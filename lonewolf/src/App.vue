@@ -1,9 +1,21 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from "vue-router";
 import HelloWorld from "./components/HelloWorld.vue";
+
+import { darkTheme } from 'naive-ui'
+
+const themeOverrides= {
+  common: {
+    fontWeightStrong: '500',
+    fontWeight: '400'
+  },
+}
+
+
 </script>
 
 <template>
+
   <header>
     <img
       alt="Vue logo"
@@ -22,8 +34,10 @@ import HelloWorld from "./components/HelloWorld.vue";
       </nav>
     </div>
   </header>
-
-  <RouterView />
+  <n-config-provider :theme="darkTheme" :theme-overrides="themeOverrides">
+    <n-global-style />
+    <RouterView />
+  </n-config-provider>
 </template>
 
 <style scoped>
