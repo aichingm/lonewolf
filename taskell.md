@@ -1,14 +1,6 @@
 ## To-Do
 
-- Board View
-- List View
-- Card View
-- Move APIs
-    * [ ] Move Lists
-    * [ ] Move Cards in List
-    * [ ] Move Card between Lists
-- Drag and Drop Lists
-- Drag and Drop Cards
+- Detail Card View
 - Custom Background
 - Replay
 - Card Colors
@@ -32,9 +24,20 @@
 - Card depands on
     > A card can depend on other cards being in a certain List
 - Card Custom Fields
+- List Edit Title
+    > This is an action which sohuld be implmented in the actions dropdown of the List
 
 ## Doing
 
 
 ## Done
 
+- Board View
+- List View
+- Card View
+- Drag and Drop Lists
+- Drag and Drop Cards
+- Move APIs
+    * [x] Move Lists
+    * [x] Move Cards in List
+    * [x] Move Card between Lists
