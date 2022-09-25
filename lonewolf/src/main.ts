@@ -1,14 +1,15 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 
-import naiveUI from 'naive-ui'
+import naiveUI from "naive-ui";
 
 // General Font
-import 'vfonts/Lato.css'
+import "vfonts/Lato.css";
 // Monospace Font
-import 'vfonts/FiraCode.css'
+import "vfonts/FiraCode.css";
 
-import { Icon } from '@iconify/vue';
+import { Icon } from "@iconify/vue";
+
 
 import App from "./App.vue";
 import router from "./router";
