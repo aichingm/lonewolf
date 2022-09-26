@@ -54,11 +54,8 @@ function newList(title: string) {
 
 <style scoped>
 .board {
-  overflow-x: scroll;
-  overflow-y: hidden;
+  display: inline-block;
   white-space: nowrap;
-  height: 100%;
-  width: 100%;
 }
 
 .board > div:not(:last-child) {

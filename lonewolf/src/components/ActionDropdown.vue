@@ -14,7 +14,7 @@
         >
             <template #icon>
                 <n-icon size="16" color="gray">
-                    <icon icon="fluent:code-text-edit-20-regular" />
+                    <icon icon="fluent:more-horizontal-20-regular" />
                 </n-icon>
             </template>
         </n-button>

@@ -171,7 +171,6 @@ function actionMenuSelected(
   display: inline-block;
   margin-top: -4px;
   margin-bottom: -4px;
-  position: absolute;
   margin-left: 6px;
 }
 

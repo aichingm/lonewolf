@@ -13,10 +13,14 @@ const theme = null;
 </script>
 
 <template>
-    <n-config-provider :theme="theme" :theme-overrides="themeOverrides">
+    <n-config-provider :theme="theme" :theme-overrides="themeOverrides" class="app-config-wrapper">
         <n-global-style />
         <RouterView />
     </n-config-provider>
 </template>
 
-<style scoped></style>
+<style scoped>
+.app-config-wrapper{
+    height: 100%;
+}
+</style>

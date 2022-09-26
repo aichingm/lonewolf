@@ -43,7 +43,6 @@ function newButtonClicked() {
 
 <style scoped>
 .list {
-  margin-right: 10px;
   width: 270px;
   background-color: #e9e9ed;
   padding: 10px;

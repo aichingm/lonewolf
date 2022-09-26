@@ -1,6 +1,6 @@
 <template>
     <div class="wrapper">
-        <BoardVue :board="board" />
+        <BoardVue :board="board" class="board"/>
     </div>
 </template>
 
@@ -18,7 +18,17 @@ const board = reactive(new Board(uuid1(), "Default")) as Board;
 <style scoped>
 .wrapper {
   height: 100%;
-  width: 100%;
   display: block;
+  overflow-x: scroll;
+  overflow-y: hidden;
+
 }
+
+.board{
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  height: calc(100% - 10px);
+}
+
 </style>

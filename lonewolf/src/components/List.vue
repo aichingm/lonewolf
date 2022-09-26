@@ -2,9 +2,7 @@
     <div class="list-lane">
         <div class="list-header list-part list-dragger">
             <div class="list-name">{{ list.title }}</div>
-            <div class="quick-edit">
-                <ActionDropdown :options="options" @selected="actionMenuSelected" />
-            </div>
+            <ActionDropdown :options="options" @selected="actionMenuSelected" />
         </div>
         <div class="cards list-part list-dragger">
             <!-- eslint-disable vue/no-mutating-props -->
@@ -169,8 +167,10 @@ function dragEvent(_event: object) {
 }
 
 .list-header {
-  padding: 10px 7px 0 7px;
+  padding: 7px 7px 0 7px;
   border-radius: 4px 4px 0 0;
+  display: flex;
+  justify-content: space-between;
 }
 
 .list-footer {
@@ -181,13 +181,10 @@ function dragEvent(_event: object) {
 
 .list-name {
   font-size: 1.5em;
-  width: calc(100% - 32px);
   display: inline-block;
   margin-left: 3px;
-}
-
-.quick-edit {
-  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cards {
