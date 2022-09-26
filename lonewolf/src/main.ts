@@ -11,6 +11,8 @@ import "vfonts/FiraCode.css";
 import { Icon } from "@iconify/vue";
 
 
+import Codemirror from 'vue-codemirror'
+
 import App from "./App.vue";
 import router from "./router";
 
@@ -23,5 +25,8 @@ app.use(router);
 app.use(naiveUI);
 
 app.component("Icon", Icon);
+
+// setup VueCodemirror to not use any default extensions
+app.use(Codemirror, {extensions: []})
 
 app.mount("#app");

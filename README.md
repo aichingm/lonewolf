@@ -1,7 +1,7 @@
 # Lonewolf
 
 ## Container
-
+ 
 Build image:
 
 ```
@@ -51,7 +51,38 @@ npm run build
 
 * https://icon-sets.iconify.design/fluent/
 
+### Drag and Drop
+
+* https://github.com/SortableJS/vue.draggable.next
+* https://github.com/SortableJS/Vue.Draggable/issues/935#issuecomment-1003768094
+* https://madewithvuejs.com/draggable-kanban-board
+
 ### Markdown
+
+#### Rendering
+
+* https://github.com/markedjs/marked
+    * https://github.com/markedjs/marked/blob/master/docs/USING_PRO.md
+    * https://github.com/markedjs/marked/issues/233 emoji support
+
+* https://github.com/markdown-it/markdown-it
+    * https://github.com/revin/markdown-it-task-lists task lists
+
+#### Working idea 1
+
+Go with a editor like github which is just a textarea.
+
+Instead of a textarea, codemirror would support some nice tricks:
+
+* Syntax highlighting for code blocks
+* cursor positions
+* autocomplete dropdowns for mentions and emojis
+
+#### Prosemirror
+
+* Editor Block https://prosemirror.net/examples/codemirror/
+* Markdown example https://codesandbox.io/s/7yr5w0mr8x
+* Inline Code plugin https://github.com/curvenote/editor
 
 #### Candidates
 
@@ -66,15 +97,18 @@ npm run build
     * React markdown editor https://github.com/outline/rich-markdown-editor
     * Missing https://npm.io/package/mdsmirror github page
 1. https://github.com/ocavue/rino
-1. https://github.com/voracious/ink-mde
+1. https://github.com/voracious/ink-mde                                         ***
     * https://github.com/voracious/ink-mde/tree/main/packages/vue
     * https://github.com/voracious/vue-ink
 1. https://github.com/Vanessa219/vditor
-1. https://github.com/Ionaru/easy-markdown-editor
+1. https://github.com/Ionaru/easy-markdown-editor                               ***
+    * bad code support
 1. https://github.com/barelyhuman/mark
 1. https://github.com/syfxlin/tiptap-starter-kit
-1. https://github.com/sparksuite/simplemde-markdown-editor
+1. https://github.com/sparksuite/simplemde-markdown-editor                      ---
     * https://github.com/findingorder/fo-markdown-note
+    * XSS unfixed
+    * dead project
 1. https://github.com/lepture/editor
 1. https://github.com/imzbf/md-editor-v3
     * https://github.com/imzbf/md-editor-rt
@@ -82,6 +116,7 @@ npm run build
 1. https://github.com/tuture-dev/editure
 1. https://github.com/cloverhearts/quilljs-markdown
 1. https://github.com/nasa8x/v-markdown-editor
+1. https://github.com/jbt/markdown-editor
 
 #### Other
 
