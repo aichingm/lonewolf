@@ -4,18 +4,31 @@ const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
         {
-            path: "/board",
-            name: "board",
+            path: "/board/:board/card/:card",
             // route level code-splitting
             // this generates a separate chunk (BoardView.[hash].js) for this route
             // which is lazy-loaded when the route is visited.
-            component: () => import("../views/BoardView.vue"),
+            components: {default:() => import("../views/BoardView.vue"), modal:()=>import("../views/CardDialogView.vue")}
+        },
+        {
+            path: "/board/:board/list/:card",
+            // route level code-splitting
+            // this generates a separate chunk (BoardView.[hash].js) for this route
+            // which is lazy-loaded when the route is visited.
+            components: {default:() => import("../views/BoardView.vue"), modal:()=>import("../views/ListDialogView.vue")}
+        },
+        {
+            path: "/board/:board",
+            // route level code-splitting
+            // this generates a separate chunk (BoardView.[hash].js) for this route
+            // which is lazy-loaded when the route is visited.
+            component: () => import("../views/BoardView.vue")
         },
         {
             path: "/editor",
             name: "editor",
             // route level code-splitting
-            // this generates a separate chunk (CM6View.[hash].js) for this route
+            // this generates a separate chunk (Editor.[hash].js) for this route
             // which is lazy-loaded when the route is visited.
             component: () => import("../views/Editor.vue"),
         },

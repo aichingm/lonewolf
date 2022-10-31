@@ -19,6 +19,7 @@
                 <template #item="{ element }">
                     <CardVue
                         :card="element"
+                        @card-edit="(card)=>$emit('card-edit', card)"
                     />
                 </template>
             </draggable>
@@ -58,6 +59,8 @@ const $props = defineProps<{
     list: List;
 }>();
 
+const $emit = defineEmits(["card-edit", "list-edit"]);
+
 const lists = shallowRef($props.list.board.lists.toArray());
 const cards = shallowRef($props.list.cards.toArray());
 const actions = shallowRef(new Array<ActionDropdownOption>());
@@ -76,6 +79,15 @@ watch($props.list.board.vueTicker(), () => {
 function generateActions(): ActionDropdownOption[] {
     const children = filterMoveList(lists.value);
     return [
+        new ActionDropdownOption(
+            "editKey",
+            "Edit",
+            "edit",
+            $props.list,
+            null,
+            false,
+            null
+        ),
         new ActionDropdownOption(
             "moveKey",
             "Move",
@@ -137,6 +149,9 @@ function actionMenuSelected(
         if (typeof key === 'number') {
             $props.list.board.execTransaction(new ListSortTransaction($props.list, $props.list.position, key))
         }
+    }
+    if (optionObject.command == "edit") {
+        $emit("list-edit", optionObject.data);
     }
 }
 

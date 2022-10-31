@@ -1,6 +1,5 @@
 ## To-Do
 
-- Detail Card View
 - Custom Background
 - Replay
 - Card Colors
@@ -29,6 +28,7 @@
 
 ## Doing
 
+- Detail Card View
 
 ## Done
 

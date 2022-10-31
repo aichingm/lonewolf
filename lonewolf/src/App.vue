@@ -15,7 +15,12 @@ const theme = null;
 <template>
     <n-config-provider :theme="theme" :theme-overrides="themeOverrides" class="app-config-wrapper">
         <n-global-style />
-        <RouterView />
+        <router-view v-slot="{ Component }">
+            <keep-alive>
+                <component :is="Component" />
+            </keep-alive>
+        </router-view>
+        <RouterView name="modal"/>
     </n-config-provider>
 </template>
 

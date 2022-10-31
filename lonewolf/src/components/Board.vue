@@ -13,6 +13,8 @@
             <template #item="{ element }">
                 <ListVue
                     :list="element"
+                    @card-edit="(card)=>$emit('card-edit', card)"
+                    @list-edit="(list)=>$emit('list-edit', list)"
                 />
             </template>
         </draggable>
@@ -36,6 +38,8 @@ import type List from "@/common/data/List";
 const $props = defineProps<{
     board: Board;
 }>();
+
+const $emit = defineEmits(["card-edit", "list-edit"]);
 
 const lists = shallowRef($props.board.lists.toArray());
 

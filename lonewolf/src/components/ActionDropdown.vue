@@ -11,6 +11,7 @@
             size="tiny"
             @focus="show(true)"
             @blur="show(false)"
+            @click.stop
         >
             <template #icon>
                 <n-icon size="16" color="gray">

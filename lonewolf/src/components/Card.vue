@@ -1,5 +1,5 @@
 <template>
-    <div class="card">
+    <div class="card" @click="$emit('card-edit', $props.card)">
         <div class="badges">
             <div class="badge"></div>
             <div class="badge"></div>
@@ -60,6 +60,8 @@ const $props = defineProps<{
     card: Card;
 }>();
 
+const $emit = defineEmits(["card-edit"]);
+
 const lists = shallowRef($props.card.list.board.lists.toArray());
 const cards = shallowRef($props.card.list.cards.toArray());
 const actions = shallowRef(new Array<ActionDropdownOption>());
@@ -83,6 +85,15 @@ const generateActions = function () {
     const cardsChildren = filterMoveCards($props.card.list.cards.toArray());
     const listChildren = filterMoveLists($props.card.list.board.lists.toArray());
     return [
+        new ActionDropdownOption(
+            "editKey",
+            "Edit",
+            "edit",
+            $props.card,
+            null,
+            false,
+            null
+        ),
         new ActionDropdownOption(
             "moveKey",
             "Move",
@@ -159,6 +170,9 @@ function actionMenuSelected(
     key: string | number,
     optionObject: ActionDropdownOption
 ) {
+    if (optionObject.command == "edit") {
+        $emit("card-edit", $props.card, optionObject.data);
+    }
     if (optionObject.command == "move") {
         if (typeof key === 'number') {
             $props.card.execTransaction(new CardSortTransaction($props.card, $props.card.position, key))
