@@ -8,13 +8,11 @@
             dragClass="drag-card"
             item-key="id"
             handle=".list-dragger"
+            @change="dragEvent($event)"
         >
             <template #item="{ element }">
                 <ListVue
                     :list="element"
-                    :lists="lists"
-                    @moveList="moveList"
-                    @moveCardTo="moveCard"
                 />
             </template>
         </draggable>
@@ -23,33 +21,41 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
+import { shallowRef, watch } from "vue";
 import draggable from "vuedraggable";
+
 
 import ListVue from "./List.vue";
 import NewList from "./NewList.vue";
 
-import type List from "@/common/List";
-import type Board from "@/common/Board";
-import type Card from "@/common/Card";
+import { NewListTransaction, ListSortTransaction } from "@/common/data/Transaction";
+import type Board from "@/common/data/Board";
+
+import type List from "@/common/data/List";
 
 const $props = defineProps<{
     board: Board;
 }>();
 
-const lists = reactive($props.board.lists) as List[];
+const lists = shallowRef($props.board.lists.toArray());
 
-function moveCard(card: Card, oldList: List, newList: List) {
-    oldList.removeCard(card);
-    newList.insertCard(card, 0);
-}
+watch($props.board.vueTicker(), () => {
+    lists.value = $props.board.lists.toArray();
+})
 
-function moveList(oldPos: number, newPos: number) {
-    $props.board.moveList(oldPos, newPos);
-}
 function newList(title: string) {
-    $props.board.addList(title);
+    $props.board.execTransaction(new NewListTransaction($props.board, title))
 }
+
+function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number}}){
+    if (e.moved) {
+        const list = $props.board.lists.find(e.moved.element.id)
+        if (list != null) {
+            $props.board.execTransaction(new ListSortTransaction(list, e.moved.oldIndex, e.moved.newIndex))
+        }
+    }
+}
+
 </script>
 
 <style scoped>

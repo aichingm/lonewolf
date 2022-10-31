@@ -1,18 +1,20 @@
 <template>
     <div class="wrapper">
-        <BoardVue :board="board" class="board"/>
+        <BoardVue
+            :board="board"
+            class="board"
+        />
     </div>
 </template>
 
 <script setup lang="ts">
-import { v1 as uuid1 } from "uuid";
-import { reactive } from "vue";
+import { v1 as uuid } from "uuid";
 
 import BoardVue from "@/components/Board.vue";
+import Board from "@/common/data/Board";
 
-import Board from "@/common/Board";
+const board = new Board(uuid(), "Default");
 
-const board = reactive(new Board(uuid1(), "Default")) as Board;
 </script>
 
 <style scoped>

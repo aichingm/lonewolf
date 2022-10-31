@@ -1,13 +1,13 @@
 <template>
     <div class="list-lane">
         <div class="list-header list-part list-dragger">
-            <div class="list-name">{{ list.title }}</div>
-            <ActionDropdown :options="options" @selected="actionMenuSelected" />
+            <div class="list-name">{{ list.name }}</div>
+            <ActionDropdown :options="actions" @selected="actionMenuSelected" />
         </div>
         <div class="cards list-part list-dragger">
             <!-- eslint-disable vue/no-mutating-props -->
             <draggable
-                v-model="list.cards"
+                v-model="cards"
                 group="cards"
                 animation="200"
                 item-key="id"
@@ -19,10 +19,6 @@
                 <template #item="{ element }">
                     <CardVue
                         :card="element"
-                        :parentList="list"
-                        :lists="$props.lists"
-                        @moveCard="(oldPos, newPos) => list.moveCard(oldPos, newPos)"
-                        @moveCardTo="moveCardTo"
                     />
                 </template>
             </draggable>
@@ -44,7 +40,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, computed } from "vue";
+import { ref, nextTick, shallowRef, watch } from "vue";
+
 import draggable from "vuedraggable";
 import { v1 as uuid1 } from "uuid";
 
@@ -52,19 +49,32 @@ import CardVue from "./Card.vue";
 import ActionDropdown from "./ActionDropdown.vue";
 import ActionDropdownOption from "@/common/ActionDropdownOption";
 
-import type Card from "@/common/Card";
-import type List from "@/common/List";
+import type List from "@/common/data/List";
+import type Card from "@/common/data/Card";
+import { NewCardTransaction, ListSortTransaction, CardSortTransaction, CardMoveTransaction } from "@/common/data/Transaction";
+
 
 const $props = defineProps<{
     list: List;
-    lists: List[];
 }>();
-console.log($props.lists);
 
-const $emit = defineEmits(["moveList", "moveCardTo"]);
+const lists = shallowRef($props.list.board.lists.toArray());
+const cards = shallowRef($props.list.cards.toArray());
+const actions = shallowRef(new Array<ActionDropdownOption>());
 
-const options = computed(() => {
-    const children = filterMoveList($props.lists);
+
+watch($props.list.vueTicker(), () => {
+    cards.value = $props.list.cards.toArray();
+})
+
+watch($props.list.board.vueTicker(), () => {
+    lists.value = $props.list.board.lists.toArray();
+    actions.value = generateActions();
+})
+
+
+function generateActions(): ActionDropdownOption[] {
+    const children = filterMoveList(lists.value);
     return [
         new ActionDropdownOption(
             "moveKey",
@@ -76,7 +86,9 @@ const options = computed(() => {
             null
         ),
     ];
-});
+}
+
+actions.value = generateActions();
 
 function filterMoveList(lists: List[]) {
     if (lists.length == 0) {
@@ -92,7 +104,7 @@ function filterMoveList(lists: List[]) {
         }
         const o = new ActionDropdownOption(
             i,
-            "Before " + lists[i].title,
+            "Before " + lists[i].name,
             "moveList",
             null,
             null,
@@ -104,8 +116,8 @@ function filterMoveList(lists: List[]) {
 
     if (lists[lists.length - 1].id != $props.list.id) {
         const o = new ActionDropdownOption(
-            lists.length,
-            "After " + lists[lists.length - 1].title,
+            lists.length - 1,
+            "After " + lists[lists.length - 1].name,
             "moveList",
             null,
             null,
@@ -122,7 +134,9 @@ function actionMenuSelected(
     optionObject: ActionDropdownOption
 ) {
     if (optionObject.command == "moveList") {
-        $emit("moveList", $props.list.position, key);
+        if (typeof key === 'number') {
+            $props.list.board.execTransaction(new ListSortTransaction($props.list, $props.list.position, key))
+        }
     }
 }
 
@@ -132,7 +146,7 @@ const cardTitle = ref("");
 const cardTitleInputId = uuid1();
 
 function newCardButtonClicked() {
-    $props.list.addCard(cardTitle.value);
+    $props.list.execTransaction(new NewCardTransaction($props.list, cardTitle.value))
     cardTitle.value = "";
     nextTick(() => document.getElementById(cardTitleInputId)?.focus());
     nextTick(() =>
@@ -142,13 +156,22 @@ function newCardButtonClicked() {
     );
 }
 
-function moveCardTo(card: Card, newList: List) {
-    $emit("moveCardTo", card, $props.list, newList);
+function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number}, added: {element: Card, newIndex: number}}) {
+    if (e.moved) {
+        const card = $props.list.cards.find(e.moved.element.id)
+        if (card != null) {
+            $props.list.execTransaction(new CardSortTransaction(card, e.moved.oldIndex, e.moved.newIndex))
+        }
+    }
+    if (e.added) { // skip removed, we do both in one transaction
+        const oldList = e.added.element.list
+        const newList = $props.list
+        const oldPos = e.added.element.position
+        const card = e.added.element
+        card.execTransaction(new CardMoveTransaction(card, oldList, oldPos, newList, e.added.newIndex))
+    }
 }
 
-function dragEvent(_event: object) {
-    $props.list.reindexCards();
-}
 </script>
 
 <style scoped>

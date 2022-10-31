@@ -12,9 +12,9 @@
             <div class="badge"></div>
         </div>
         <div class="quick-edit">
-            <ActionDropdown :options="options" @selected="actionMenuSelected" />
+            <ActionDropdown :options="actions" @selected="actionMenuSelected" />
         </div>
-        <n-h3>{{ card.title }}</n-h3>
+        <n-h3>{{ card.name }}</n-h3>
         <div class="tags">
             <n-tag size="small" round :bordered="false">
                 <template #icon>
@@ -45,26 +45,43 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { shallowRef, watch } from "vue";
 
 import ActionDropdown from "./ActionDropdown.vue";
 
-import type Card from "@/common/Card";
-import type List from "@/common/List";
+import type Card from "@/common/data/Card";
+import type List from "@/common/data/List";
+import { CardSortTransaction, CardMoveTransaction } from "@/common/data/Transaction";
+
 
 import ActionDropdownOption from "@/common/ActionDropdownOption";
 
 const $props = defineProps<{
     card: Card;
-    parentList: List;
-    lists: List[];
 }>();
 
-const $emit = defineEmits(["moveCard", "moveCardTo"]);
+const lists = shallowRef($props.card.list.board.lists.toArray());
+const cards = shallowRef($props.card.list.cards.toArray());
+const actions = shallowRef(new Array<ActionDropdownOption>());
 
-const options = computed(() => {
-    const cardsChildren = filterMoveCards($props.parentList.cards);
-    const listChildren = filterMoveLists($props.lists);
+watch($props.card.vueTicker(), () => {
+    actions.value = generateActions();
+})
+
+watch($props.card.list.vueTicker(), () => {
+    cards.value = $props.card.list.cards.toArray();
+    actions.value = generateActions();
+})
+
+watch($props.card.list.board.vueTicker(), () => {
+    lists.value = $props.card.list.board.lists.toArray();
+    actions.value = generateActions();
+})
+
+
+const generateActions = function () {
+    const cardsChildren = filterMoveCards($props.card.list.cards.toArray());
+    const listChildren = filterMoveLists($props.card.list.board.lists.toArray());
     return [
         new ActionDropdownOption(
             "moveKey",
@@ -85,7 +102,8 @@ const options = computed(() => {
             null
         ),
     ];
-});
+};
+actions.value = generateActions();
 
 function filterMoveCards(cards: Card[]) {
     const filteredCards = [];
@@ -96,7 +114,7 @@ function filterMoveCards(cards: Card[]) {
         }
         const o = new ActionDropdownOption(
             i,
-            "Before " + cards[i].title,
+            "Before " + cards[i].name,
             "move",
             null,
             null,
@@ -108,8 +126,8 @@ function filterMoveCards(cards: Card[]) {
 
     if (cards.length > 0 && cards[cards.length - 1].id != $props.card.id) {
         const o = new ActionDropdownOption(
-            cards.length,
-            "After " + cards[cards.length - 1].title,
+            cards.length - 1,
+            "After " + cards[cards.length - 1].name,
             "move",
             null,
             null,
@@ -123,11 +141,11 @@ function filterMoveCards(cards: Card[]) {
 
 function filterMoveLists(lists: List[]) {
     return lists
-        .filter((l) => l.id != $props.parentList.id)
+        .filter((l) => l.id != $props.card.list.id)
         .map((l) => {
             return new ActionDropdownOption(
                 l.id,
-                l.title,
+                l.name,
                 "moveTo",
                 l,
                 null,
@@ -142,11 +160,13 @@ function actionMenuSelected(
     optionObject: ActionDropdownOption
 ) {
     if (optionObject.command == "move") {
-        $emit("moveCard", $props.card.position, key);
+        if (typeof key === 'number') {
+            $props.card.execTransaction(new CardSortTransaction($props.card, $props.card.position, key))
+        }
     }
 
     if (optionObject.command == "moveTo") {
-        $emit("moveCardTo", $props.card, optionObject.data);
+        $props.card.execTransaction(new CardMoveTransaction($props.card, $props.card.list, $props.card.position, optionObject.data, 0))
     }
 }
 </script>
