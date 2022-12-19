@@ -19,6 +19,9 @@ taskell:
 container:
 	cd container && podman build .. -f Dockerfile -t lonewolf:build
 
+container-force:
+	cd container && podman build --no-cache .. -f Dockerfile -t lonewolf:build
+
 shell:
 	podman run --rm -it -p 5173:5173 -v .:/app lonewolf:build bash -c 'cd /app; bash'
 
