@@ -45,51 +45,43 @@
 </template>
 
 <script setup lang="ts">
-import { shallowRef, watch } from "vue";
+import { computed } from "vue";
 
 import ActionDropdown from "./ActionDropdown.vue";
 
+import type Board from "@/common/data/Board";
 import type Card from "@/common/data/Card";
 import type List from "@/common/data/List";
-import { CardSortTransaction, CardMoveTransaction } from "@/common/data/Transaction";
+import { CardSortTransaction, CardMoveTransaction, TransactionTree } from "@/common/data/Transaction";
 
 
 import ActionDropdownOption from "@/common/ActionDropdownOption";
 
 const $props = defineProps<{
-    card: Card;
+    data: TransactionTree;
+    cards: Card[];
+    lists: List[];
+    board: () => Board;
 }>();
 
-const $emit = defineEmits(["card-edit"]);
+const $emit = defineEmits(["transaction", "card-edit"]);
 
-const lists = shallowRef($props.card.list.board.lists.toArray());
-const cards = shallowRef($props.card.list.cards.toArray());
-const actions = shallowRef(new Array<ActionDropdownOption>());
+const lists = computed(()=>$props.lists.map((t: TransactionTree) : List => $props.board().findList(t.id)))
+const cards = computed(()=>$props.cards.map((t: TransactionTree) : Card => $props.board().findCard(t.id)))
+const card = computed(()=>$props.board().findCard($props.data.id))
 
-watch($props.card.vueTicker(), () => {
-    actions.value = generateActions();
-})
-
-watch($props.card.list.vueTicker(), () => {
-    cards.value = $props.card.list.cards.toArray();
-    actions.value = generateActions();
-})
-
-watch($props.card.list.board.vueTicker(), () => {
-    lists.value = $props.card.list.board.lists.toArray();
-    actions.value = generateActions();
-})
+const actions = computed(()=>generateActions(lists.value, cards.value))
 
 
-const generateActions = function () {
-    const cardsChildren = filterMoveCards($props.card.list.cards.toArray());
-    const listChildren = filterMoveLists($props.card.list.board.lists.toArray());
+const generateActions = function (lists, cards) {
+    const cardsChildren = filterMoveCards(cards);
+    const listChildren = filterMoveLists(lists);
     return [
         new ActionDropdownOption(
             "editKey",
             "Edit",
             "edit",
-            $props.card,
+            $props.data.value,
             null,
             false,
             null
@@ -114,17 +106,18 @@ const generateActions = function () {
         ),
     ];
 };
-actions.value = generateActions();
 
 function filterMoveCards(cards: Card[]) {
     const filteredCards = [];
+    let mod = 0;
     for (let i = 0; i < cards.length; i++) {
-        if (cards[i].id == $props.card.id) {
-            i++;
+        if (cards[i].id == card.value.id) {
+            mod++;
+            i++
             continue;
         }
         const o = new ActionDropdownOption(
-            i,
+            i + mod,
             "Before " + cards[i].name,
             "move",
             null,
@@ -135,7 +128,7 @@ function filterMoveCards(cards: Card[]) {
         filteredCards.push(o);
     }
 
-    if (cards.length > 0 && cards[cards.length - 1].id != $props.card.id) {
+    if (cards.length > 0 && cards[cards.length - 1].id != card.value.id) {
         const o = new ActionDropdownOption(
             cards.length - 1,
             "After " + cards[cards.length - 1].name,
@@ -152,7 +145,7 @@ function filterMoveCards(cards: Card[]) {
 
 function filterMoveLists(lists: List[]) {
     return lists
-        .filter((l) => l.id != $props.card.list.id)
+        .filter((l) => l.id != card.value.list.id)
         .map((l) => {
             return new ActionDropdownOption(
                 l.id,
@@ -171,16 +164,17 @@ function actionMenuSelected(
     optionObject: ActionDropdownOption
 ) {
     if (optionObject.command == "edit") {
-        $emit("card-edit", $props.card, optionObject.data);
+        $emit("card-edit", card.value, optionObject.data);
     }
     if (optionObject.command == "move") {
         if (typeof key === 'number') {
-            $props.card.execTransaction(new CardSortTransaction($props.card, $props.card.position, key))
+            console.log(card.value.position, key)
+            $emit("transaction", new CardSortTransaction(card.value.id, card.value.position, key))
         }
     }
 
     if (optionObject.command == "moveTo") {
-        $props.card.execTransaction(new CardMoveTransaction($props.card, $props.card.list, $props.card.position, optionObject.data, 0))
+        $emit("transaction", new CardMoveTransaction(card.value.id, card.value.list.id, card.value.position, optionObject.data.id, 0))
     }
 }
 </script>

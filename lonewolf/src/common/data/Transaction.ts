@@ -3,11 +3,11 @@ import List from "./List";
 import Card from "./Card";
 import type Board from "./Board";
 
-
 export default interface Transaction {
     id(): string
-    do(): boolean
-    undo(): boolean
+    apply(b: Board): boolean
+    // NOTICE keep this limitations in mind https://v2.vuejs.org/v2/guide/reactivity.html#For-Arrays
+    mutateTransactionTree(t: TransactionTree, b: Board): boolean
 }
 
 export class BaseTransaction {
@@ -19,6 +19,18 @@ export class BaseTransaction {
     public created(): number {
         return this._created;
     }
+}
+
+export class TransactionTree {
+    public nodes = new Array<TransactionTree>();
+    public id = "";
+    public lastTransactionId = "";
+
+    constructor (id: string, lastTransactionId: string) {
+        this.id = id;
+        this.lastTransactionId = lastTransactionId;
+    }
+
 }
 
 export class IdentifiableTransaction extends BaseTransaction {
@@ -35,57 +47,57 @@ export class IdentifiableTransaction extends BaseTransaction {
 
 export class NewListTransaction extends IdentifiableTransaction implements Transaction{
     private _title: string;
-    private _board: Board;
+    private _listId: string;
 
-    constructor (board: Board, title: string) {
+    constructor (title: string) {
         super()
-        this._board = board
         this._title = title
+
     }
 
-    do(): boolean {
+    apply(board: Board): boolean {
         console.log("NewListTransaction", this._title)
 
-        const list = List.create(this._board, this._title);
-        this._board.lists.add(list)
-        list.attachTo(this._board)
-        this._board.lists.reindex()
-        this._board.transactionDone(this)
+        const list = List.create(board, this._title);
+        this._listId = list.id
+        board.lists.add(list)
         return true
     }
-    // eslint-disable-next-line no-empty-function
-    undo(): boolean{
-        // TODO
-        return false
+
+    mutateTransactionTree(t: TransactionTree, _b: Board) {
+        t.lastTransactionId = this.id
+        t.nodes.push(new TransactionTree(this._listId, this.id))
     }
 
 }
 
 export class NewCardTransaction extends IdentifiableTransaction implements Transaction{
     private _title: string;
-    private _list: List;
+    private _listId: string;
+    private _cardId: string;
 
-    constructor (list: List, title: string) {
+    constructor (listId: string, title: string) {
         super()
-        this._list = list
+        this._listId = listId
         this._title = title
     }
 
-    do(): boolean {
-        console.log("NewCardTransaction", this._list.id, this._title)
+    apply(board: Board): boolean {
+        console.log("NewCardTransaction", this._listId, this._title)
 
-        const card = Card.create(this._list, this._title);
-        this._list.cards.add(card)
-        card.attachTo(this._list)
-        this._list.cards.reindex()
-        this._list.transactionDone(this)
+        const list = board.findList(this._listId)
+
+        const card = Card.create(list, this._title);
+        list.cards.add(card)
+        board.cards.set(card.id, card)
+
+        this._cardId = card.id
         return true
     }
 
-    // eslint-disable-next-line no-empty-function
-    undo(): boolean{
-        // TODO
-        return false
+    mutateTransactionTree(t: TransactionTree, b: Board) {
+        t.nodes[b.findList(this._listId).position].nodes.push(new TransactionTree(this._cardId, this.id))
+        t.nodes[b.findList(this._listId).position].lastTransactionId = this.id
     }
 
 }
@@ -93,106 +105,99 @@ export class NewCardTransaction extends IdentifiableTransaction implements Trans
 export class ListSortTransaction extends IdentifiableTransaction implements Transaction{
     private _oldPosition: number;
     private _newPosition: number;
-    private _list: List;
+    private _listId: string;
 
-    constructor (list: List, oldPosition: number, newPosition: number) {
+    constructor (listId: string, oldPosition: number, newPosition: number) {
         super()
-        this._list = list
+        this._listId = listId
         this._oldPosition = oldPosition
         this._newPosition = newPosition
     }
 
-    do(): boolean {
-        console.log("ListSortTransaction", this._list.id, this._oldPosition, this._newPosition)
-
-        const board = this._list.board;
-        const list = board.lists.items[this._oldPosition];
-        board.lists.items.splice(this._oldPosition, 1);
-        board.lists.items.splice(this._newPosition, 0, list);
-
-        board.lists.reindex()
-        board.transactionDone(this)
+    apply(board: Board): boolean {
+        console.log("ListSortTransaction", this._listId, this._oldPosition, this._newPosition)
+        board.lists.move(this._oldPosition, this._newPosition)
         return true
     }
 
-    // eslint-disable-next-line no-empty-function
-    undo(): boolean{
-        // TODO
-        return false
+    mutateTransactionTree(t: TransactionTree, _b: Board) {
+        t.lastTransactionId = this.id
+        const listTransactionTree = t.nodes[this._oldPosition]
+        t.nodes.splice(this._oldPosition, 1);
+        t.nodes.splice(this._newPosition, 0, listTransactionTree);
     }
 
 }
 
 export class CardSortTransaction extends IdentifiableTransaction implements Transaction{
-    private _card: Card;
+    private _cardId: string;
     private _oldPosition: number;
     private _newPosition: number;
 
-    constructor (card: Card, oldPosition: number, newPosition: number) {
+    constructor (cardId: string, oldPosition: number, newPosition: number) {
         super()
-        this._card = card
+        this._cardId = cardId
         this._oldPosition = oldPosition
         this._newPosition = newPosition
 
     }
 
-    do(): boolean{
-        console.log("CardSortTransaction", this._card.id, this._oldPosition, this._newPosition)
-
-        const list = this._card.list;
-        list.cards.items.splice(this._oldPosition, 1);
-        list.cards.items.splice(this._newPosition, 0, this._card);
-
-        list.cards.reindex()
-        list.transactionDone(this)
+    apply(board: Board): boolean{
+        console.log("CardSortTransaction", this._cardId, this._oldPosition, this._newPosition)
+        board.findCard(this._cardId).list.cards.move(this._oldPosition, this._newPosition)
         return true
     }
 
-    // eslint-disable-next-line no-empty-function
-    undo(): boolean{
-        // TODO
-        return false
+    mutateTransactionTree(t: TransactionTree, board: Board) {
+        const listTree = t.nodes[board.findCard(this._cardId).list.position]
+        const cardTree = listTree.nodes[this._oldPosition]
+        listTree.nodes.splice(this._oldPosition, 1);
+        listTree.nodes.splice(this._newPosition, 0, cardTree);
+        listTree.lastTransactionId = this.id
     }
+
 }
 
-
 export class CardMoveTransaction extends IdentifiableTransaction implements Transaction{
-    private _card: Card;
+    private _cardId: string;
     private _oldPosition: number;
     private _newPosition: number;
-    private _oldList: List;
-    private _newList: List;
+    private _oldListId: string;
+    private _newListId: string;
 
-    constructor (card: Card, oldList: List, oldPosition: number, newList: List, newPosition: number) {
+    constructor (cardId: string, oldListId: string, oldPosition: number, newListId: string, newPosition: number) {
         super()
-        this._card = card
-        this._oldList = oldList
+        this._cardId = cardId
+        this._oldListId = oldListId
         this._oldPosition = oldPosition
-        this._newList = newList
+        this._newListId = newListId
         this._newPosition = newPosition
-
     }
 
-    do(): boolean {
-        console.log("CardMoveTransaction", this._card.id, this._oldList.id, this._oldPosition, this._newList.id, this._newPosition)
+    apply(board: Board): boolean{
+        console.log("CardMoveTransaction", this._cardId, this._oldListId, this._oldPosition, this._newListId, this._newPosition)
 
-        this._oldList.cards.items.splice(this._oldPosition, 1);
-        this._newList.cards.items.splice(this._newPosition, 0, this._card);
+        const oldList = board.findList(this._oldListId)
+        const newList = board.findList(this._newListId)
+        const card = board.findCard(this._cardId)
 
-        this._card.attachTo(this._newList)
-
-        this._oldList.cards.reindex()
-        this._newList.cards.reindex()
-
-        this._oldList.transactionDone(this)
-        this._newList.transactionDone(this)
+        oldList.cards.remove(this._oldPosition);
+        card.position = this._newPosition
+        newList.insertCard(card);
 
         return true
     }
 
-    // eslint-disable-next-line no-empty-function
-    undo(): boolean {
-        // TODO
-        return false
+    mutateTransactionTree(t: TransactionTree, board: Board) {
+
+        const oldListTree = t.nodes[board.findList(this._oldListId).position]
+        const newListTree = t.nodes[board.findList(this._newListId).position]
+        const cardTree = oldListTree.nodes[this._oldPosition]
+
+        oldListTree.nodes.splice(this._oldPosition, 1)
+        newListTree.nodes.splice(this._newPosition, 0, cardTree);
+
+        cardTree.lastTransactionId = this.id
     }
+
 }

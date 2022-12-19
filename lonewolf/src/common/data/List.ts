@@ -1,26 +1,21 @@
 import { v4 as uuid } from "uuid";
-import { ref } from "vue"
-import type { Ref } from "vue"
 
 import Indexable from "@/common/Indexable";
 import IndexedMap from "@/common/IndexedMap";
 import type Board from "./Board";
 import type Card from "./Card";
-import type Vueable from "@/common/Vueable"
-import type Transaction from "@/common/data/Transaction";
+import { TransactionTree } from "@/common/data/Transaction";
 
 
 
-export default class List extends Indexable implements Vueable{
+export default class List extends Indexable {
     private _cards = new IndexedMap<Card>();
 
     private _board: Board;
 
-
     constructor(board: Board, id: string, name: string) {
         super(id, name, -1)
         this._board = board;
-        this._vueTicker = ref("")
     }
 
     public static create(board: Board, title: string): List {
@@ -31,6 +26,16 @@ export default class List extends Indexable implements Vueable{
         return this._cards;
     }
 
+    public addCard(c: Card): void {
+        this.cards.add(c)
+        c.attachTo(this)
+    }
+
+    public insertCard(c: Card): void {
+        this.cards.insert(c)
+        c.attachTo(this)
+    }
+
     public attachTo(board: Board) {
         this._board = board
     }
@@ -39,17 +44,34 @@ export default class List extends Indexable implements Vueable{
         return this._board
     }
 
-    public execTransaction(t: Transaction): boolean {
-        return this.board.execTransaction(t)
+    public toSerializable() {
+        const l = new SerializableList();
+        l.id = this.id
+        l.name = this.name
+        l.position = this.position
+        return l;
     }
 
-    public transactionDone(transaction: Transaction) {
-        this._vueTicker.value = transaction.id()
+    public static fromSerializable(board: Board, s: SerializableList) {
+        const l = new List(board, s.id, s.name)
+        l.position = s.position
+        return l;
     }
 
-    private _vueTicker: Ref<string>;
-    public vueTicker(): Ref<string> {
-        return this._vueTicker
+    public toTransactionTree(): TransactionTree {
+        const t = new TransactionTree();
+        t.id = this.id
+        t.lastTransactionId = "no-new-transaction"
+        t.nodes = Array.from(this.cards.items.map( (c: Card) => {return c.toTransactionTree();}));
+        return t
     }
+
+}
+
+export class SerializableList {
+
+    public id = "";
+    public name = "";
+    public position: number;
 
 }

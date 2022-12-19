@@ -2,6 +2,7 @@
     <n-modal
         v-model:show="modalShow"
         @afterLeave="back()"
+        style="height: calc(100% - 60px); width: 600px; position: fixed; top: 30px;left: calc(50% - 300px);"
     >
         <n-card
             style="width: 600px"
@@ -31,6 +32,11 @@ const modalShow = ref(true)
 
 const router = useRouter();
 const route = useRoute();
+
+console.log(route.params.board, route.params.card)
+
+
+
 const back = () => router.push({path: "/board/" + route.params.board})
 
 </script>

@@ -12,9 +12,12 @@
         >
             <template #item="{ element }">
                 <ListVue
-                    :list="element"
+                    :board="$props.board"
+                    :data="element"
+                    :lists="$props.data.nodes"
                     @card-edit="(card)=>$emit('card-edit', card)"
                     @list-edit="(list)=>$emit('list-edit', list)"
+                    @transaction="(...args)=>$emit('transaction', ...args)"
                 />
             </template>
         </draggable>
@@ -23,39 +26,35 @@
 </template>
 
 <script setup lang="ts">
-import { shallowRef, watch } from "vue";
+import { computed } from "vue";
 import draggable from "vuedraggable";
 
 
 import ListVue from "./List.vue";
 import NewList from "./NewList.vue";
 
-import { NewListTransaction, ListSortTransaction } from "@/common/data/Transaction";
+import { TransactionTree, NewListTransaction, ListSortTransaction } from "@/common/data/Transaction";
 import type Board from "@/common/data/Board";
 
 import type List from "@/common/data/List";
 
 const $props = defineProps<{
-    board: Board;
+    board: () => Board;
+    data: TransactionTree;
 }>();
 
-const $emit = defineEmits(["card-edit", "list-edit"]);
-
-const lists = shallowRef($props.board.lists.toArray());
-
-watch($props.board.vueTicker(), () => {
-    lists.value = $props.board.lists.toArray();
-})
+const $emit = defineEmits(["transaction", "card-edit", "list-edit"]);
+const lists = computed(()=>$props.data.nodes)
 
 function newList(title: string) {
-    $props.board.execTransaction(new NewListTransaction($props.board, title))
+    $emit("transaction", new NewListTransaction(title))
 }
 
 function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number}}){
     if (e.moved) {
-        const list = $props.board.lists.find(e.moved.element.id)
+        const list = $props.board().lists.find(e.moved.element.id)
         if (list != null) {
-            $props.board.execTransaction(new ListSortTransaction(list, e.moved.oldIndex, e.moved.newIndex))
+            $emit("transaction", new ListSortTransaction(list, e.moved.oldIndex, e.moved.newIndex))
         }
     }
 }

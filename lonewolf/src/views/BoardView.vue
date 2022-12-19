@@ -1,10 +1,14 @@
 <template>
+    <n-button @click="save">Save</n-button> {{ board.name }}
+    <n-button @click="load">Load</n-button>
     <div class="wrapper">
         <BoardVue
-            :board="board"
+            :data="tt.nodes[0]"
+            :board="boardFn"
             class="board"
             @card-edit="cardDialog"
             @list-edit="listDialog"
+            @transaction="transactionHandler"
         />
     </div>
 </template>
@@ -12,19 +16,46 @@
 <script setup lang="ts">
 import { v1 as uuid } from "uuid";
 import { useRouter, useRoute } from 'vue-router'
+import { reactive } from 'vue'
 
 import BoardVue from "@/components/Board.vue";
 import Board from "@/common/data/Board";
 import type Card from "@/common/data/Card";
 import type List from "@/common/data/List";
+import  { TransactionTree } from "@/common/data/Transaction";
 
-const board = new Board(uuid(), "Default");
+let board = new Board(uuid(), "Default")
+const boardFn = () => board;
+const tt = reactive(new TransactionTree("root-node", "no-transaction-id"))
+tt.nodes.push(board.toTransactionTree())
 
 const router = useRouter();
 const route = useRoute();
 
 const cardDialog = (card: Card) => router.push({path: "/board/" + route.params.board + "/card/" + card.id})
 const listDialog = (list: List) => router.push({path: "/board/" + route.params.board + "/list/" + list.id})
+
+let storage = null;
+
+function transactionHandler(transaction) {
+    if (transaction.apply(board)) {
+        transaction.mutateTransactionTree(tt.nodes[0], board)
+        board.transactions.push(transaction)
+    }
+}
+
+function save(){
+    storage = JSON.stringify(board.toSerializable())
+    console.log("store", storage)
+}
+
+function load(){
+    board = Board.fromSerializable(JSON.parse(storage))
+    //tt.nodes.splice(0)
+    tt.nodes = new Array<TransactionTree>()
+    tt.nodes.push(board.toTransactionTree())
+    console.log("load", storage, tt)
+}
 
 </script>
 
