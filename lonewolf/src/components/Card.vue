@@ -1,5 +1,5 @@
 <template>
-    <div class="card" @click="$emit('card-edit', $props.card)">
+    <div class="card" @click="$emit('card-edit', card)">
         <div class="badges">
             <div class="badge"></div>
             <div class="badge"></div>
@@ -46,6 +46,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import type { Ref } from "vue";
 
 import ActionDropdown from "./ActionDropdown.vue";
 
@@ -59,21 +60,20 @@ import ActionDropdownOption from "@/common/ActionDropdownOption";
 
 const $props = defineProps<{
     data: TransactionTree;
-    cards: Card[];
-    lists: List[];
+    cards: TransactionTree[];
+    lists: TransactionTree[];
     board: () => Board;
 }>();
 
 const $emit = defineEmits(["transaction", "card-edit"]);
 
-const lists = computed(()=>$props.lists.map((t: TransactionTree) : List => $props.board().findList(t.id)))
-const cards = computed(()=>$props.cards.map((t: TransactionTree) : Card => $props.board().findCard(t.id)))
-const card = computed(()=>$props.board().findCard($props.data.id))
+const card = computed(()=>{$props.data.version; return $props.board().findCard($props.data.id);}) as Ref<Card> // if card is null, something else is f'ed up
+const lists = computed(()=>$props.lists.map((t: TransactionTree) : List|null => $props.board().findList(t.id)).filter((l=>l!=null)) as List[])
+const cards = computed(()=>$props.cards.map((t: TransactionTree) : Card|null => $props.board().findCard(t.id)).filter((c=>c!=null)) as Card[])
 
-const actions = computed(()=>generateActions(lists.value, cards.value))
+const actions = computed(()=>{$props.data.version; return generateActions(lists.value, cards.value)})
 
-
-const generateActions = function (lists, cards) {
+const generateActions = function (lists: List[], cards: Card[]) {
     const cardsChildren = filterMoveCards(cards);
     const listChildren = filterMoveLists(lists);
     return [
@@ -81,7 +81,7 @@ const generateActions = function (lists, cards) {
             "editKey",
             "Edit",
             "edit",
-            $props.data.value,
+            card,
             null,
             false,
             null
@@ -120,7 +120,7 @@ function filterMoveCards(cards: Card[]) {
             i + mod,
             "Before " + cards[i].name,
             "move",
-            null,
+            cards[i],
             null,
             false,
             null
@@ -133,7 +133,7 @@ function filterMoveCards(cards: Card[]) {
             cards.length - 1,
             "After " + cards[cards.length - 1].name,
             "move",
-            null,
+            cards[cards.length - 1],
             null,
             false,
             null
@@ -145,7 +145,7 @@ function filterMoveCards(cards: Card[]) {
 
 function filterMoveLists(lists: List[]) {
     return lists
-        .filter((l) => l.id != card.value.list.id)
+        .filter((l) =>  card.value.list && l.id != card.value.list.id)
         .map((l) => {
             return new ActionDropdownOption(
                 l.id,
@@ -164,16 +164,16 @@ function actionMenuSelected(
     optionObject: ActionDropdownOption
 ) {
     if (optionObject.command == "edit") {
-        $emit("card-edit", card.value, optionObject.data);
+        $emit("card-edit", card.value);
     }
-    if (optionObject.command == "move") {
+
+    if (optionObject.command == "move" && optionObject.data != null) {
         if (typeof key === 'number') {
-            console.log(card.value.position, key)
             $emit("transaction", new CardSortTransaction(card.value.id, card.value.position, key))
         }
     }
 
-    if (optionObject.command == "moveTo") {
+    if (optionObject.command == "moveTo" && optionObject.data != null) {
         $emit("transaction", new CardMoveTransaction(card.value.id, card.value.list.id, card.value.position, optionObject.data.id, 0))
     }
 }

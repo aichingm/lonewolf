@@ -1,7 +1,9 @@
 import NamedIdentifiable from "@/common/NamedIdentifiable";
 import IndexedMap from "@/common/IndexedMap";
 import List from "@/common/data/List";
+import type { SerializableList } from "@/common/data/List";
 import Card from "@/common/data/Card";
+import type { SerializableCard } from "@/common/data/Card";
 import type Transaction from "@/common/data/Transaction";
 import { TransactionTree } from "@/common/data/Transaction";
 
@@ -33,10 +35,10 @@ export default class Board extends NamedIdentifiable {
     }
 
     public findCard(id: string): Card | null {
-        return this._cards.get(id)
+        return this._cards.get(id) || null
     }
 
-    public findList(id: string): Card | null {
+    public findList(id: string): List | null {
         return this._lists.find(id)
     }
 
@@ -45,11 +47,8 @@ export default class Board extends NamedIdentifiable {
     }
 
     public toTransactionTree(): TransactionTree {
-        const t = new TransactionTree();
-        t.id = this.id
-        t.lastTransactionId = "no-new-transaction"
+        const t = new TransactionTree(this.id, "no-new-transaction");
         t.nodes = Array.from(this.lists.items.map( (l: List) => {return l.toTransactionTree();}));
-        //Array<TransactionTree>()
         return t
     }
 

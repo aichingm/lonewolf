@@ -4,7 +4,7 @@ import Card from "./Card";
 import type Board from "./Board";
 
 export default interface Transaction {
-    id(): string
+    id: string
     apply(b: Board): boolean
     // NOTICE keep this limitations in mind https://v2.vuejs.org/v2/guide/reactivity.html#For-Arrays
     mutateTransactionTree(t: TransactionTree, b: Board): boolean
@@ -31,6 +31,10 @@ export class TransactionTree {
         this.lastTransactionId = lastTransactionId;
     }
 
+    public get version() {
+        return this.lastTransactionId
+    }
+
 }
 
 export class IdentifiableTransaction extends BaseTransaction {
@@ -40,14 +44,33 @@ export class IdentifiableTransaction extends BaseTransaction {
         this._id = uuid();
     }
 
-    public id(): string {
+    public get id(): string {
         return this._id;
     }
 }
 
+export class MutateTransaction extends IdentifiableTransaction {
+
+    private _preventMutation = false;
+
+    constructor () {
+        super()
+    }
+
+    public preventMutation(prevent?: boolean): MutateTransaction {
+        this._preventMutation = prevent === undefined ? true : prevent;
+        return this
+    }
+
+    public isMutationPrevented(): boolean {
+        return this._preventMutation;
+    }
+
+}
+
 export class NewListTransaction extends IdentifiableTransaction implements Transaction{
-    private _title: string;
-    private _listId: string;
+    private _title = "";
+    private _listId = "";
 
     constructor (title: string) {
         super()
@@ -55,7 +78,7 @@ export class NewListTransaction extends IdentifiableTransaction implements Trans
 
     }
 
-    apply(board: Board): boolean {
+    public apply(board: Board): boolean {
         console.log("NewListTransaction", this._title)
 
         const list = List.create(board, this._title);
@@ -64,9 +87,10 @@ export class NewListTransaction extends IdentifiableTransaction implements Trans
         return true
     }
 
-    mutateTransactionTree(t: TransactionTree, _b: Board) {
+    public mutateTransactionTree(t: TransactionTree, _b: Board): boolean {
         t.lastTransactionId = this.id
         t.nodes.push(new TransactionTree(this._listId, this.id))
+        return true
     }
 
 }
@@ -74,7 +98,7 @@ export class NewListTransaction extends IdentifiableTransaction implements Trans
 export class NewCardTransaction extends IdentifiableTransaction implements Transaction{
     private _title: string;
     private _listId: string;
-    private _cardId: string;
+    private _cardId = "";
 
     constructor (listId: string, title: string) {
         super()
@@ -82,10 +106,14 @@ export class NewCardTransaction extends IdentifiableTransaction implements Trans
         this._title = title
     }
 
-    apply(board: Board): boolean {
+    public apply(board: Board): boolean {
         console.log("NewCardTransaction", this._listId, this._title)
 
         const list = board.findList(this._listId)
+
+        if (list == null) {
+            throw new Error("List[" + this._listId + "] not found")
+        }
 
         const card = Card.create(list, this._title);
         list.cards.add(card)
@@ -95,14 +123,20 @@ export class NewCardTransaction extends IdentifiableTransaction implements Trans
         return true
     }
 
-    mutateTransactionTree(t: TransactionTree, b: Board) {
-        t.nodes[b.findList(this._listId).position].nodes.push(new TransactionTree(this._cardId, this.id))
-        t.nodes[b.findList(this._listId).position].lastTransactionId = this.id
+    public mutateTransactionTree(t: TransactionTree, b: Board): boolean {
+        const list = b.findList(this._listId)
+        if (list == null) {
+            throw new Error("List[" + this._listId + "] not found")
+        }
+
+        t.nodes[list.position].nodes.push(new TransactionTree(this._cardId, this.id))
+        t.nodes[list.position].lastTransactionId = this.id
+        return true
     }
 
 }
 
-export class ListSortTransaction extends IdentifiableTransaction implements Transaction{
+export class ListSortTransaction extends MutateTransaction implements Transaction{
     private _oldPosition: number;
     private _newPosition: number;
     private _listId: string;
@@ -114,22 +148,26 @@ export class ListSortTransaction extends IdentifiableTransaction implements Tran
         this._newPosition = newPosition
     }
 
-    apply(board: Board): boolean {
+    public apply(board: Board): boolean {
         console.log("ListSortTransaction", this._listId, this._oldPosition, this._newPosition)
         board.lists.move(this._oldPosition, this._newPosition)
         return true
     }
 
-    mutateTransactionTree(t: TransactionTree, _b: Board) {
+    public mutateTransactionTree(t: TransactionTree, _b: Board): boolean {
+        if ( ! this.isMutationPrevented()) {
+            const listTransactionTree = t.nodes[this._oldPosition]
+            t.nodes.splice(this._oldPosition, 1);
+            t.nodes.splice(this._newPosition, 0, listTransactionTree);
+        }
+
         t.lastTransactionId = this.id
-        const listTransactionTree = t.nodes[this._oldPosition]
-        t.nodes.splice(this._oldPosition, 1);
-        t.nodes.splice(this._newPosition, 0, listTransactionTree);
+        return true
     }
 
 }
 
-export class CardSortTransaction extends IdentifiableTransaction implements Transaction{
+export class CardSortTransaction extends MutateTransaction implements Transaction{
     private _cardId: string;
     private _oldPosition: number;
     private _newPosition: number;
@@ -139,26 +177,37 @@ export class CardSortTransaction extends IdentifiableTransaction implements Tran
         this._cardId = cardId
         this._oldPosition = oldPosition
         this._newPosition = newPosition
-
     }
 
-    apply(board: Board): boolean{
+    public apply(board: Board): boolean{
         console.log("CardSortTransaction", this._cardId, this._oldPosition, this._newPosition)
-        board.findCard(this._cardId).list.cards.move(this._oldPosition, this._newPosition)
+        const card = board.findCard(this._cardId)
+        if (card == null) {
+            throw new Error("Card[" + this._cardId + "] not found")
+        }
+
+        card.list.cards.move(this._oldPosition, this._newPosition)
         return true
     }
 
-    mutateTransactionTree(t: TransactionTree, board: Board) {
-        const listTree = t.nodes[board.findCard(this._cardId).list.position]
+    public mutateTransactionTree(t: TransactionTree, board: Board):boolean {
+        const card = board.findCard(this._cardId)
+        if (card == null) {
+            throw new Error("Card[" + this._cardId + "] not found")
+        }
+        const listTree = t.nodes[card.list.position]
         const cardTree = listTree.nodes[this._oldPosition]
-        listTree.nodes.splice(this._oldPosition, 1);
-        listTree.nodes.splice(this._newPosition, 0, cardTree);
-        listTree.lastTransactionId = this.id
+        if ( ! this.isMutationPrevented()) {
+            listTree.nodes.splice(this._oldPosition, 1);
+            listTree.nodes.splice(this._newPosition, 0, cardTree);
+            listTree.lastTransactionId = this.id
+        }
+        return true
     }
 
 }
 
-export class CardMoveTransaction extends IdentifiableTransaction implements Transaction{
+export class CardMoveTransaction extends MutateTransaction implements Transaction{
     private _cardId: string;
     private _oldPosition: number;
     private _newPosition: number;
@@ -174,30 +223,161 @@ export class CardMoveTransaction extends IdentifiableTransaction implements Tran
         this._newPosition = newPosition
     }
 
-    apply(board: Board): boolean{
+    public apply(board: Board): boolean{
         console.log("CardMoveTransaction", this._cardId, this._oldListId, this._oldPosition, this._newListId, this._newPosition)
 
         const oldList = board.findList(this._oldListId)
+        if (oldList == null) {
+            throw new Error("List[" + this._oldListId + "] not found")
+        }
         const newList = board.findList(this._newListId)
+        if (newList == null) {
+            throw new Error("List[" + this._newListId + "] not found")
+        }
         const card = board.findCard(this._cardId)
+        if (card == null) {
+            throw new Error("Card[" + this._cardId + "] not found")
+        }
 
-        oldList.cards.remove(this._oldPosition);
+        oldList.cards.remove(card);
         card.position = this._newPosition
         newList.insertCard(card);
 
         return true
     }
 
-    mutateTransactionTree(t: TransactionTree, board: Board) {
+    public mutateTransactionTree(t: TransactionTree, board: Board): boolean {
 
-        const oldListTree = t.nodes[board.findList(this._oldListId).position]
-        const newListTree = t.nodes[board.findList(this._newListId).position]
-        const cardTree = oldListTree.nodes[this._oldPosition]
+        const oldList = board.findList(this._oldListId)
+        if (oldList == null) {
+            throw new Error("List[" + this._oldListId + "] not found")
+        }
+        const newList = board.findList(this._newListId)
+        if (newList == null) {
+            throw new Error("List[" + this._newListId + "] not found")
+        }
 
-        oldListTree.nodes.splice(this._oldPosition, 1)
-        newListTree.nodes.splice(this._newPosition, 0, cardTree);
 
+        const oldListTree = t.nodes[oldList.position]
+        const newListTree = t.nodes[newList.position]
+
+        const cardTree = this.isMutationPrevented() ? newListTree.nodes[this._newPosition] : oldListTree.nodes[this._oldPosition];
+
+        if ( ! this.isMutationPrevented()) {
+            oldListTree.nodes.splice(this._oldPosition, 1)
+            newListTree.nodes.splice(this._newPosition, 0, cardTree);
+        }
         cardTree.lastTransactionId = this.id
+        newListTree.lastTransactionId = this.id
+        oldListTree.lastTransactionId = this.id
+        return true
+    }
+
+}
+
+export class CardRenameTransaction extends IdentifiableTransaction implements Transaction{
+    private _cardId: string;
+    private _title: string;
+
+    constructor (cardId: string, title: string) {
+        super()
+        this._cardId = cardId
+        this._title = title
+
+    }
+
+    public apply(board: Board): boolean{
+        console.log("CardRenameTransaction", this._cardId, this._title)
+        const card = board.findCard(this._cardId)
+        if (card == null) {
+            throw new Error("Card[" + this._cardId + "] not found")
+        }
+        card.name = this._title
+        return true
+    }
+
+    public mutateTransactionTree(t: TransactionTree, board: Board): boolean {
+        const card = board.findCard(this._cardId)
+        if (card == null) {
+            throw new Error("Card[" + this._cardId + "] not found")
+        }
+
+        const listTree = t.nodes[card.list.position]
+        const cardTree = listTree.nodes[card.position]
+        cardTree.lastTransactionId = this.id
+        listTree.lastTransactionId = this.id
+        return true
+    }
+
+}
+
+export class ListRenameTransaction extends IdentifiableTransaction implements Transaction{
+    private _listId: string;
+    private _title: string;
+
+    constructor (listId: string, title: string) {
+        super()
+        this._listId = listId
+        this._title = title
+
+    }
+
+    public apply(board: Board): boolean{
+        console.log("ListRenameTransaction", this._listId, this._title)
+        const list = board.findCard(this._listId)
+        if (list == null) {
+            throw new Error("List[" + this._listId + "] not found")
+        }
+        list.name = this._title
+        return true
+    }
+
+    public mutateTransactionTree(t: TransactionTree, board: Board): boolean {
+        const list = board.findList(this._listId)
+        if (list == null) {
+            throw new Error("List[" + this._listId + "] not found")
+        }
+        const listTree = t.nodes[list.position]
+        listTree.lastTransactionId = this.id
+        t.lastTransactionId = this.id
+        return true
+    }
+
+}
+
+
+export class CardDescriptionTransaction extends IdentifiableTransaction implements Transaction{
+    private _cardId: string;
+    private _description: string;
+
+    constructor (cardId: string, description: string) {
+        super()
+        this._cardId = cardId
+        this._description = description
+
+    }
+
+    public apply(board: Board): boolean{
+        console.log("CardDescriptionTransaction", this._cardId, this._description)
+        const card = board.findCard(this._cardId)
+        if (card == null) {
+            throw new Error("Card[" + this._cardId + "] not found")
+        }
+        card.description = this._description
+        return true
+    }
+
+    public mutateTransactionTree(t: TransactionTree, board: Board): boolean {
+        const card = board.findCard(this._cardId)
+        if (card == null) {
+            throw new Error("Card[" + this._cardId + "] not found")
+        }
+
+        const listTree = t.nodes[card.list.position]
+        listTree.lastTransactionId = this.id
+        const cardTree = listTree.nodes[card.position]
+        cardTree.lastTransactionId = this.id
+        return true
     }
 
 }

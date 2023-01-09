@@ -11,7 +11,7 @@ export default class IndexedMap<T extends Indexable> {
         return this._items;
     }
 
-    public get namedItems() {
+    public get namedItems(): Map<string, T> {
         return this._namedItems;
     }
 
@@ -29,20 +29,20 @@ export default class IndexedMap<T extends Indexable> {
         // this method manipulates the position (reindexing)
         this.items.push(item);
         item.position = this.items.length - 1;
-        this.namedItems[item.id] = item
+        this.namedItems.set(item.id, item)
     }
 
     public insert(item: T) {
         // this method manipulates the position (reindexing)
         this.items.splice(item.position, 0, item);
         this.reindex();
-        this.namedItems[item.id] = item
+        this.namedItems.set(item.id, item)
     }
 
     public remove(item: T) {
         this.items.splice(item.position, 1);
         this.reindex();
-        this.namedItems[item.id] = undefined
+        this.namedItems.delete(item.id)
         return item;
     }
 
@@ -56,23 +56,22 @@ export default class IndexedMap<T extends Indexable> {
 
     public reindex() {
         // this method manipulates the position (reindexing)
-        console.log(this.items)
         for (let i = 0; i < this.items.length; i++) {
             this.items[i].position = i;
         }
     }
 
     public find(id: string) {
-        return this.namedItems[id] || null
+        return this.namedItems.get(id) || null
     }
 
     public put(t: T) {
         // remove old item from namedItems
-        this.namedItems[this.items[t.position]] = undefined
+        this.namedItems.delete(this.items[t.position].id)
         // overwrite in items
         this.items[t.position] = t
         // add new item to namedItems
-        this.namedItems[t.id] = t
+        this.namedItems.set(t.id, t)
     }
 
 }

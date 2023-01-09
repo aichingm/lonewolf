@@ -1,30 +1,45 @@
 <template>
     <n-config-provider :theme="null">
         <n-el tag="div" class="editor">
-            <ToolbarVue v-if="viewReady" :editor-view="view as EditorView" @previewToggleChanged="(x)=>previewShown = x"/>
+            <ToolbarVue v-if="viewReady && $props.showToolbar && editMode" :editor-view="view as EditorView" @previewToggleChanged="setEditMode"
+                        showCreateBold
+                        showCreateItalic
+                        showCreateCode
+                        showCreateLink
+                        showCreateImage
+                        showCreateHeadline1
+                        showCreateHeadline2
+                        showCreateList
+                        showCreateOrderedList
+                        showCreateTaskList
+                        showDone
+
+            />
             <Codemirror
                 class="cm6"
-                :style="{'--minheight': '150px', 'background-color': 'var(--base-color)'}"
-                placeholder="Code goes here..."
+                :style="{'background-color': 'var(--base-color)'}"
+                placeholder="..."
                 :autofocus="true"
                 :indent-with-tab="true"
                 :tab-size="2"
                 :extensions="extensions"
-                v-model="code"
+                v-model="editorContent"
                 @ready="handleReady"
                 @change="log"
                 @focus="log"
-                @blur="log"
-                v-if="!previewShown"
+                @blur="setEditMode(false)"
+                v-if="editMode"
             />
-            <div class="preview" v-html="previewHtml" v-if="previewShown">
+            <div class="preview" v-html="previewHtml" v-if="!editMode" @click="setEditMode(true)">
             </div>
+            <div class="preview-empty" v-if="previewHtml=='' && !editMode" @click="setEditMode(true)"><n-text depth="3">Description...</n-text></div>
         </n-el>
     </n-config-provider>
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef, computed } from 'vue'
+import { ref, shallowRef, computed, watch } from 'vue'
+import type { Ref } from 'vue'
 
 import { minimalSetup, EditorView } from "codemirror"
 
@@ -36,29 +51,46 @@ import { languages } from "@codemirror/language-data"
 import { autocompletion } from "@codemirror/autocomplete"
 
 import { marked } from 'marked';
-
-import sampleMarkdown from "./samplemarkdown"
+import DOMPurify from 'dompurify';
 
 import ToolbarVue from "./Toolbar.vue"
 
+const $props = withDefaults(defineProps<{
+    content: string
+    editMode: Ref<boolean>
+    showToolbar?: boolean
+}>(),{
+    showToolbar: true
+});
+
+const $emit = defineEmits(["update:content", "update:editMode"]);
+
+const editMode = ref($props.editMode)
+const setEditMode = (value: boolean) => editMode.value = value
+
+watch(editMode, ()=> {
+    $emit("update:editMode", editMode)
+    if (editorContent.value != originalEditorContent) {
+        $emit("update:content", editorContent.value)
+    }
+})
+
+
+const originalEditorContent = ref($props.content).value
+const editorContent = ref($props.content)
+
 //debug  helper
-const log = console.log
+const log = ()=>false
 
 // preview editor switching variable
-const previewShown = ref(false);
+//watch($props.editMode, ()=>editMode = ref($props.editMode))
 
 // marked-preview rendering
 const previewHtml = computed(() => {
-    return marked(code.value, {
-        sanitize: true,
-        sanitizer: (unsafe) => {
-            return unsafe.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
-        },
-    })
+    return DOMPurify.sanitize(marked(editorContent.value))
 })
 
 // setup codemirror
-const code = ref(sampleMarkdown)
 
 // Autocompeletion idea
 //
@@ -179,13 +211,18 @@ const handleReady = (payload: { view: EditorView; state: EditorState; container:
   margin-bottom: 0;
 }
 
+.preview-empty{
+
+    color: #caffee;
+}
+
 .editor {
   display: block;
-  border: 1px solid #c9c9c9;
+  /*border: 1px solid #c9c9c9;
   border-top-left-radius: 2px;
   border-top-right-radius: 2px;
   border-bottom-right-radius: 0px;
-  border-bottom-left-radius: 0px;
+  border-bottom-left-radius: 0px;*/
 }
 
 .cm-wrapper {

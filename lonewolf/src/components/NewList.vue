@@ -9,6 +9,7 @@
                     v-model:value="listName"
                     @keyup.enter="newButtonClicked()"
                     placeholder="New List"
+                    :theme-overrides="inputThemeOverrides"
                 />
                 <n-button type="primary" @click="newButtonClicked()" tabindex="-1"
                 >+</n-button
@@ -26,6 +27,12 @@ const listName = ref("");
 const listNameInput = ref(null);
 const listNameInputId = uuid1();
 const scrollTargetId = uuid1();
+
+const inputThemeOverrides = {
+    border: '0px solid',
+    boxShadowFocus: '0px solid',
+}
+
 
 const $emit = defineEmits(["newList"]);
 

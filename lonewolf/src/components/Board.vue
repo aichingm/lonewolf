@@ -1,30 +1,29 @@
 <template>
     <div class="board">
         <draggable
-            v-model="lists"
+            :list="lists"
             group="lists"
             animation="200"
             ghostClass="ghost-card"
-            dragClass="drag-card"
+            dragClass="drag-list"
             item-key="id"
             handle=".list-dragger"
-            @change="dragEvent($event)"
-        >
+            @change="dragEvent"
+            :force-fallback="isChrome()">
             <template #item="{ element }">
                 <ListVue
                     :board="$props.board"
                     :data="element"
-                    :lists="$props.data.nodes"
+                    :lists="lists"
                     @card-edit="(card)=>$emit('card-edit', card)"
                     @list-edit="(list)=>$emit('list-edit', list)"
-                    @transaction="(...args)=>$emit('transaction', ...args)"
+                    @transaction="(t)=>$emit('transaction', t)"
                 />
             </template>
         </draggable>
         <NewList @newList="newList" />
     </div>
 </template>
-
 <script setup lang="ts">
 import { computed } from "vue";
 import draggable from "vuedraggable";
@@ -34,8 +33,9 @@ import ListVue from "./List.vue";
 import NewList from "./NewList.vue";
 
 import { TransactionTree, NewListTransaction, ListSortTransaction } from "@/common/data/Transaction";
-import type Board from "@/common/data/Board";
+import { isChrome } from "@/utils/browser-comp";
 
+import type Board from "@/common/data/Board";
 import type List from "@/common/data/List";
 
 const $props = defineProps<{
@@ -44,7 +44,7 @@ const $props = defineProps<{
 }>();
 
 const $emit = defineEmits(["transaction", "card-edit", "list-edit"]);
-const lists = computed(()=>$props.data.nodes)
+const lists = computed(()=>{$props.data.version; return $props.data.nodes})
 
 function newList(title: string) {
     $emit("transaction", new NewListTransaction(title))
@@ -52,16 +52,17 @@ function newList(title: string) {
 
 function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number}}){
     if (e.moved) {
-        const list = $props.board().lists.find(e.moved.element.id)
-        if (list != null) {
-            $emit("transaction", new ListSortTransaction(list, e.moved.oldIndex, e.moved.newIndex))
+        const list = $props.board().findList(e.moved.element.id)
+        if (list != null) { // TODO why can this be null, add comment
+            $emit("transaction", new ListSortTransaction(list.id, e.moved.oldIndex, e.moved.newIndex).preventMutation())
         }
     }
+    return false
 }
 
 </script>
 
-<style scoped>
+<style >
 .board {
   display: inline-block;
   white-space: nowrap;
@@ -73,12 +74,13 @@ function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number
   height: 100%;
 }
 
-.ghost-card {
+.ghost-card{
   opacity: 0;
   transform: rotate(0) !important;
 }
 
-.drag-card {
-  transform: rotate(-3deg) !important;
+.drag-list {
+  rotate: -3deg;
 }
+
 </style>

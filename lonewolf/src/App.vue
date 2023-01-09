@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { RouterView } from "vue-router";
+import AppView from "@/views/AppView.vue";
+import WebView from "@/views/WebView.vue";
 
 const themeOverrides = {
     common: {
         fontWeightStrong: "500",
         fontWeight: "400",
-        bodyColor: "#C8DCF9FF",
     },
 };
 
@@ -15,12 +15,8 @@ const theme = null;
 <template>
     <n-config-provider :theme="theme" :theme-overrides="themeOverrides" class="app-config-wrapper">
         <n-global-style />
-        <router-view v-slot="{ Component }">
-            <keep-alive>
-                <component :is="Component" />
-            </keep-alive>
-        </router-view>
-        <RouterView name="modal"/>
+        <AppView v-if="true"/>
+        <WebView v-if="false"/>
     </n-config-provider>
 </template>
 

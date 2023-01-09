@@ -2,10 +2,13 @@ import { v1 as uuid } from "uuid";
 
 import type List from "@/common/data/List";
 import { TransactionTree } from "@/common/data/Transaction";
+import type Board from "@/common/data/Board";
 import Indexable from "@/common/Indexable"
 
 export default class Card extends Indexable{
     private _list: List;
+    private _description = "";
+
 
     constructor(list: List, id: string, name: string) {
         super(id, name, -1)
@@ -20,8 +23,16 @@ export default class Card extends Indexable{
         this._list = list
     }
 
-    public get list(){
+    public get list(): List{
         return this._list
+    }
+
+    public get description(): string {
+        return this._description
+    }
+
+    public set description(description: string){
+        this._description = description
     }
 
     public toSerializable() {
@@ -30,22 +41,24 @@ export default class Card extends Indexable{
         c.name = this.name
         c.position = this.position
         c.listId = this.list.id
+        c.description = this._description
         return c
     }
 
     public static fromSerializable(board: Board, s: SerializableCard) {
         const list = board.findList(s.listId)
-        console.log("sc", s)
+        if (list == null) {
+            throw new Error("List[" + s.listId + "] not found")
+        }
         const c = new Card(list, s.id, s.name)
         c.position = s.position
         c.list.cards.put(c)
+        c.description = s.description
         return c;
     }
 
     public toTransactionTree(): TransactionTree {
-        const t = new TransactionTree();
-        t.id = this.id
-        t.lastTransactionId = "no-new-transaction"
+        const t = new TransactionTree(this.id, "no-new-transaction");
         t.nodes = [];
         return t
     }
@@ -56,8 +69,7 @@ export class SerializableCard {
     public id = "";
     public name = "";
     public listId = "";
-    public position: number;
-
-
+    public position = -1;
+    public description = "";
 }
 

@@ -1,29 +1,30 @@
 <template>
     <div class="list-lane">
-        <div class="list-header list-part list-dragger">
+        <div class="list-header list-part list-dragger" @click="$emit('list-edit', list)">
             <div class="list-name">{{ list.name }}</div>
             <ActionDropdown :options="actions" @selected="actionMenuSelected" />
         </div>
         <div class="cards list-part list-dragger">
             <!-- eslint-disable vue/no-mutating-props -->
             <draggable
-                v-model="cards"
+                :list="$props.data.nodes"
                 group="cards"
                 animation="200"
                 item-key="id"
                 ghostClass="ghost-card"
                 dragClass="drag-card"
                 @change="dragEvent($event)"
-            >
+                :force-fallback="isChrome()">
+
                 <!-- eslint-enable -->
                 <template #item="{ element }">
                     <CardVue
                         :data="element"
                         :board="$props.board"
-                        :lists="lists"
+                        :lists="$props.lists"
                         :cards="cards"
                         @card-edit="(card)=>$emit('card-edit', card)"
-                        @transaction="(...args)=>$emit('transaction', ...args)"
+                        @transaction="(t)=>$emit('transaction', t)"
                     />
                 </template>
             </draggable>
@@ -33,6 +34,7 @@
                     v-model:value="cardTitle"
                     @keyup.enter="newCardButtonClicked()"
                     placeholder="New Card"
+                    :theme-overrides="inputThemeOverrides"
                 />
                 <n-button type="primary" @click="newCardButtonClicked()" tabindex="-1"
                 >+</n-button
@@ -46,6 +48,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref } from "vue";
+import type { Ref } from "vue";
 
 import draggable from "vuedraggable";
 import { v1 as uuid1 } from "uuid";
@@ -53,58 +56,30 @@ import { v1 as uuid1 } from "uuid";
 import CardVue from "./Card.vue";
 import ActionDropdown from "./ActionDropdown.vue";
 import ActionDropdownOption from "@/common/ActionDropdownOption";
+import { isChrome } from "@/utils/browser-comp";
 
 import type Board from "@/common/data/Board";
 import type List from "@/common/data/List";
 import type Card from "@/common/data/Card";
 
-import { TransactionTree, NewCardTransaction, ListSortTransaction, CardSortTransaction, CardMoveTransaction } from "@/common/data/Transaction";
 
+import { TransactionTree, NewCardTransaction, ListSortTransaction, CardSortTransaction, CardMoveTransaction } from "@/common/data/Transaction";
 
 const $props = defineProps<{
     board: () => Board;
     data: TransactionTree;
-    lists: Array<TransactionTree>;
+    lists: TransactionTree[];
 }>();
 
 const $emit = defineEmits(["transaction", "card-edit", "list-edit"]);
-/*
-const boardRef = shallowRef($props.data.data)
-const board = ()=> boardRef.value
-const listRef = shallowRef(board().findList($props.listId));
-const list = ()=> listRef.value
-const listsRef = shallowRef(list().board.lists.toArray());
-const lists = ()=> listsRef.value
-const cardsRef = shallowRef(list().cards.toArray());
-const cards = ()=> cardsRef.value
-const actionsRef = shallowRef(new Array<ActionDropdownOption>());
-const actions = ()=> actionsRef.value
 
+const list = computed(()=>{$props.data.version; return $props.board().findList($props.data.id)}) as Ref<List> // if list is null, something else is f'ed up
+const cards = computed(()=>{$props.data.version; return $props.data.nodes})
 
-watch($props.data.node(list().id), () => {
-    listRef.value = board().findList($props.listId);
-    cardsRef.value = list().cards.toArray();
-})
+const lists = computed(()=>{$props.data.version; return $props.lists.map((t: TransactionTree) : List|null => $props.board().findList(t.id)).filter(l=>l!=null) as List[]})
+const actions = computed(()=>{$props.data.version; return generateActions(lists.value)})
 
-watch($props.data.rootNode(), () => {
-    if($props.data.data.findList($props.listId) == null) {
-        // NOTICE this list seams to be removed from the board, but the board update notification goes though anyways
-        return
-    }
-
-    boardRef.value = $props.data.data
-    listRef.value = board().findList($props.listId);
-    listsRef.value = list().board.lists.toArray();
-    cardsRef.value = list().cards.toArray();
-    actionsRef.value = generateActions();
-})*/
-
-const cards = computed(()=>$props.data.nodes.map((t: TransactionTree) : Card => $props.board().findCard(t.id)))
-const lists = computed(()=>$props.lists.map((t: TransactionTree) : List => $props.board().findList(t.id)))
-const actions = computed(()=>generateActions(lists.value))
-const list = computed(()=>$props.board().findList($props.data.id))
-
-function generateActions(lists): ActionDropdownOption[] {
+function generateActions(lists: List[]): ActionDropdownOption[] {
     const children = filterMoveList(lists);
     return [
         new ActionDropdownOption(
@@ -177,7 +152,7 @@ function actionMenuSelected(
         }
     }
     if (optionObject.command == "edit") {
-        $emit("list-edit", optionObject.data);
+        $emit("list-edit", list.value);
     }
 }
 
@@ -201,16 +176,25 @@ function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number
     if (e.moved) {
         const card = list.value.cards.find(e.moved.element.id)
         if (card != null) {
-            $emit("transaction", new CardSortTransaction(card.id, e.moved.oldIndex, e.moved.newIndex))
+            $emit("transaction", new CardSortTransaction(card.id, e.moved.oldIndex, e.moved.newIndex).preventMutation())
         }
     }
     if (e.added) { // skip removed, we do both in one transaction
-        const oldList = e.added.element.list
+        const card = $props.board().findCard(e.added.element.id)
+        if (card == null) {
+            throw new Error("Card[" + e.added.element.id + "] not found")
+        }
+
+        const oldList = card.list
         const newList = list.value
-        const oldPos = e.added.element.position
-        const card = e.added.element
-        $emit("transaction", new CardMoveTransaction(card.id, oldList.id, oldPos, newList.id, e.added.newIndex))
+        const oldPos = card.position
+        $emit("transaction", new CardMoveTransaction(card.id, oldList.id, oldPos, newList.id, e.added.newIndex).preventMutation())
     }
+}
+
+const inputThemeOverrides = {
+    border: '0px solid',
+    boxShadowFocus: '0px solid',
 }
 
 </script>
@@ -282,6 +266,6 @@ function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number
 }
 
 .drag-card {
-  transform: rotate(-3deg) !important;
+  rotate: -3deg;
 }
 </style>

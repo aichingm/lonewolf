@@ -59,9 +59,7 @@ export default class List extends Indexable {
     }
 
     public toTransactionTree(): TransactionTree {
-        const t = new TransactionTree();
-        t.id = this.id
-        t.lastTransactionId = "no-new-transaction"
+        const t = new TransactionTree(this.id, "no-new-transaction");
         t.nodes = Array.from(this.cards.items.map( (c: Card) => {return c.toTransactionTree();}));
         return t
     }
@@ -69,9 +67,7 @@ export default class List extends Indexable {
 }
 
 export class SerializableList {
-
     public id = "";
     public name = "";
-    public position: number;
-
+    public position = -1;
 }

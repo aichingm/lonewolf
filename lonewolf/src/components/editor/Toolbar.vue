@@ -1,21 +1,21 @@
 <template>
     <div class="toolbar">
         <div class="left">
-            <n-button quaternary @click="editorInteractions.bold">
+            <n-button v-if="$props.showCreateBold" quaternary @click="editorInteractions.bold" :focusable="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-bold-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button quaternary @click="editorInteractions.italic">
+            <n-button v-if="$props.showCreateItalic" quaternary @click="editorInteractions.italic" :focusable="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-italic-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button quaternary @click="editorInteractions.code">
+            <n-button v-if="$props.showCreateCode" quaternary @click="editorInteractions.code" :focusable="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:code-20-regular" />
@@ -23,14 +23,14 @@
                 </template>
             </n-button>
             <div class="new-section"></div>
-            <n-button quaternary @click="editorInteractions.link">
+            <n-button v-if="$props.showCreateLink" quaternary @click="editorInteractions.link" :focusable="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:link-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button quaternary @click="editorInteractions.image">
+            <n-button v-if="$props.showCreateImage" quaternary @click="editorInteractions.image" :focusable="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:image-20-regular" />
@@ -38,21 +38,21 @@
                 </template>
             </n-button>
             <div class="new-section"></div>
-            <n-button quaternary @click="editorInteractions.headline">
+            <n-button v-if="$props.showCreateHeadline1" quaternary @click="editorInteractions.headline" :focusable="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-header-1-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button quaternary @click="editorInteractions.codeFence">
+            <n-button v-if="$props.showCreateCodeFence" quaternary @click="editorInteractions.codeFence" :focusable="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:braces-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button quaternary @click="editorInteractions.blockqoute">
+            <n-button v-if="$props.showCreateBlockquote" quaternary @click="editorInteractions.blockqoute" :focusable="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-quote-20-regular" />
@@ -60,28 +60,28 @@
                 </template>
             </n-button>
             <div class="new-section"></div>
-            <n-button quaternary @click="editorInteractions.list">
+            <n-button v-if="$props.showCreateList" quaternary @click="editorInteractions.list" :focusable="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-bullet-list-ltr-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button quaternary @click="editorInteractions.orderedList">
+            <n-button v-if="$props.showCreateOrderedList" quaternary @click="editorInteractions.orderedList" :focusable="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-number-list-ltr-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button quaternary @click="editorInteractions.taskList">
+            <n-button v-if="$props.showCreateTaskList" quaternary @click="editorInteractions.taskList" :focusable="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:task-list-ltr-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button quaternary @click="editorInteractions.table">
+            <n-button v-if="$props.showCreateTable" quaternary @click="editorInteractions.table" :focusable="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:table-20-regular" />
@@ -90,7 +90,7 @@
             </n-button>
         </div>
         <div class="right">
-            <n-switch class="preview-switcher" size="small" @update:value="(value: boolean) => $emit('previewToggleChanged', value)" :rail-style="previewRailStyle">
+            <n-switch v-if="$props.showPreviewToggle" class="preview-toggle" size="small" @update:value="(value: boolean) => $emit('previewToggleChanged', value)" :rail-style="previewRailStyle" :focusable="false">
                 <template #checked>
                     Preview
                 </template>
@@ -98,10 +98,17 @@
                     Editing
                 </template>
             </n-switch>
-            <n-button quaternary tag="a" href="https://www.markdownguide.org/basic-syntax/" target="_blank">
+            <n-button v-if="$props.showMarkdownReference" quaternary tag="a" href="https://www.markdownguide.org/basic-syntax/" target="_blank" :focusable="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:calendar-info-20-regular" />
+                    </n-icon>
+                </template>
+            </n-button>
+            <n-button v-if="$props.showDone">
+                <template #icon>
+                    <n-icon size="20" color="gray">
+                        <icon icon="fluent:save-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
@@ -117,10 +124,23 @@ import type { EditorView } from "codemirror"
 import { EditorSelection } from '@codemirror/state'
 import type { SelectionRange, Line } from '@codemirror/state'
 
-
-
 const $props = defineProps<{
     editorView: EditorView;
+    showCreateBold?: boolean;
+    showCreateItalic?: boolean;
+    showCreateCode?: boolean;
+    showCreateLink?: boolean;
+    showCreateImage?: boolean;
+    showCreateHeadline1?: boolean;
+    showCreateCodeFence?: boolean;
+    showCreateList?: boolean;
+    showCreateOrderedList?: boolean;
+    showCreateTaskList?: boolean;
+    showCreateBlockquote?: boolean;
+    showCreateTable?: boolean;
+    showMarkdownReference?: boolean
+    showPreviewToggle?: boolean;
+    showDone?: boolean;
 }>();
 
 const $emit = defineEmits(["previewToggleChanged"]);
@@ -300,7 +320,7 @@ const editorInteractions = {
   display: inline-block;
 }
 
-.toolbar .preview-switcher {
+.toolbar .preview-toggle {
   display: inline-block;
   vertical-align: baseline;
   margin-right: 14px;
