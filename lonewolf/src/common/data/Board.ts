@@ -1,3 +1,5 @@
+import { v1 as uuid } from "uuid";
+
 import NamedIdentifiable from "@/common/NamedIdentifiable";
 import IndexedMap from "@/common/IndexedMap";
 import List from "@/common/data/List";
@@ -21,8 +23,8 @@ export default class Board extends NamedIdentifiable {
 
     private _transactions: Transaction[];
 
-    constructor(id: string, name: string) {
-        super(id, name)
+    constructor() {
+        super(uuid(), "")
         this._transactions = []
     }
 
@@ -62,7 +64,9 @@ export default class Board extends NamedIdentifiable {
     }
 
     public static fromSerializable(s: SerializableBoard) {
-        const b = new Board(s.id, s.name)
+        const b = new Board()
+        b.id = s.id
+        b.name = s.name
         b._settings = {};
         b._lists = new IndexedMap<List>();
         b._cards.clear();

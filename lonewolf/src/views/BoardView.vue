@@ -25,7 +25,7 @@ import type List from "@/common/data/List";
 import  { TransactionTree } from "@/common/data/Transaction";
 import type Transaction from "@/common/data/Transaction";
 
-const board = new Board(uuid(), "Default")
+const board = new Board()
 const boardFn = () => board;
 const tt = reactive(new TransactionTree("root-node", "no-transaction-id"))
 tt.nodes.push(board.toTransactionTree())

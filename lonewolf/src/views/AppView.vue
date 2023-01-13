@@ -1,13 +1,9 @@
 <template>
     <div style="height:100%;">
-        <n-drawer v-model:show="leftDrawer.state.value" :width="280" placement="left">
-            <n-drawer-content title="" body-content-style="margin:0;padding:0;">
-                <n-menu :options="leftDrawerMenuOptions" @update:value="leftDrawerMenuClicked" :indent="32" :icon-size="0"/>
-            </n-drawer-content>
-        </n-drawer>
+        <FileMenu v-model:show="fileMenu.state" @action="(action: string)=>fileMenu.actionHandler(action)"/>
         <div class="app-header-nav" :style="'border-bottom-color:' + borderColor + ';'">
             <n-space class="app-header-nav-space" justify="space-between">
-                <n-button @click="()=>leftDrawer.show(true)" :ghost ="true" :block="true" :bordered="false">
+                <n-button @click="fileMenu.show(true)" :ghost ="true" :block="true" :bordered="false">
                     <template #icon>
                         <n-icon size="24" color="gray">
                             <icon icon="fluent:panel-left-expand-20-filled" />
@@ -49,81 +45,32 @@
 <script setup lang="ts">
 import { ref, reactive } from "vue";
 import { useThemeVars } from 'naive-ui'
+import { v4 as uuid } from "uuid";
 
-
-import { v1 as uuid } from "uuid";
 
 import BoardVue from "@/components/Board.vue";
 import CardDialog from "@/components/CardDialog.vue";
 import ListDialog from "@/components/ListDialog.vue";
+import FileMenu from "@/components/FileMenu.vue";
 import Board from "@/common/data/Board";
 import type Card from "@/common/data/Card";
 import type List from "@/common/data/List";
 import type Transaction from "@/common/data/Transaction";
-import  { TransactionTree, NewCardTransaction, NewListTransaction } from "@/common/data/Transaction";
+import  { TransactionTree, NewCardTransaction, NewListTransaction, NewBoardTransaction } from "@/common/data/Transaction";
 
 
 const theme  = useThemeVars();
 const borderColor = theme.value.borderColor;
 
+const fileMenu = {state: ref(false), show: (value: boolean)=>fileMenu.state.value=value, actionHandler: actionHandler}
 
 const searchValue = ref();
 const cardDialog = {show: ref(false), id: ref("")};
 const listDialog = {show: ref(false), id: ref("")};
 
-const leftDrawer = { state: ref(false), show: (bool: boolean)=>leftDrawer.state.value = bool}
 
-
-const leftDrawerMenuOptions = [
-    {
-        label: 'Open',
-        key: 'open',
-    },
-    {
-        key: 'divider-1',
-        type: 'divider',
-    },
-    {
-        label: 'Save',
-        key: 'save',
-    },
-    {
-        label: 'Save as...',
-        key: 'save-as',
-    },
-    {
-        key: 'divider-1',
-        type: 'divider',
-    },
-    {
-        label: 'Quit',
-        key: 'quit',
-    },
-    {
-        key: 'divider-1',
-        type: 'divider',
-    },
-    {
-        label: 'Default',
-        key: 'default',
-    },
-]
-
-const leftDrawerMenuClicked = function (key: string) {
-    leftDrawer.show(false)
-    switch (key) {
-    case "default":
-        board = Board.fromSerializable(JSON.parse("{}"))
-        break;
-    case "save":
-        board = Board.fromSerializable(JSON.parse("{}"))
-        break;
-    }
-}
-
-
-let board = new Board(uuid(), "Default")
-
+let board = new Board()
+new NewBoardTransaction().apply(board)
 new NewListTransaction("Open").apply(board)
 new NewListTransaction("Closed").apply(board)
 new NewCardTransaction(board.lists.items[0].id, "My First Issue").apply(board)
@@ -145,6 +92,26 @@ function transactionHandler(transaction: Transaction) {
     }
 }
 
+function actionHandler(action: string) {
+
+    switch (action) {
+    case 'new':
+
+        // TODO here should be a check if the board is saved
+
+        transactionTreeRoot.lastTransactionId = uuid()
+        transactionTreeRoot.nodes.splice(0, transactionTreeRoot.nodes.length)
+
+        board = new Board()
+        new NewBoardTransaction().apply(board)
+        transactionTreeRoot.nodes.push(board.toTransactionTree())
+        break;
+    default:
+        console.error("Unhandled action[" + action + "]")
+        break;
+    }
+
+}
 
 
 </script>

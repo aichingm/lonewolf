@@ -44,7 +44,7 @@ const $props = defineProps<{
 }>();
 
 const $emit = defineEmits(["transaction", "card-edit", "list-edit"]);
-const lists = computed(()=>{$props.data.version; return $props.data.nodes})
+const lists = computed(()=>{$props.data;$props.data.version; return $props.data.nodes})
 
 function newList(title: string) {
     $emit("transaction", new NewListTransaction(title))

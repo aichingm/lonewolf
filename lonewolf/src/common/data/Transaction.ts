@@ -68,6 +68,24 @@ export class MutateTransaction extends IdentifiableTransaction {
 
 }
 
+export class NewBoardTransaction extends IdentifiableTransaction implements Transaction{
+
+    constructor () {
+        super()
+    }
+
+    public apply(_board: Board): boolean {
+        console.log("NewBoardTransaction")
+        return true
+    }
+
+    public mutateTransactionTree(t: TransactionTree, _b: Board): boolean {
+        t.lastTransactionId = this.id
+        return true
+    }
+
+}
+
 export class NewListTransaction extends IdentifiableTransaction implements Transaction{
     private _title = "";
     private _listId = "";

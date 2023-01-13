@@ -80,7 +80,7 @@ const leftDrawerMenuOptions = [
     },
 ]
 
-const board = ref(new Board("foo-bar", "Default"))
+const board = ref(new Board())
 
 const leftDrawerMenuClicked = function (key: string) {
     leftDrawer.show(false)
