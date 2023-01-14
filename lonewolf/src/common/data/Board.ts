@@ -20,6 +20,7 @@ export default class Board extends NamedIdentifiable {
     private _lists = new IndexedMap<List>();
     private _cards = new Map<string, Card>();
 
+    public createdAt = 0
 
     private _transactions: Transaction[];
 
@@ -58,6 +59,7 @@ export default class Board extends NamedIdentifiable {
         const b = new SerializableBoard();
         b.id = this.id
         b.name = this.name
+        b.createdAt = this.createdAt
         b.lists = this.lists.items.map( (l: List) => {return l.toSerializable();});
         b.cards = Array.from(this.cards.values()).map( (c: Card) => {return c.toSerializable();});
         return b
@@ -67,10 +69,8 @@ export default class Board extends NamedIdentifiable {
         const b = new Board()
         b.id = s.id
         b.name = s.name
+        b.createdAt = s.createdAt
         b._settings = {};
-        b._lists = new IndexedMap<List>();
-        b._cards.clear();
-        b._transactions = new Array<Transaction>;
 
         s.lists.forEach(l => b.lists.put(List.fromSerializable(b, l)))
 
@@ -86,6 +86,7 @@ export class SerializableBoard {
     public cards: SerializableCard[] = new Array<SerializableCard>();
     public id = "";
     public name = "";
+    public createdAt = 0;
 
 }
 

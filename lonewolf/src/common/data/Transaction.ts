@@ -35,6 +35,11 @@ export class TransactionTree {
         return this.lastTransactionId
     }
 
+    public reset() {
+        this.lastTransactionId = uuid()
+        this.nodes.splice(0, this.nodes.length)
+    }
+
 }
 
 export class IdentifiableTransaction extends BaseTransaction {
@@ -68,25 +73,48 @@ export class MutateTransaction extends IdentifiableTransaction {
 
 }
 
-export class NewBoardTransaction extends IdentifiableTransaction implements Transaction{
+export class NewBoardTransaction extends IdentifiableTransaction implements Transaction {
 
     constructor () {
         super()
     }
 
-    public apply(_board: Board): boolean {
-        console.log("NewBoardTransaction")
+    public apply(board: Board): boolean {
+        console.log("NewBoardTransaction", new Date().getTime())
+        board.createdAt = new Date().getTime();
         return true
     }
 
     public mutateTransactionTree(t: TransactionTree, _b: Board): boolean {
-        t.lastTransactionId = this.id
+        t.lastTransactionId = this.id;
         return true
     }
 
 }
 
-export class NewListTransaction extends IdentifiableTransaction implements Transaction{
+export class BoardRenameTransaction extends IdentifiableTransaction implements Transaction {
+
+    private _name: string = ""
+
+    constructor (name: string) {
+        super()
+        this._name = name
+    }
+
+    public apply(board: Board): boolean {
+        console.log("BoardRenameTransaction", this._name)
+        board.name = this._name;
+        return true
+    }
+
+    public mutateTransactionTree(t: TransactionTree, _b: Board): boolean {
+        t.lastTransactionId = this.id;
+        return true
+    }
+
+}
+
+export class NewListTransaction extends IdentifiableTransaction implements Transaction {
     private _title = "";
     private _listId = "";
 
@@ -113,7 +141,7 @@ export class NewListTransaction extends IdentifiableTransaction implements Trans
 
 }
 
-export class NewCardTransaction extends IdentifiableTransaction implements Transaction{
+export class NewCardTransaction extends IdentifiableTransaction implements Transaction {
     private _title: string;
     private _listId: string;
     private _cardId = "";
@@ -185,7 +213,7 @@ export class ListSortTransaction extends MutateTransaction implements Transactio
 
 }
 
-export class CardSortTransaction extends MutateTransaction implements Transaction{
+export class CardSortTransaction extends MutateTransaction implements Transaction {
     private _cardId: string;
     private _oldPosition: number;
     private _newPosition: number;
@@ -225,7 +253,7 @@ export class CardSortTransaction extends MutateTransaction implements Transactio
 
 }
 
-export class CardMoveTransaction extends MutateTransaction implements Transaction{
+export class CardMoveTransaction extends MutateTransaction implements Transaction {
     private _cardId: string;
     private _oldPosition: number;
     private _newPosition: number;
@@ -293,7 +321,7 @@ export class CardMoveTransaction extends MutateTransaction implements Transactio
 
 }
 
-export class CardRenameTransaction extends IdentifiableTransaction implements Transaction{
+export class CardRenameTransaction extends IdentifiableTransaction implements Transaction {
     private _cardId: string;
     private _title: string;
 
@@ -329,7 +357,7 @@ export class CardRenameTransaction extends IdentifiableTransaction implements Tr
 
 }
 
-export class ListRenameTransaction extends IdentifiableTransaction implements Transaction{
+export class ListRenameTransaction extends IdentifiableTransaction implements Transaction {
     private _listId: string;
     private _title: string;
 
@@ -364,7 +392,7 @@ export class ListRenameTransaction extends IdentifiableTransaction implements Tr
 }
 
 
-export class CardDescriptionTransaction extends IdentifiableTransaction implements Transaction{
+export class CardDescriptionTransaction extends IdentifiableTransaction implements Transaction {
     private _cardId: string;
     private _description: string;
 

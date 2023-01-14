@@ -40,22 +40,6 @@ const drawerMenuOptions = [
         label: 'Save',
         key: 'save',
     },
-    {
-        label: 'Save as...',
-        key: 'save-as',
-    },
-    {
-        key: 'divider-2',
-        type: 'divider',
-    },
-    {
-        label: 'Quit',
-        key: 'quit',
-    },
-    {
-        key: 'divider-3',
-        type: 'divider',
-    }
 ]
 
 const drawerMenuClicked = function (key: string) {

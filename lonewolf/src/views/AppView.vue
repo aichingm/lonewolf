@@ -3,13 +3,16 @@
         <FileMenu v-model:show="fileMenu.state" @action="(action: string)=>fileMenu.actionHandler(action)"/>
         <div class="app-header-nav" :style="'border-bottom-color:' + borderColor + ';'">
             <n-space class="app-header-nav-space" justify="space-between">
-                <n-button @click="fileMenu.show(true)" :ghost ="true" :block="true" :bordered="false">
-                    <template #icon>
-                        <n-icon size="24" color="gray">
-                            <icon icon="fluent:panel-left-expand-20-filled" />
-                        </n-icon>
-                    </template>
-                </n-button>
+                <n-space class="app-header-nav-space">
+                    <n-button @click="fileMenu.show(true)" :ghost ="true" :block="true" :bordered="false">
+                        <template #icon>
+                            <n-icon size="24" color="gray">
+                                <icon icon="fluent:panel-left-expand-20-filled" />
+                            </n-icon>
+                        </template>
+                    </n-button>
+                    <TitleInput v-model:title="title"/>
+                </n-space>
                 <n-input v-model:value="searchValue" type="text" placeholder="Search" clearable>
                     <template #prefix>
                         <n-icon color="gray">
@@ -43,12 +46,13 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { ref, reactive, watch } from "vue";
 import { useThemeVars } from 'naive-ui'
 import { v4 as uuid } from "uuid";
 
 
 import BoardVue from "@/components/Board.vue";
+import TitleInput from "@/components/TitleInput.vue";
 import CardDialog from "@/components/CardDialog.vue";
 import ListDialog from "@/components/ListDialog.vue";
 import FileMenu from "@/components/FileMenu.vue";
@@ -56,7 +60,8 @@ import Board from "@/common/data/Board";
 import type Card from "@/common/data/Card";
 import type List from "@/common/data/List";
 import type Transaction from "@/common/data/Transaction";
-import  { TransactionTree, NewCardTransaction, NewListTransaction, NewBoardTransaction } from "@/common/data/Transaction";
+import  { TransactionTree, NewCardTransaction, NewListTransaction, NewBoardTransaction, BoardRenameTransaction } from "@/common/data/Transaction";
+import  { BrowserNativeStorage } from "@/common/storage/BrowserStorage";
 
 
 const theme  = useThemeVars();
@@ -68,14 +73,10 @@ const searchValue = ref();
 const cardDialog = {show: ref(false), id: ref("")};
 const listDialog = {show: ref(false), id: ref("")};
 
+const title = ref("")
+watch(title, ()=>new BoardRenameTransaction(title.value).apply(board))
 
-let board = new Board()
-new NewBoardTransaction().apply(board)
-new NewListTransaction("Open").apply(board)
-new NewListTransaction("Closed").apply(board)
-new NewCardTransaction(board.lists.items[0].id, "My First Issue").apply(board)
-new NewCardTransaction(board.lists.items[0].id, "A Simple Task").apply(board)
-new NewCardTransaction(board.lists.items[1].id, "Create This Card").apply(board)
+let board = newBoard()
 
 const boardFn = () => board;
 
@@ -92,6 +93,8 @@ function transactionHandler(transaction: Transaction) {
     }
 }
 
+const storage= new BrowserNativeStorage();
+
 function actionHandler(action: string) {
 
     switch (action) {
@@ -99,12 +102,29 @@ function actionHandler(action: string) {
 
         // TODO here should be a check if the board is saved
 
-        transactionTreeRoot.lastTransactionId = uuid()
-        transactionTreeRoot.nodes.splice(0, transactionTreeRoot.nodes.length)
+        transactionTreeRoot.reset()
 
-        board = new Board()
-        new NewBoardTransaction().apply(board)
+        board = newBoard()
+
         transactionTreeRoot.nodes.push(board.toTransactionTree())
+        break;
+
+    case 'save':
+        //https://github.com/ankitrohatgi/tarballjs
+        //https://github.com/Stuk/jszip
+        //local storage
+        storage.save(board)
+        break;
+    case 'open':
+        if (storage.isListable()) {
+
+        } else {
+            storage.load("").then((b: Board)=>{
+                transactionTreeRoot.reset()
+                transactionTreeRoot.nodes.push(b.toTransactionTree())
+                board = b
+            })
+        }
         break;
     default:
         console.error("Unhandled action[" + action + "]")
@@ -113,6 +133,14 @@ function actionHandler(action: string) {
 
 }
 
+
+function newBoard(){
+    const board = new Board()
+    board.name = "Untitled Board"
+    title.value = board.name
+    new NewBoardTransaction().apply(board)
+    return board
+}
 
 </script>
 <style scoped>
