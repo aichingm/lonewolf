@@ -94,7 +94,7 @@ export class NewBoardTransaction extends IdentifiableTransaction implements Tran
 
 export class BoardRenameTransaction extends IdentifiableTransaction implements Transaction {
 
-    private _name: string = ""
+    private _name = ""
 
     constructor (name: string) {
         super()

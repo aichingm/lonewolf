@@ -16,7 +16,7 @@ const $emit = defineEmits(["change-commited", "update:title"]);
 const titleEditInput = ref(null) as Ref<typeof NInput | null>
 const editMode = ref(false)
 
-let originalTitle = $props.title.value;
+let originalTitle = ref($props.title).value;
 const modelTitle = ref($props.title.value);
 watch($props.title, ()=> {originalTitle = $props.title.value; modelTitle.value = $props.title.value})
 

@@ -11,7 +11,7 @@
             handle=".list-dragger"
             @change="dragEvent"
             :force-fallback="isChrome()"
-            >
+        >
             <template #item="{ element }">
                 <ListVue
                     :board="$props.board"

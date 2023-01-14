@@ -14,7 +14,6 @@
 </template>
 
 <script setup lang="ts">
-import { v1 as uuid } from "uuid";
 import { useRouter, useRoute } from 'vue-router'
 import { reactive } from 'vue'
 

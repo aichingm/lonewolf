@@ -46,11 +46,8 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, reactive, watch, computed } from "vue";
+import { ref, reactive } from "vue";
 import { useThemeVars } from 'naive-ui'
-import { v4 as uuid } from "uuid";
-
-
 import BoardVue from "@/components/Board.vue";
 import BiDirTitleInput from "@/components/BiDirTitleInput.vue";
 import CardDialog from "@/components/CardDialog.vue";
@@ -61,7 +58,7 @@ import type Card from "@/common/data/Card";
 import type List from "@/common/data/List";
 import type Transaction from "@/common/data/Transaction";
 import { RefProtector } from "@/utils/vue";
-import  { TransactionTree, NewCardTransaction, NewListTransaction, NewBoardTransaction, BoardRenameTransaction } from "@/common/data/Transaction";
+import  { TransactionTree, NewBoardTransaction, BoardRenameTransaction } from "@/common/data/Transaction";
 import  { BrowserNativeStorage } from "@/common/storage/BrowserStorage";
 
 
@@ -120,7 +117,7 @@ function actionHandler(action: string) {
         break;
     case 'open':
         if (storage.isListable()) {
-
+            const _entries = storage.list()
         } else {
             storage.load("").then((b: Board)=>{
                 transactionTreeRoot.reset()

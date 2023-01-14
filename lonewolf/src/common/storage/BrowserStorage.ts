@@ -32,8 +32,8 @@ export class BrowserNativeStorage implements IStorage {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const target = e.target
-                    if(e.target != null && e.target.result != null){
-                        const board = Board.fromSerializable(JSON.parse(unbuff(e.target.result)))
+                    if(target != null && target.result != null){
+                        const board = Board.fromSerializable(JSON.parse(unbuff(target.result)))
                         resolve(board)
                     }
                 };
