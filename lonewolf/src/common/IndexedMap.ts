@@ -66,8 +66,10 @@ export default class IndexedMap<T extends Indexable> {
     }
 
     public put(t: T) {
-        // remove old item from namedItems
-        this.namedItems.delete(this.items[t.position].id)
+        if (this.items[t.position] != undefined) {
+            // remove old item from namedItems
+            this.namedItems.delete(this.items[t.position].id)
+        }
         // overwrite in items
         this.items[t.position] = t
         // add new item to namedItems
