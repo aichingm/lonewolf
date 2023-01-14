@@ -1,6 +1,7 @@
 <template>
     <div class="board">
         <draggable
+            id="draggable"
             :list="lists"
             group="lists"
             animation="200"
@@ -9,7 +10,8 @@
             item-key="id"
             handle=".list-dragger"
             @change="dragEvent"
-            :force-fallback="isChrome()">
+            :force-fallback="isChrome()"
+            >
             <template #item="{ element }">
                 <ListVue
                     :board="$props.board"
@@ -81,6 +83,10 @@ function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number
 
 .drag-list {
   rotate: -3deg;
+}
+
+#draggable:empty { /* if drafable is empty it still is focusable via tab, so hide it if it is empty*/
+    display: none;
 }
 
 </style>
