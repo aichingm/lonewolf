@@ -162,14 +162,16 @@ const cardTitle = ref("");
 const cardTitleInputId = uuid1();
 
 function newCardButtonClicked() {
-    $emit("transaction", new NewCardTransaction(list.value.id, cardTitle.value))
-    cardTitle.value = "";
-    nextTick(() => document.getElementById(cardTitleInputId)?.focus());
-    nextTick(() =>
-        document
-            .getElementById(scrollTargetId)
-            ?.scrollIntoView({ block: "end", behavior: "smooth" })
-    );
+    if (cardTitle.value != "") {
+        $emit("transaction", new NewCardTransaction(list.value.id, cardTitle.value))
+        cardTitle.value = "";
+        nextTick(() => document.getElementById(cardTitleInputId)?.focus());
+        nextTick(() =>
+            document
+                .getElementById(scrollTargetId)
+                ?.scrollIntoView({ block: "end", behavior: "smooth" })
+        );
+    }
 }
 
 function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number}, added: {element: Card, newIndex: number}}) {

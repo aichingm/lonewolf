@@ -37,14 +37,16 @@ const inputThemeOverrides = {
 const $emit = defineEmits(["newList"]);
 
 function newButtonClicked() {
-    $emit("newList", listName.value);
-    listName.value = "";
-    nextTick(() => document.getElementById(listNameInputId)?.focus());
-    nextTick(() =>
-        document
-            .getElementById(scrollTargetId)
-            ?.scrollIntoView({ inline: "end", behavior: "smooth" })
-    );
+    if (listName.value != "") {
+        $emit("newList", listName.value);
+        listName.value = "";
+        nextTick(() => document.getElementById(listNameInputId)?.focus());
+        nextTick(() =>
+            document
+                .getElementById(scrollTargetId)
+                ?.scrollIntoView({ inline: "end", behavior: "smooth" })
+        );
+    }
 }
 </script>
 
