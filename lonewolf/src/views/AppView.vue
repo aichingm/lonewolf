@@ -11,7 +11,7 @@
                             </n-icon>
                         </template>
                     </n-button>
-                    <TitleInput v-model:title="title"/>
+                    <BiDirTitleInput :title="title.ref" @update:title="title.update"/>
                 </n-space>
                 <n-input v-model:value="searchValue" type="text" placeholder="Search" clearable>
                     <template #prefix>
@@ -46,13 +46,13 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, reactive, watch } from "vue";
+import { ref, reactive, watch, computed } from "vue";
 import { useThemeVars } from 'naive-ui'
 import { v4 as uuid } from "uuid";
 
 
 import BoardVue from "@/components/Board.vue";
-import TitleInput from "@/components/TitleInput.vue";
+import BiDirTitleInput from "@/components/BiDirTitleInput.vue";
 import CardDialog from "@/components/CardDialog.vue";
 import ListDialog from "@/components/ListDialog.vue";
 import FileMenu from "@/components/FileMenu.vue";
@@ -60,6 +60,7 @@ import Board from "@/common/data/Board";
 import type Card from "@/common/data/Card";
 import type List from "@/common/data/List";
 import type Transaction from "@/common/data/Transaction";
+import { RefProtector } from "@/utils/vue";
 import  { TransactionTree, NewCardTransaction, NewListTransaction, NewBoardTransaction, BoardRenameTransaction } from "@/common/data/Transaction";
 import  { BrowserNativeStorage } from "@/common/storage/BrowserStorage";
 
@@ -73,8 +74,10 @@ const searchValue = ref();
 const cardDialog = {show: ref(false), id: ref("")};
 const listDialog = {show: ref(false), id: ref("")};
 
-const title = ref("")
-watch(title, ()=>new BoardRenameTransaction(title.value).apply(board))
+const title = new RefProtector(ref(""), (newTitle: string)=> {
+    title.ref.value = newTitle;
+    new BoardRenameTransaction(title.ref.value).apply(board)
+})
 
 let board = newBoard()
 
@@ -123,6 +126,7 @@ function actionHandler(action: string) {
                 transactionTreeRoot.reset()
                 transactionTreeRoot.nodes.push(b.toTransactionTree())
                 board = b
+                title.ref.value = board.name
             })
         }
         break;
@@ -137,7 +141,7 @@ function actionHandler(action: string) {
 function newBoard(){
     const board = new Board()
     board.name = "Untitled Board"
-    title.value = board.name
+    title.ref.value = board.name
     new NewBoardTransaction().apply(board)
     return board
 }
