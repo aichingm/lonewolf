@@ -1,5 +1,5 @@
 
-.PHONY: dev build lint npm-install taskell container shell
+.PHONY: dev build lint npm-install container container-force shell
 
 dev:
 	podman run --rm -it -p 5173:5173 -v .:/app lonewolf:build bash -c 'cd /app/lonewolf/; npm run dev -- --host'
@@ -12,9 +12,6 @@ lint:
 
 npm-install:
 	podman run --rm -it -v .:/app lonewolf:build bash -c 'cd /app/lonewolf/; npm install'
-
-taskell:
-	podman run --rm -it -v .:/app lonewolf:build bash -c 'cd /app; taskell'
 
 container:
 	cd container && podman build .. -f Dockerfile -t lonewolf:build
