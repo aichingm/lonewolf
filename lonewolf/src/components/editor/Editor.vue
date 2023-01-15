@@ -1,38 +1,40 @@
 <template>
-    <n-config-provider :theme="null">
-        <n-el tag="div" class="editor">
-            <ToolbarVue v-if="viewReady && $props.showToolbar && editMode" :editor-view="view as EditorView" @previewToggleChanged="setEditMode"
-                        showCreateBold
-                        showCreateItalic
-                        showCreateCode
-                        showCreateLink
-                        showCreateImage
-                        showCreateHeadline1
-                        showCreateHeadline2
-                        showCreateList
-                        showCreateOrderedList
-                        showCreateTaskList
-                        showDone
+    <n-config-provider :theme="theme">
+        <n-el tag="div">
+            <transition name="editor">
+                <n-el tag="div" class="editor" v-if="editMode">
+                    <ToolbarVue v-if="viewReady && $props.showToolbar && editMode" :editor-view="view as EditorView" @previewToggleChanged="setEditMode"
+                                showCreateBold
+                                showCreateItalic
+                                showCreateCode
+                                showCreateLink
+                                showCreateImage
+                                showCreateHeadline1
+                                showCreateHeadline2
+                                showCreateList
+                                showCreateOrderedList
+                                showCreateTaskList
+                                showDone
 
-            />
-            <Codemirror
-                class="cm6"
-                :style="{'background-color': 'var(--base-color)'}"
-                placeholder="..."
-                :autofocus="true"
-                :indent-with-tab="true"
-                :tab-size="2"
-                :extensions="extensions"
-                v-model="editorContent"
-                @ready="handleReady"
-                @change="log"
-                @focus="log"
-                @blur="setEditMode(false)"
-                v-if="editMode"
-            />
-            <div class="preview" v-html="previewHtml" v-if="!editMode" @click="setEditMode(true)">
-            </div>
-            <div class="preview-empty" v-if="previewHtml=='' && !editMode" @click="setEditMode(true)"><n-text depth="3">Description...</n-text></div>
+                    />
+                    <Codemirror
+                        class="cm6"
+                        :style="{'background-color': 'var(--base-color)'}"
+                        placeholder="..."
+                        :autofocus="true"
+                        :indent-with-tab="true"
+                        :tab-size="2"
+                        :extensions="extensions"
+                        v-model="editorContent"
+                        @ready="handleReady"
+                        @change="log"
+                        @focus="log"
+                        @blur="setEditMode(false)"
+                    />
+                </n-el>
+            </transition >
+            <div class="preview" v-html="previewHtml" v-if="!editMode" @click="setEditMode(true)"></div>
+            <n-text depth="3" v-if="previewHtml=='' && !editMode" @click="setEditMode(true)">Description...</n-text>
         </n-el>
     </n-config-provider>
 </template>
@@ -40,6 +42,9 @@
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch } from 'vue'
 import type { Ref } from 'vue'
+import { useThemeVars } from 'naive-ui'
+
+
 
 import { minimalSetup, EditorView } from "codemirror"
 
@@ -65,6 +70,7 @@ const $props = withDefaults(defineProps<{
 
 const $emit = defineEmits(["update:content", "update:editMode"]);
 
+const theme = useThemeVars()
 const editMode = ref($props.editMode)
 const setEditMode = (value: boolean) => editMode.value = value
 
@@ -74,7 +80,6 @@ watch(editMode, ()=> {
         $emit("update:content", editorContent.value)
     }
 })
-
 
 const originalEditorContent = ref($props.content).value
 const editorContent = ref($props.content)
@@ -211,18 +216,21 @@ const handleReady = (payload: { view: EditorView; state: EditorState; container:
   margin-bottom: 0;
 }
 
-.preview-empty{
-
-    color: #caffee;
+.editor {
+    margin: 2px;
+    box-sizing: border-box;
+    border: 1px solid var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(24, 160, 88, 0.2);
+    border-radius: var(--n-border-radius);
 }
 
-.editor {
-  display: block;
-  /*border: 1px solid #c9c9c9;
-  border-top-left-radius: 2px;
-  border-top-right-radius: 2px;
-  border-bottom-right-radius: 0px;
-  border-bottom-left-radius: 0px;*/
+.editor-enter-active {
+    transition: box-shadow .3s var(--n-bezier), border .3s var(--n-bezier);
+}
+
+.editor-enter-from, .editor1-leave-to{
+    border: none;
+    box-shadow: none;
 }
 
 .cm-wrapper {
@@ -231,10 +239,13 @@ const handleReady = (payload: { view: EditorView; state: EditorState; container:
 }
 
 :deep() .cm-content, :deep() .cm-gutters {
-  min-height: var(--minheight) !important;
+    min-height: var(--minheight) !important;
 }
 
 :deep() .cm-editor.cm-focused {
   outline: 0;
 }
 </style>
+
+
+

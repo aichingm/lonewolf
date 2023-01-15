@@ -105,7 +105,7 @@
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.showDone">
+            <n-button v-if="$props.showDone" quaternary >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:save-20-regular" />
@@ -264,9 +264,15 @@ const editorInteractions = {
 
         $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => (
             {
-                changes: editorInteractions.forEachLine($props.editorView, range, (line) => ({from: line.from, insert: line.text.startsWith(">") ? ">" : "> "})),
-                range: EditorSelection.range(range.from + ($props.editorView.state.doc.lineAt(range.from).text.startsWith(">") ? 1 : 2), range.to + editorInteractions.calcShiftingForLineStartingBlocks(range, ">"))
+                changes: editorInteractions.forEachLine($props.editorView, range, (line) => (
+                    {from: line.from, to: line.from + (line.text.startsWith("*") ? 2 : 0), insert: line.text.startsWith("*") ? "" : "* "}
+                )
+                ),
+                range: EditorSelection.range(range.from + ($props.editorView.state.doc.lineAt(range.from).text.startsWith("*") ? -2 : 2), range.to + ($props.editorView.state.doc.lineAt(range.from).text.startsWith("*") ? -2 : 2))
             }
+
+            // TODO if starts with "* " remove and reset cusor (special case if curstor < 2) else add "* " and shift cursor 2 to the right
+
         )))
 
         $props.editorView.focus()
