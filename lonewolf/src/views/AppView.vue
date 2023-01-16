@@ -2,17 +2,17 @@
     <div style="height:100%;">
         <FileMenu v-model:show="fileMenu.state" @action="(action: string)=>fileMenu.actionHandler(action)"/>
         <div class="app-header-nav" :style="'border-bottom-color:' + borderColor + ';'">
-            <n-space class="app-header-nav-space" justify="space-between">
-                <n-space class="app-header-nav-space">
-                    <n-button @click="fileMenu.show(true)" :ghost ="true" :block="true" :bordered="false">
-                        <template #icon>
-                            <n-icon size="24" color="gray">
-                                <icon icon="fluent:panel-left-expand-20-filled" />
-                            </n-icon>
-                        </template>
-                    </n-button>
-                    <BiDirTitleInput :title="title.ref" @update:title="title.update"/>
-                </n-space>
+            <n-space class="app-header-nav-space" justify="left">
+                <n-button @click="fileMenu.show(true)" :ghost ="true" :block="true" :bordered="false">
+                    <template #icon>
+                        <n-icon size="24" color="gray">
+                            <icon icon="fluent:panel-left-expand-20-filled" />
+                        </n-icon>
+                    </template>
+                </n-button>
+                <BiDirTitleInput :title="title.ref" @update:title="title.update"/>
+            </n-space>
+            <n-space class="app-header-nav-space" justify="center">
                 <n-input v-model:value="searchValue" type="text" placeholder="Search" clearable>
                     <template #prefix>
                         <n-icon color="gray">
@@ -20,6 +20,8 @@
                         </n-icon>
                     </template>
                 </n-input>
+            </n-space>
+            <n-space class="app-header-nav-space" justify="right">
                 <n-button quaternary circle style="margin-right: 8px">
                     <template #icon>
                         <n-icon size="18" color="gray">
@@ -148,14 +150,19 @@ function newBoard(){
 .app-config-wrapper{
     height: calc(100% - 48px);
 }
+
 .app-header-nav{
     height: 47px;
     border-bottom: solid 1px;
+    display: flex;
 }
+
 .app-header-nav-space{
     height: 48px;
     align-items: center;
+    width: calc( 100% / 3);
 }
+
 .app-board{
     height: calc(100% - 48px);
 }
