@@ -4,7 +4,7 @@
             <div class="list-name">{{ list.name }}</div>
             <ActionDropdown :options="actions" @selected="actionMenuSelected" />
         </div>
-        <div class="cards list-part list-dragger">
+        <div :class="'cards list-part ' + (inputHasFocus?'':'list-dragger')">
             <!-- eslint-disable vue/no-mutating-props -->
             <draggable
                 :list="$props.data.nodes"
@@ -35,6 +35,8 @@
                     @keyup.enter="newCardButtonClicked()"
                     placeholder="New Card"
                     :theme-overrides="inputThemeOverrides"
+                    @focus="inputHasFocus = true"
+                    @blur="inputHasFocus = false"
                 />
                 <n-button type="primary" @click="newCardButtonClicked()" tabindex="-1"
                 >+</n-button
@@ -198,6 +200,8 @@ const inputThemeOverrides = {
     border: '0px solid',
     boxShadowFocus: '0px solid',
 }
+
+const inputHasFocus = ref(false)
 
 </script>
 
