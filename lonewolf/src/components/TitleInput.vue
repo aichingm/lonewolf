@@ -1,5 +1,5 @@
 <template>
-    <div v-if="!editMode" tabindex="0" @focus="showEdit()" >{{ modelTitle }}</div>
+    <div v-if="!editMode" tabindex="0" @focus="showEdit()">{{ modelTitle }}</div>
     <n-input ref="titleEditInput" v-if="editMode" @blur="hideEdit()" type="text" v-model:value="modelTitle" :placeholder="modelTitle" />
 </template>
 <script setup lang="ts">
@@ -11,7 +11,7 @@ const $props = defineProps<{
     title: string;
 }>();
 
-const $emit = defineEmits(["change-commited", "update:title"]);
+const $emit = defineEmits(["update:title"]);
 
 const titleEditInput = ref(null) as Ref<typeof NInput | null>
 const editMode = ref(false)

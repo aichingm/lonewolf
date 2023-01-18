@@ -3,7 +3,7 @@
         v-model:show="showModel"
     >
         <n-card
-            style="width: 600px"
+            class="card"
             title="Modal"
             :bordered="false"
             size="huge"
@@ -60,6 +60,8 @@ watch(showModel, ()=>$emit("update:show", showModel))
 </script>
 
 <style scoped>
-
+.card {
+    width: 600px;
+}
 
 </style>

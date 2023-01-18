@@ -1,7 +1,7 @@
 <template>
-    <n-config-provider :theme="theme">
+    <n-config-provider :theme="theme" class="editor-root">
         <n-el tag="div">
-            <transition name="editor">
+            <transition name="editor" :duration=".3">
                 <n-el tag="div" class="editor" v-if="editMode">
                     <ToolbarVue v-if="viewReady && $props.showToolbar && editMode" :editor-view="view as EditorView" @previewToggleChanged="setEditMode"
                                 showCreateBold
@@ -19,7 +19,6 @@
                     />
                     <Codemirror
                         class="cm6"
-                        :style="{'background-color': 'var(--base-color)'}"
                         placeholder="..."
                         :autofocus="true"
                         :indent-with-tab="true"
@@ -31,6 +30,8 @@
                         @focus="log"
                         @blur="setEditMode(false)"
                     />
+                    <div class="editor-decoration editor-decoration-border"></div>
+                    <div class="editor-decoration editor-decoration-shadow"></div>
                 </n-el>
             </transition >
             <div class="preview" v-html="previewHtml" v-if="!editMode" @click="setEditMode(true)"></div>
@@ -198,6 +199,13 @@ const handleReady = (payload: { view: EditorView; state: EditorState; container:
 </script>
 
 <style scoped>
+
+.editor-root {
+    display: inline-block;
+    width: 100%;
+    position: relative;
+}
+
 .cm6 {
     background-color: var(--base-color);
     display: block !important;
@@ -217,18 +225,32 @@ const handleReady = (payload: { view: EditorView; state: EditorState; container:
 }
 
 .editor {
-    margin: 2px;
-    box-sizing: border-box;
+    width:100%;
+    display:inline-block;
+}
+.editor-decoration {
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    pointer-events: none;
+}
+
+.editor-decoration-border {
     border: 1px solid var(--primary-color);
+    border-radius: var(--n-border-radius);
+}
+.editor-decoration-shadow{
     box-shadow: 0 0 0 2px rgba(24, 160, 88, 0.2);
     border-radius: var(--n-border-radius);
 }
 
-.editor-enter-active {
+.editor-enter-active .editor-decoration{
     transition: box-shadow .3s var(--n-bezier), border .3s var(--n-bezier);
 }
 
-.editor-enter-from, .editor1-leave-to{
+.editor-enter-from .editor-decoration, .editor-leave-to .editor-decoration{
     border: none;
     box-shadow: none;
 }
