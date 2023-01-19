@@ -12,7 +12,7 @@
         >
             <template #header>
                 <InitialFocus />
-                <TitleInput v-model:title="titleModel"/>
+                <TitleInput :title="titleModel" @update:title="emitTitle"/>
             </template>
             <template #header-extra>
             </template>
@@ -30,6 +30,7 @@ import type { Ref } from "vue";
 import InitialFocus from "@/components/InitialFocus.vue";
 import TitleInput from "@/components/TitleInput.vue";
 import { ListRenameTransaction } from "@/common/data/Transaction";
+import type List from "@/common/data/List";
 import type Board from "@/common/data/Board";
 
 
@@ -41,20 +42,27 @@ const $props = defineProps<{
 
 const $emit = defineEmits(["transaction", "update:show"]);
 
-// const list = computed(() => $props.board().findList($props.id.value))
+const emitTitle = (title: string) => $emit("transaction", new ListRenameTransaction($props.id.value, title))
 
 const titleModel = ref("")
-watch($props.id, ()=>{
-    const list =  $props.board().findList($props.id.value);
-    if(list != null) {
-        titleModel.value = list.name
-    }
-})
-watch(titleModel, ()=>$emit("transaction", new ListRenameTransaction($props.id.value, titleModel.value)))
-
 const showModel = ref(false)
-watch($props.show, ()=>showModel.value = $props.show.value)
-watch(showModel, ()=>$emit("update:show", showModel))
+
+const reloadList = () => {
+    const list =  $props.board().findList($props.id.value);
+    if(list != null) setRefs(list)
+}
+
+const setRefs = (list: List) => {
+    titleModel.value = list.name
+}
+
+
+watch($props.id, ()=>reloadList())
+watch($props.show, () => showModel.value = $props.show.value)
+watch(showModel, ()=>{
+    $emit("update:show", showModel)
+    reloadList()
+})
 
 
 </script>

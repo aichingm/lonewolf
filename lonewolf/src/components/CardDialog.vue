@@ -12,7 +12,7 @@
                 <InitialFocus />
                 <div class="card-reset">
                     <IconedBox icon="fluent:rename-20-filled">
-                        <TitleInput v-model:title="titleModel" />
+                        <TitleInput :title="titleModel" @update:title="emitTitle" />
                     </IconedBox>
                 </div>
             </template>
@@ -38,6 +38,7 @@ import IconedBox from "@/components/IconedBox.vue";
 import TitleInput from "@/components/TitleInput.vue";
 import { CardRenameTransaction, CardDescriptionTransaction } from "@/common/data/Transaction";
 import { RefProtector } from "@/utils/vue";
+import type Card from "@/common/data/Card";
 import type Board from "@/common/data/Board";
 
 const $props = defineProps<{
@@ -48,29 +49,30 @@ const $props = defineProps<{
 
 const $emit = defineEmits(["transaction", "update:show"]);
 
-//const card = computed(() => $props.board().findCard($props.id.value))
+const emitTitle = (title: string) => $emit("transaction", new CardRenameTransaction($props.id.value, title))
+const emitDescription = (_description: string) => $emit("transaction", new CardDescriptionTransaction($props.id.value, descriptionModel.value))
 
 const titleModel = ref("")
 const descriptionModel = ref("")
-
-watch($props.id, ()=>{
-    const card =  $props.board().findCard($props.id.value);
-    if(card != null) {
-        titleModel.value = card.name
-        descriptionModel.value = card.description
-    }
-})
-watch(titleModel, ()=>$emit("transaction", new CardRenameTransaction($props.id.value, titleModel.value)))
-
-
 const showModel = ref(false)
-watch($props.show, ()=>showModel.value = $props.show.value)
-watch(showModel, ()=>$emit("update:show", showModel))
-
-
-watch(descriptionModel, ()=>$emit("transaction", new CardDescriptionTransaction($props.id.value, descriptionModel.value)))
-
 const editMode = new RefProtector(ref(false));
+
+const reloadCard = ()=> {
+    const card =  $props.board().findCard($props.id.value);
+    if(card != null) setRefs(card)
+}
+
+const setRefs = (card: Card)=>{
+    titleModel.value = card.name
+    descriptionModel.value = card.description
+}
+
+watch($props.id, ()=>reloadCard())
+watch($props.show, ()=>showModel.value = $props.show.value)
+watch(showModel, ()=>{$emit("update:show", showModel); reloadCard()})
+
+watch(descriptionModel, ()=>emitDescription(descriptionModel.value))
+
 
 </script>
 <style scoped>
