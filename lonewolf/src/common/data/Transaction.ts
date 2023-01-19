@@ -370,7 +370,7 @@ export class ListRenameTransaction extends IdentifiableTransaction implements Tr
 
     public apply(board: Board): boolean{
         console.log("ListRenameTransaction", this._listId, this._title)
-        const list = board.findCard(this._listId)
+        const list = board.findList(this._listId)
         if (list == null) {
             throw new Error("List[" + this._listId + "] not found")
         }
