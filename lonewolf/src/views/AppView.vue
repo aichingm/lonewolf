@@ -39,11 +39,11 @@
                     class="board"
                     @card-edit="showCardDialog"
                     @list-edit="showListDialog"
-                    @transaction="createTransactionHandler(boardFn())"
+                    @transaction="(t)=>createTransactionHandler(boardFn())(t)"
                 />
             </div>
-            <CardDialog :id="cardDialog.id" :board="boardFn" v-model:show="cardDialog.show" @transaction="createTransactionHandler(boardFn())" />
-            <ListDialog :id="listDialog.id" :board="boardFn" v-model:show="listDialog.show" @transaction="createTransactionHandler(boardFn())" />
+            <CardDialog :id="cardDialog.id" :board="boardFn" v-model:show="cardDialog.show" @transaction="(t)=>createTransactionHandler(boardFn())(t)" />
+            <ListDialog :id="listDialog.id" :board="boardFn" v-model:show="listDialog.show" @transaction="(t)=>createTransactionHandler(boardFn())(t)" />
         </div>
     </div>
 </template>
@@ -63,8 +63,6 @@ import type Transaction from "@/common/data/Transaction";
 import { RefProtector } from "@/utils/vue";
 import  { TransactionTree, NewBoardTransaction, BoardRenameTransaction } from "@/common/data/Transaction";
 import  { BrowserNativeStorage } from "@/common/storage/BrowserStorage";
-
-console.log("new appview")
 
 const theme  = useThemeVars();
 const borderColor = theme.value.borderColor;
