@@ -39,11 +39,11 @@
                     class="board"
                     @card-edit="showCardDialog"
                     @list-edit="showListDialog"
-                    @transaction="transactionHandler"
+                    @transaction="createTransactionHandler(boardFn())"
                 />
             </div>
-            <CardDialog :id="cardDialog.id" :board="boardFn" v-model:show="cardDialog.show" @transaction="transactionHandler" />
-            <ListDialog :id="listDialog.id" :board="boardFn" v-model:show="listDialog.show" @transaction="transactionHandler" />
+            <CardDialog :id="cardDialog.id" :board="boardFn" v-model:show="cardDialog.show" @transaction="createTransactionHandler(boardFn())" />
+            <ListDialog :id="listDialog.id" :board="boardFn" v-model:show="listDialog.show" @transaction="createTransactionHandler(boardFn())" />
         </div>
     </div>
 </template>
@@ -58,11 +58,13 @@ import FileMenu from "@/components/FileMenu.vue";
 import Board from "@/common/data/Board";
 import type Card from "@/common/data/Card";
 import type List from "@/common/data/List";
+import MostRecent from "@/common/MostRecent";
 import type Transaction from "@/common/data/Transaction";
 import { RefProtector } from "@/utils/vue";
 import  { TransactionTree, NewBoardTransaction, BoardRenameTransaction } from "@/common/data/Transaction";
 import  { BrowserNativeStorage } from "@/common/storage/BrowserStorage";
 
+console.log("new appview")
 
 const theme  = useThemeVars();
 const borderColor = theme.value.borderColor;
@@ -78,7 +80,8 @@ const title = new RefProtector(ref(""), (newTitle: string)=> {
     new BoardRenameTransaction(title.ref.value).apply(board)
 })
 
-let board = newBoard()
+
+let board = MostRecent.exists() ? MostRecent.load() as Board : newBoard(); // as Board because typescript is stupid and can't see that .exist checks if it is null...
 
 const boardFn = () => board;
 
@@ -88,10 +91,13 @@ transactionTreeRoot.nodes.push(board.toTransactionTree())
 const showCardDialog = (card: Card) => {cardDialog.show.value = true; cardDialog.id.value = card.id;}
 const showListDialog = (list: List) => {listDialog.show.value = true; listDialog.id.value = list.id;}
 
-function transactionHandler(transaction: Transaction) {
-    if (transaction.apply(board)) {
-        transaction.mutateTransactionTree(transactionTreeRoot.nodes[0], board)
-        board.transactions.push(transaction)
+function createTransactionHandler(board: Board) {
+    return function transactionHandler(transaction: Transaction) {
+        if (transaction.apply(board)) {
+            transaction.mutateTransactionTree(transactionTreeRoot.nodes[0], board)
+            board.transactions.push(transaction)
+            MostRecent.put(board)
+        }
     }
 }
 
