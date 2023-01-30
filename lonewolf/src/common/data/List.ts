@@ -4,7 +4,7 @@ import Indexable from "@/common/Indexable";
 import IndexedMap from "@/common/IndexedMap";
 import type Board from "./Board";
 import type Card from "./Card";
-import { TransactionTree } from "@/common/data/Transaction";
+import { SDList } from "./extern/SimpleData";
 
 
 
@@ -58,10 +58,10 @@ export default class List extends Indexable {
         return l;
     }
 
-    public toTransactionTree(): TransactionTree {
-        const t = new TransactionTree(this.id, "no-new-transaction");
-        t.nodes = Array.from(this.cards.items.map( (c: Card) => {return c.toTransactionTree();}));
-        return t
+    public toSimpleData(): SDList {
+        const l = new SDList(this.id, "no-new-transaction");
+        l.cards = Array.from(this.cards.items.map( (c: Card) => {return c.toSimpleData();}));
+        return l
     }
 
 }

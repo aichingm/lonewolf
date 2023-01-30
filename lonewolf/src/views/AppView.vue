@@ -34,7 +34,7 @@
         <div class="app-config-wrapper">
             <div class="wrapper">
                 <BoardVue
-                    :data="transactionTreeRoot.nodes[0]"
+                    :simpleBoard="simpleDataRoot.board"
                     :board="boardFn"
                     class="board"
                     @card-edit="showCardDialog"
@@ -61,7 +61,8 @@ import type List from "@/common/data/List";
 import MostRecent from "@/common/MostRecent";
 import type Transaction from "@/common/data/Transaction";
 import { RefProtector } from "@/utils/vue";
-import  { TransactionTree, NewBoardTransaction, BoardRenameTransaction } from "@/common/data/Transaction";
+import { SDRoot } from "@/common/data/extern/SimpleData";
+import  { NewBoardTransaction, BoardRenameTransaction } from "@/common/data/Transaction";
 import  { BrowserNativeStorage } from "@/common/storage/BrowserStorage";
 
 const theme  = useThemeVars();
@@ -83,8 +84,7 @@ let board = MostRecent.exists() ? MostRecent.load() as Board : newBoard(); // as
 
 const boardFn = () => board;
 
-const transactionTreeRoot = reactive(new TransactionTree("root-node", "no-transaction-id"))
-transactionTreeRoot.nodes.push(board.toTransactionTree())
+const simpleDataRoot = reactive(new SDRoot("root-node", "no-transaction-id", board.toSimpleData()))
 
 const showCardDialog = (card: Card) => {cardDialog.show.value = true; cardDialog.id.value = card.id;}
 const showListDialog = (list: List) => {listDialog.show.value = true; listDialog.id.value = list.id;}
@@ -92,7 +92,7 @@ const showListDialog = (list: List) => {listDialog.show.value = true; listDialog
 function createTransactionHandler(board: Board) {
     return function transactionHandler(transaction: Transaction) {
         if (transaction.apply(board)) {
-            transaction.mutateTransactionTree(transactionTreeRoot.nodes[0], board)
+            transaction.mutate(simpleDataRoot.board, board)
             board.transactions.push(transaction)
             MostRecent.put(board)
         }
@@ -108,11 +108,11 @@ function actionHandler(action: string) {
 
         // TODO here should be a check if the board is saved
 
-        transactionTreeRoot.reset()
+        simpleDataRoot.reset()
 
         board = newBoard()
 
-        transactionTreeRoot.nodes.push(board.toTransactionTree())
+        simpleDataRoot.board = board.toSimpleData()
         break;
 
     case 'save':
@@ -126,8 +126,8 @@ function actionHandler(action: string) {
             const _entries = storage.list()
         } else {
             storage.load("").then((b: Board)=>{
-                transactionTreeRoot.reset()
-                transactionTreeRoot.nodes.push(b.toTransactionTree())
+                simpleDataRoot.reset()
+                simpleDataRoot.board = b.toSimpleData()
                 board = b
                 title.ref.value = board.name
             })

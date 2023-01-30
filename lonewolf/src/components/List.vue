@@ -7,7 +7,7 @@
         <div :class="'cards list-part ' + (inputHasFocus?'':'list-dragger')">
             <!-- eslint-disable vue/no-mutating-props -->
             <draggable
-                :list="$props.data.nodes"
+                :list="$props.simpleList.cards"
                 group="cards"
                 animation="200"
                 item-key="id"
@@ -19,7 +19,7 @@
                 <!-- eslint-enable -->
                 <template #item="{ element }">
                     <CardVue
-                        :data="element"
+                        :simpleCard="element"
                         :board="$props.board"
                         :lists="$props.lists"
                         :cards="cards"
@@ -62,24 +62,25 @@ import { isChrome } from "@/utils/browser-comp";
 
 import type Board from "@/common/data/Board";
 import type List from "@/common/data/List";
+import type { SDList } from "@/common/data/extern/SimpleData";
 import type Card from "@/common/data/Card";
 
 
-import { TransactionTree, NewCardTransaction, ListSortTransaction, CardSortTransaction, CardMoveTransaction } from "@/common/data/Transaction";
+import { NewCardTransaction, ListSortTransaction, CardSortTransaction, CardMoveTransaction } from "@/common/data/Transaction";
 
 const $props = defineProps<{
     board: () => Board;
-    data: TransactionTree;
-    lists: TransactionTree[];
+    simpleList: SDList;
+    lists: SDList[];
 }>();
 
 const $emit = defineEmits(["transaction", "card-edit", "list-edit"]);
 
-const list = computed(()=>{$props.data.version; return $props.board().findList($props.data.id)}) as Ref<List> // if list is null, something else is f'ed up
-const cards = computed(()=>{$props.data.version; return $props.data.nodes})
+const list = computed(()=>{$props.simpleList.version; return $props.board().findList($props.simpleList.id)}) as Ref<List> // if list is null, something else is f'ed up
+const cards = computed(()=>{$props.simpleList.version; return $props.simpleList.cards})
 
-const lists = computed(()=>{$props.data.version; return $props.lists.map((t: TransactionTree) : List|null => $props.board().findList(t.id)).filter(l=>l!=null) as List[]})
-const actions = computed(()=>{$props.data.version; return generateActions(lists.value)})
+const lists = computed(()=>{$props.simpleList.version; return $props.lists.map((t: SDList) : List|null => $props.board().findList(t.id)).filter(l=>l!=null) as List[]})
+const actions = computed(()=>{$props.simpleList.version; return generateActions(lists.value)})
 
 function generateActions(lists: List[]): ActionDropdownOption[] {
     const children = filterMoveList(lists);

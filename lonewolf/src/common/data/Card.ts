@@ -1,7 +1,7 @@
 import { v1 as uuid } from "uuid";
 
 import type List from "@/common/data/List";
-import { TransactionTree } from "@/common/data/Transaction";
+import { SDCard } from "./extern/SimpleData";
 import type Board from "@/common/data/Board";
 import Indexable from "@/common/Indexable"
 
@@ -57,10 +57,8 @@ export default class Card extends Indexable{
         return c;
     }
 
-    public toTransactionTree(): TransactionTree {
-        const t = new TransactionTree(this.id, "no-new-transaction");
-        t.nodes = [];
-        return t
+    public toSimpleData(): SDCard {
+        return new SDCard(this.id, "no-new-transaction");
     }
 }
 

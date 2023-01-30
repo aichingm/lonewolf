@@ -7,10 +7,8 @@ import type { SerializableList } from "@/common/data/List";
 import Card from "@/common/data/Card";
 import type { SerializableCard } from "@/common/data/Card";
 import type Transaction from "@/common/data/Transaction";
-import { TransactionTree } from "@/common/data/Transaction";
+import { SDBoard } from "./extern/SimpleData";
 
-//import ChangeProvider from "@/common/data/ChangeListener";
-//import type { ChangeListener} from "@/common/data/ChangeListener";
 
 
 export default class Board extends NamedIdentifiable {
@@ -49,10 +47,10 @@ export default class Board extends NamedIdentifiable {
         return this._transactions;
     }
 
-    public toTransactionTree(): TransactionTree {
-        const t = new TransactionTree(this.id, "no-new-transaction");
-        t.nodes = Array.from(this.lists.items.map( (l: List) => {return l.toTransactionTree();}));
-        return t
+    public toSimpleData(): SDBoard {
+        const b = new SDBoard(this.id, "no-new-transaction");
+        b.lists = Array.from(this.lists.items.map( (l: List) => {return l.toSimpleData();}));
+        return b
     }
 
     public toSerializable() {

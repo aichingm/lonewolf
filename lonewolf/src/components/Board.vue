@@ -15,7 +15,7 @@
             <template #item="{ element }">
                 <ListVue
                     :board="$props.board"
-                    :data="element"
+                    :simpleList="element"
                     :lists="lists"
                     @card-edit="(card)=>$emit('card-edit', card)"
                     @list-edit="(list)=>$emit('list-edit', list)"
@@ -34,19 +34,20 @@ import draggable from "vuedraggable";
 import ListVue from "./List.vue";
 import NewList from "./NewList.vue";
 
-import { TransactionTree, NewListTransaction, ListSortTransaction } from "@/common/data/Transaction";
+import { NewListTransaction, ListSortTransaction } from "@/common/data/Transaction";
 import { isChrome } from "@/utils/browser-comp";
 
 import type Board from "@/common/data/Board";
+import type { SDBoard } from "@/common/data/extern/SimpleData";
 import type List from "@/common/data/List";
 
 const $props = defineProps<{
     board: () => Board;
-    data: TransactionTree;
+    simpleBoard: SDBoard;
 }>();
 
 const $emit = defineEmits(["transaction", "card-edit", "list-edit"]);
-const lists = computed(()=>{$props.data;$props.data.version; return $props.data.nodes})
+const lists = computed(()=>{$props.simpleBoard; $props.simpleBoard.version; return $props.simpleBoard.lists})
 
 function newList(title: string) {
     $emit("transaction", new NewListTransaction(title))

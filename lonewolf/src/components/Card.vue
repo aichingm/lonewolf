@@ -52,26 +52,28 @@ import ActionDropdown from "./ActionDropdown.vue";
 
 import type Board from "@/common/data/Board";
 import type Card from "@/common/data/Card";
+import type { SDCard, SDList } from "@/common/data/extern/SimpleData";
+
 import type List from "@/common/data/List";
-import { CardSortTransaction, CardMoveTransaction, TransactionTree } from "@/common/data/Transaction";
+import { CardSortTransaction, CardMoveTransaction, } from "@/common/data/Transaction";
 
 
 import ActionDropdownOption from "@/common/ActionDropdownOption";
 
 const $props = defineProps<{
-    data: TransactionTree;
-    cards: TransactionTree[];
-    lists: TransactionTree[];
+    simpleCard: SDCard;
+    cards: SDCard[];
+    lists: SDList[];
     board: () => Board;
 }>();
 
 const $emit = defineEmits(["transaction", "card-edit"]);
 
-const card = computed(()=>{$props.data.version; return $props.board().findCard($props.data.id);}) as Ref<Card> // if card is null, something else is f'ed up
-const lists = computed(()=>$props.lists.map((t: TransactionTree) : List|null => $props.board().findList(t.id)).filter((l=>l!=null)) as List[])
-const cards = computed(()=>$props.cards.map((t: TransactionTree) : Card|null => $props.board().findCard(t.id)).filter((c=>c!=null)) as Card[])
+const card = computed(()=>{$props.simpleCard.version; return $props.board().findCard($props.simpleCard.id);}) as Ref<Card> // if card is null, something else is f'ed up
+const lists = computed(()=>$props.lists.map((t: SDList) : List|null => $props.board().findList(t.id)).filter((l=>l!=null)) as List[])
+const cards = computed(()=>$props.cards.map((t: SDCard) : Card|null => $props.board().findCard(t.id)).filter((c=>c!=null)) as Card[])
 
-const actions = computed(()=>{$props.data.version; return generateActions(lists.value, cards.value)})
+const actions = computed(()=>{$props.simpleCard.version; return generateActions(lists.value, cards.value)})
 
 const generateActions = function (lists: List[], cards: Card[]) {
     const cardsChildren = filterMoveCards(cards);
