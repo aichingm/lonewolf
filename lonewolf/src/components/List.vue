@@ -2,7 +2,13 @@
     <div class="list-lane">
         <div class="list-header list-part list-dragger" @click="$emit('list-edit', list)">
             <div class="list-name">{{ list.name }}</div>
-            <ActionDropdown :options="actions" @selected="actionMenuSelected" />
+            <n-space :size="34" item-style="display: flex;">
+                <n-badge :value="cards.length" show-zero :offset="[20, 11]" color="#d0d0d0">
+                    <div>
+                    </div>
+                </n-badge>
+                <ActionDropdown :options="actions" @selected="actionMenuSelected" />
+            </n-space>
         </div>
         <div :class="'cards list-part ' + (inputHasFocus?'':'list-dragger')">
             <!-- eslint-disable vue/no-mutating-props -->

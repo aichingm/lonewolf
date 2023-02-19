@@ -31,6 +31,10 @@ npm run build
 
 ## Libraries
 
+### Typescript
+
+* https://typescript.tv/errors/
+
 ### Framework
 
 * https://vuejs.org/
