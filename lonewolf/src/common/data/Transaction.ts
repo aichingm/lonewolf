@@ -1,6 +1,7 @@
 import { v4 as uuid } from "uuid";
 import List from "./List";
 import Card from "./Card";
+import Label from "./Label";
 import { SDBoard, SDList, SDCard } from "./extern/SimpleData";
 import type Board from "./Board";
 
@@ -403,6 +404,242 @@ export class CardDescriptionTransaction extends IdentifiableTransaction implemen
         listTree.version = this.id
         const cardTree = listTree.cards[card.position]
         cardTree.version = this.id
+        return true
+    }
+
+}
+
+export class CardAddLabelTransaction extends IdentifiableTransaction implements Transaction {
+    private _cardId: string;
+    private _labelId: string;
+
+    constructor (cardId: string, labelId: string) {
+        super()
+        this._cardId = cardId
+        this._labelId = labelId
+
+    }
+
+    public apply(board: Board): boolean{
+        console.log("CardAddLabelTransaction", this._cardId, this._labelId)
+        const card = board.findCard(this._cardId)
+        if (card == null) {
+            throw new Error("Card[" + this._cardId + "] not found")
+        }
+
+        const label = board.findLabel(this._labelId)
+        if (label == null) {
+            throw new Error("Label[" + this._labelId + "] not found")
+        }
+
+        card.labels.push(label)
+        return true
+    }
+
+    public mutate(t: SDBoard, board: Board): boolean {
+        const card = board.findCard(this._cardId)
+        if (card == null) {
+            throw new Error("Card[" + this._cardId + "] not found")
+        }
+
+        const listTree = t.lists[card.list.position]
+        const cardTree = listTree.cards[card.position]
+        cardTree.version = this.id
+        return true
+    }
+
+}
+
+export class CardRemoveLabelTransaction extends IdentifiableTransaction implements Transaction {
+    private _cardId: string;
+    private _labelId: string;
+
+    constructor (cardId: string, labelId: string) {
+        super()
+        this._cardId = cardId
+        this._labelId = labelId
+
+    }
+
+    public apply(board: Board): boolean{
+        console.log("CardRemoveLabelTransaction", this._cardId, this._labelId)
+        const card = board.findCard(this._cardId)
+        if (card == null) {
+            throw new Error("Card[" + this._cardId + "] not found")
+        }
+
+        const label = board.findLabel(this._labelId)
+        if (label == null) {
+            throw new Error("Label[" + this._labelId + "] not found")
+        }
+
+        card.labels.splice(card.labels.findIndex((l)=>l.id == this._labelId), 1)
+
+        return true
+    }
+
+    public mutate(t: SDBoard, board: Board): boolean {
+        const card = board.findCard(this._cardId)
+        if (card == null) {
+            throw new Error("Card[" + this._cardId + "] not found")
+        }
+
+        const listTree = t.lists[card.list.position]
+        const cardTree = listTree.cards[card.position]
+        cardTree.version = this.id
+        return true
+    }
+
+}
+
+export class CreateLabelTransaction extends IdentifiableTransaction implements Transaction {
+    private _name: string;
+    private _color: string;
+    private _label: Label;
+
+    constructor (name: string, color: string) {
+        super()
+        this._name = name
+        this._color = color
+        this._label = new Label()
+
+    }
+
+    public apply(board: Board): boolean{
+        console.log("CreateLabelTransaction", this._name, this._color)
+        this._label.name = this._name
+        this._label.color = this._color
+        board.labels.set(this._label.id, this._label)
+        return true
+    }
+
+    public mutate(t: SDBoard, _board: Board): boolean {
+        const sdl = this._label.toSimpleData()
+        sdl.version = this.id
+        t.labels.push(sdl)
+        return true
+    }
+
+}
+
+export class LabelColorChangeTransaction extends IdentifiableTransaction implements Transaction {
+    private _labelId: string;
+    private _color: string;
+
+    constructor (labelId: string, color: string) {
+        super()
+        this._labelId = labelId
+        this._color = color
+    }
+
+    public apply(board: Board): boolean{
+        console.log("LabelColorChangeTransaction", this._labelId, this._color)
+
+
+        const label = board.labels.get(this._labelId)
+        if (label == null) {
+            throw new Error("Label[" + this._labelId + "] not found")
+        }
+        label.color = this._color
+        return true
+    }
+
+    public mutate(t: SDBoard, _board: Board): boolean {
+
+        const  sdl = t.labels.find((l)=>l.id == this._labelId)
+        if (sdl == null) {
+            throw new Error("Label[" + this._labelId + "] not found (SD)")
+        }
+
+        sdl.version = this.id
+
+        return true
+    }
+
+}
+
+export class DeleteLabelTransaction extends IdentifiableTransaction implements Transaction {
+    private _labelId: string;
+
+    constructor (labelId: string) {
+        super()
+        this._labelId = labelId
+    }
+
+    public apply(board: Board): boolean{
+        console.log("DeleteLabelTransaction", this._labelId)
+        board.labels.delete(this._labelId)
+        return true
+    }
+
+    public mutate(t: SDBoard, _board: Board): boolean {
+        const  sdlIndex = t.labels.findIndex((l)=>l.id == this._labelId)
+        if (sdlIndex < 0) {
+            throw new Error("Label[" + this._labelId + "] not found (SD)")
+        }
+        t.labels.splice(sdlIndex, 1);
+        return true
+    }
+
+}
+
+export class LabelNameChangeTransaction extends IdentifiableTransaction implements Transaction {
+    private _labelId: string;
+    private _name: string;
+
+    constructor (labelId: string, name: string) {
+        super()
+        this._labelId = labelId
+        this._name= name
+    }
+
+    public apply(board: Board): boolean{
+        console.log("LabelNameChangeTransaction", this._labelId, this._name)
+        const label = board.labels.get(this._labelId)
+        if (label == null) {
+            throw new Error("Label[" + this._labelId + "] not found")
+        }
+        label.name = this._name
+        return true
+    }
+
+    public mutate(t: SDBoard, _board: Board): boolean {
+        const  sdl = t.labels.find((l)=>l.id == this._labelId)
+        if (sdl == null) {
+            throw new Error("Label[" + this._labelId + "] not found (SD)")
+        }
+        sdl.version = this.id
+        return true
+    }
+
+}
+
+export class LabelVisibilityChangeTransaction extends IdentifiableTransaction implements Transaction {
+    private _labelId: string;
+    private _visibility: boolean;
+
+    constructor (labelId: string, visibility: boolean) {
+        super()
+        this._labelId = labelId
+        this._visibility = visibility
+    }
+
+    public apply(board: Board): boolean{
+        console.log("LabelVisibilityChangeTransaction", this._labelId, this._visibility)
+        const label = board.labels.get(this._labelId)
+        if (label == null) {
+            throw new Error("Label[" + this._labelId + "] not found")
+        }
+        label.visibility = this._visibility
+        return true
+    }
+
+    public mutate(t: SDBoard, _board: Board): boolean {
+        const  sdl = t.labels.find((l)=>l.id == this._labelId)
+        if (sdl == null) {
+            throw new Error("Label[" + this._labelId + "] not found (SD)")
+        }
+        sdl.version = this.id
         return true
     }
 

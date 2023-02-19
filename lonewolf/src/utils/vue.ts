@@ -1,4 +1,5 @@
 import type { Ref } from 'vue'
+import { toRaw } from 'vue'
 
 export class RefProtector<T>{
 
@@ -26,5 +27,20 @@ export class RefProtector<T>{
         this._update = func
     }
 
+    public assign(t: T) {
+        this.ref.value = t;
+    }
+
 }
 
+export function assignArray<T>(target: Ref<T[]>, values: T[]) {
+    if(toRaw(target.value)===values ||
+        target.value===values
+    ){
+        console.error("You are tring to reassign the same object to a Ref, this will not mark the Ref as dirty!")
+        target.value = values
+        return;
+    }
+    target.value.splice(0, target.value.length)
+    values.forEach(v => target.value.push(v))
+}

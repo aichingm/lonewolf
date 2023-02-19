@@ -1,15 +1,7 @@
 <template>
-    <div class="card" @click="$emit('card-edit', card)">
+    <div class="card" @click="$emit('card-edit', card, $props.card)">
         <div class="badges">
-            <div class="badge"></div>
-            <div class="badge"></div>
-            <div class="badge"></div>
-            <div class="badge"></div>
-            <div class="badge"></div>
-            <div class="badge"></div>
-            <div class="badge"></div>
-            <div class="badge"></div>
-            <div class="badge"></div>
+            <CardLabelBadge v-for="l in activeLabels" :key="l.id" :color="l.color" :borderColor="l.color" :name="l.name" />
         </div>
         <div class="quick-edit">
             <ActionDropdown :options="actions" @selected="actionMenuSelected" />
@@ -45,35 +37,45 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, watch, ref } from "vue";
 import type { Ref } from "vue";
 
 import ActionDropdown from "./ActionDropdown.vue";
+import CardLabelBadge from "./CardLabelBadge.vue";
 
 import type Board from "@/common/data/Board";
 import type Card from "@/common/data/Card";
-import type { SDCard, SDList } from "@/common/data/extern/SimpleData";
+import type { SDCard, SDList, SDLabel } from "@/common/data/extern/SimpleData";
 
 import type List from "@/common/data/List";
 import { CardSortTransaction, CardMoveTransaction, } from "@/common/data/Transaction";
 
 
 import ActionDropdownOption from "@/common/ActionDropdownOption";
+import { assignArray } from "@/utils/vue";
 
 const $props = defineProps<{
-    simpleCard: SDCard;
+    card: SDCard;
     cards: SDCard[];
     lists: SDList[];
+    labels: SDLabel[];
     board: () => Board;
 }>();
 
 const $emit = defineEmits(["transaction", "card-edit"]);
 
-const card = computed(()=>{$props.simpleCard.version; return $props.board().findCard($props.simpleCard.id);}) as Ref<Card> // if card is null, something else is f'ed up
+const card = computed(()=>{$props.card.version; return $props.board().findCard($props.card.id);}) as Ref<Card> // if card is null, something else is f'ed up
 const lists = computed(()=>$props.lists.map((t: SDList) : List|null => $props.board().findList(t.id)).filter((l=>l!=null)) as List[])
 const cards = computed(()=>$props.cards.map((t: SDCard) : Card|null => $props.board().findCard(t.id)).filter((c=>c!=null)) as Card[])
 
-const actions = computed(()=>{$props.simpleCard.version; return generateActions(lists.value, cards.value)})
+const activeLabels = ref([...card.value.labels.filter(l=>l.visibility)])
+watch([$props.labels, $props.card], ()=> assignArray(activeLabels, card.value.labels.filter(l=>l.visibility)))
+
+/*
+$props.card.version: why?
+lists.value, cards.value: for actions wich have the name of other lists or cards included (move, moveTo)
+*/
+const actions = computed(()=>{$props.card.version; return generateActions(lists.value, cards.value)})
 
 const generateActions = function (lists: List[], cards: Card[]) {
     const cardsChildren = filterMoveCards(cards);
@@ -166,7 +168,7 @@ function actionMenuSelected(
     optionObject: ActionDropdownOption
 ) {
     if (optionObject.command == "edit") {
-        $emit("card-edit", card.value);
+        $emit("card-edit", card.value, $props.card);
     }
 
     if (optionObject.command == "move" && optionObject.data != null) {
@@ -186,15 +188,7 @@ function actionMenuSelected(
   display: inline-flex;
   width: calc(100% - 30px);
   vertical-align: top;
-}
-
-.badge {
-  height: 8px;
-  width: 40px;
-  border-radius: 4px;
-  background-color: #ca4e4e;
-  margin-right: 4px;
-  margin-bottom: 4px;
+  overflow: hidden;
 }
 
 .quick-edit {

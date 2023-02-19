@@ -19,11 +19,12 @@
                 <!-- eslint-enable -->
                 <template #item="{ element }">
                     <CardVue
-                        :simpleCard="element"
+                        :card="element"
                         :board="$props.board"
                         :lists="$props.lists"
                         :cards="cards"
-                        @card-edit="(card)=>$emit('card-edit', card)"
+                        :labels="$props.labels"
+                        @card-edit="(card, simpleCard)=>$emit('card-edit', card, simpleCard)"
                         @transaction="(t)=>$emit('transaction', t)"
                     />
                 </template>
@@ -62,7 +63,7 @@ import { isChrome } from "@/utils/browser-comp";
 
 import type Board from "@/common/data/Board";
 import type List from "@/common/data/List";
-import type { SDList } from "@/common/data/extern/SimpleData";
+import type { SDList, SDLabel } from "@/common/data/extern/SimpleData";
 import type Card from "@/common/data/Card";
 
 
@@ -72,6 +73,7 @@ const $props = defineProps<{
     board: () => Board;
     simpleList: SDList;
     lists: SDList[];
+    labels: SDLabel[];
 }>();
 
 const $emit = defineEmits(["transaction", "card-edit", "list-edit"]);

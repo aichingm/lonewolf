@@ -17,7 +17,8 @@
                     :board="$props.board"
                     :simpleList="element"
                     :lists="lists"
-                    @card-edit="(card)=>$emit('card-edit', card)"
+                    :labels="$props.simpleBoard.labels"
+                    @card-edit="(card, simpleCard)=>$emit('card-edit', card, simpleCard)"
                     @list-edit="(list)=>$emit('list-edit', list)"
                     @transaction="(t)=>$emit('transaction', t)"
                 />

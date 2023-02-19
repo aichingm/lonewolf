@@ -22,7 +22,7 @@
                 </n-input>
             </n-space>
             <n-space class="app-header-nav-space" justify="right">
-                <n-button quaternary circle style="margin-right: 8px">
+                <n-button quaternary circle style="margin-right: 8px" @click="settingsDialogShow.assign(true)">
                     <template #icon>
                         <n-icon size="18" color="gray">
                             <icon icon="fluent:more-vertical-20-filled" />
@@ -42,8 +42,9 @@
                     @transaction="(t)=>createTransactionHandler(boardFn())(t)"
                 />
             </div>
-            <CardDialog :id="cardDialog.id" :board="boardFn" v-model:show="cardDialog.show" @transaction="(t)=>createTransactionHandler(boardFn())(t)" />
+            <CardDialog  v-if="cardDialogCard.card.id != ''" :cardHolder="cardDialogCard" :board="boardFn" :labels="simpleDataRoot.board.labels" v-model:show="cardDialogShow.ref" @transaction="(t)=>createTransactionHandler(boardFn())(t)" />
             <ListDialog :id="listDialog.id" :board="boardFn" v-model:show="listDialog.show" @transaction="(t)=>createTransactionHandler(boardFn())(t)" />
+            <SettingsDialog :board="boardFn" v-model:show="settingsDialogShow.ref" :labels="simpleDataRoot.board.labels" @transaction="(t)=>createTransactionHandler(boardFn())(t)" />
         </div>
     </div>
 </template>
@@ -54,6 +55,7 @@ import BoardVue from "@/components/Board.vue";
 import BiDirTitleInput from "@/components/BiDirTitleInput.vue";
 import CardDialog from "@/components/CardDialog.vue";
 import ListDialog from "@/components/ListDialog.vue";
+import SettingsDialog from "@/components/SettingsDialog.vue";
 import FileMenu from "@/components/FileMenu.vue";
 import Board from "@/common/data/Board";
 import type Card from "@/common/data/Card";
@@ -61,7 +63,7 @@ import type List from "@/common/data/List";
 import MostRecent from "@/common/MostRecent";
 import type Transaction from "@/common/data/Transaction";
 import { RefProtector } from "@/utils/vue";
-import { SDRoot } from "@/common/data/extern/SimpleData";
+import { SDRoot, SDCardHolder, SDCard } from "@/common/data/extern/SimpleData";
 import  { NewBoardTransaction, BoardRenameTransaction } from "@/common/data/Transaction";
 import  { BrowserNativeStorage } from "@/common/storage/BrowserStorage";
 
@@ -71,11 +73,16 @@ const borderColor = theme.value.borderColor;
 const fileMenu = {state: ref(false), show: (value: boolean)=>fileMenu.state.value=value, actionHandler: actionHandler}
 
 const searchValue = ref();
-const cardDialog = {show: ref(false), id: ref("")};
+
+const cardDialogCard = reactive(new SDCardHolder(new SDCard("", "")))
+const cardDialogShow =  new RefProtector(ref(false))
+
+const settingsDialogShow =  new RefProtector(ref(false))
+
 const listDialog = {show: ref(false), id: ref("")};
 
 const title = new RefProtector(ref(""), (newTitle: string)=> {
-    title.ref.value = newTitle;
+    title.assign(newTitle);
     new BoardRenameTransaction(title.ref.value).apply(board)
 })
 
@@ -86,7 +93,10 @@ const boardFn = () => board;
 
 const simpleDataRoot = reactive(new SDRoot("root-node", "no-transaction-id", board.toSimpleData()))
 
-const showCardDialog = (card: Card) => {cardDialog.show.value = true; cardDialog.id.value = card.id;}
+const showCardDialog = (_card: Card, simpleCard: SDCard) => {
+    cardDialogShow.assign(true);
+    cardDialogCard.card = simpleCard;
+}
 const showListDialog = (list: List) => {listDialog.show.value = true; listDialog.id.value = list.id;}
 
 function createTransactionHandler(board: Board) {

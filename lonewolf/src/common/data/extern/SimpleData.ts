@@ -25,12 +25,24 @@ export class SDRoot extends SimpleData{
 
 }
 
+export class SDCardHolder extends SimpleData{
+    public card: SDCard
+
+    constructor (card: SDCard) {
+        super("", "")
+        this.card = card
+    }
+
+}
+
 export class SDBoard extends SimpleData{
     public lists = new Array<SDList>();
+    public labels = new Array<SDLabel>();
 
     public reset() {
         super.reset()
         this.lists.splice(0, this.lists.length)
+        this.labels.splice(0, this.labels.length)
     }
 
 }
@@ -46,5 +58,9 @@ export class SDList  extends SimpleData{
 }
 
 export class SDCard  extends SimpleData{
+
+}
+
+export class SDLabel  extends SimpleData{
 
 }
