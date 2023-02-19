@@ -2,6 +2,7 @@
     <div class="board">
         <draggable
             id="draggable"
+            :class="'justify-content-' + listsJustification"
             :list="lists"
             group="lists"
             animation="200"
@@ -23,8 +24,10 @@
                     @transaction="(t)=>$emit('transaction', t)"
                 />
             </template>
+            <template #footer>
+                <NewList v-if="showNewList" @newList="newList" />
+            </template>
         </draggable>
-        <NewList @newList="newList" />
     </div>
 </template>
 <script setup lang="ts">
@@ -48,7 +51,12 @@ const $props = defineProps<{
 }>();
 
 const $emit = defineEmits(["transaction", "card-edit", "list-edit"]);
+
 const lists = computed(()=>{$props.simpleBoard; $props.simpleBoard.version; return $props.simpleBoard.lists})
+
+const showNewList = computed(()=>{$props.simpleBoard.settings.version; return $props.board().settings.boardShowNewList})
+
+const listsJustification = computed(()=>{$props.simpleBoard.settings.version; return $props.board().settings.boardListsJustification})
 
 function newList(title: string) {
     $emit("transaction", new NewListTransaction(title))
@@ -68,7 +76,6 @@ function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number
 
 <style >
 .board {
-  display: inline-block;
   white-space: nowrap;
 }
 
@@ -86,6 +93,26 @@ function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number
 .drag-list {
   rotate: -3deg;
 }
+
+#draggable{ /* if drafable is empty it still is focusable via tab, so hide it if it is empty*/
+    min-width: 100%;
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.justify-content-center {
+    justify-content: center;
+}
+
+.justify-content-space-evenly {
+    justify-content: space-evenly;
+}
+
+.justify-content-left {
+    justify-content: left;
+}
+
 
 #draggable:empty { /* if drafable is empty it still is focusable via tab, so hide it if it is empty*/
     display: none;

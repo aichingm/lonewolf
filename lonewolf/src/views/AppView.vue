@@ -32,7 +32,7 @@
             </n-space>
         </div>
         <div class="app-config-wrapper">
-            <div class="wrapper">
+            <div class="wrapper" >
                 <BoardVue
                     :simpleBoard="simpleDataRoot.board"
                     :board="boardFn"
@@ -44,7 +44,7 @@
             </div>
             <CardDialog  v-if="cardDialogCard.card.id != ''" :cardHolder="cardDialogCard" :board="boardFn" :labels="simpleDataRoot.board.labels" v-model:show="cardDialogShow.ref" @transaction="(t)=>createTransactionHandler(boardFn())(t)" />
             <ListDialog :id="listDialog.id" :board="boardFn" v-model:show="listDialog.show" @transaction="(t)=>createTransactionHandler(boardFn())(t)" />
-            <SettingsDialog :board="boardFn" v-model:show="settingsDialogShow.ref" :labels="simpleDataRoot.board.labels" @transaction="(t)=>createTransactionHandler(boardFn())(t)" />
+            <SettingsDialog :board="boardFn" v-model:show="settingsDialogShow.ref" :labels="simpleDataRoot.board.labels" :settings="simpleDataRoot.board.settings" @transaction="(t)=>createTransactionHandler(boardFn())(t)" />
         </div>
     </div>
 </template>
@@ -190,10 +190,11 @@ function newBoard(){
 }
 
 .board{
-  margin-top: 10px;
-  margin-left: 10px;
-  margin-right: 10px;
-  height: calc(100% - 10px);
+    display: flex;
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    height: calc(100% - 10px);
 }
 
 </style>

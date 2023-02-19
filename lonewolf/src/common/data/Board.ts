@@ -3,6 +3,7 @@ import { v1 as uuid } from "uuid";
 import NamedIdentifiable from "@/common/NamedIdentifiable";
 import IndexedMap from "@/common/IndexedMap";
 import List from "@/common/data/List";
+import Settings from "@/common/data/Settings";
 import type { SerializableList } from "@/common/data/List";
 import type { SerializableLabel } from "@/common/data/Label";
 import Card from "@/common/data/Card";
@@ -11,15 +12,12 @@ import type { SerializableCard } from "@/common/data/Card";
 import type Transaction from "@/common/data/Transaction";
 import { SDBoard } from "./extern/SimpleData";
 
-
-
 export default class Board extends NamedIdentifiable {
-
-    private _settings: object = {};
 
     private _lists = new IndexedMap<List>();
     private _cards = new Map<string, Card>();
     private _labels = new Map<string, Label>();
+    private _settings = new Settings();
 
     public createdAt = 0
 
@@ -48,6 +46,10 @@ export default class Board extends NamedIdentifiable {
 
     public get labels(): Map<string, Label> {
         return this._labels
+    }
+
+    public get settings(): Settings {
+        return this._settings
     }
 
     public findCard(id: string): Card | null {
@@ -82,6 +84,7 @@ export default class Board extends NamedIdentifiable {
         b.lists = this.lists.items.map( (l: List) => {return l.toSerializable();});
         b.labels = Array.from(this.labels.values()).map( (l: Label) => {return l.toSerializable();});
         b.cards = Array.from(this.cards.values()).map( (c: Card) => {return c.toSerializable();});
+        b.settings = this.settings
         return b
     }
 
@@ -90,7 +93,12 @@ export default class Board extends NamedIdentifiable {
         b.id = s.id
         b.name = s.name
         b.createdAt = s.createdAt
-        b._settings = {};
+
+        if (s.settings != undefined) {
+            Object.assign(b._settings, s.settings)
+        }
+
+        s.settings // FIXME old version had no settings... DELETE this check on product release
 
         s.lists.forEach(l => b.lists.put(List.fromSerializable(b, l)))
 
@@ -111,6 +119,7 @@ export class SerializableBoard {
     public lists: SerializableList[] = new Array<SerializableList>();
     public labels: SerializableLabel[] = new Array<SerializableLabel>();
     public cards: SerializableCard[] = new Array<SerializableCard>();
+    public settings: Settings = new Settings()
     public id = "";
     public name = "";
     public createdAt = 0;

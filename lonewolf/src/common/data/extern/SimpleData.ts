@@ -38,11 +38,13 @@ export class SDCardHolder extends SimpleData{
 export class SDBoard extends SimpleData{
     public lists = new Array<SDList>();
     public labels = new Array<SDLabel>();
+    public settings = new SimpleData("settings", uuid());
 
     public reset() {
         super.reset()
         this.lists.splice(0, this.lists.length)
         this.labels.splice(0, this.labels.length)
+        this.settings.version = uuid()
     }
 
 }

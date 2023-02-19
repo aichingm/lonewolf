@@ -38,6 +38,7 @@
                     </n-layout-sider>
                     <n-layout class="settings-content-pane">
                         <LabelsManager v-if="menuModel == 'labels'" :board="$props.board" :labels="$props.labels" @transaction="(t)=>$emit('transaction', t)"/>
+                        <BoardManager v-if="menuModel == 'board'" :board="$props.board" @transaction="(t)=>$emit('transaction', t)"/>
                     </n-layout>
                 </n-layout>
             </n-space>
@@ -50,7 +51,8 @@ import { ref, watch, h } from "vue";
 import type { Ref } from "vue";
 import type Board from "@/common/data/Board";
 import LabelsManager from "@/components/settings/LabelsManager.vue";
-import type { SDLabel } from "@/common/data/extern/SimpleData";
+import BoardManager from "@/components/settings/BoardManager.vue";
+import type { SDLabel, SimpleData } from "@/common/data/extern/SimpleData";
 
 
 import { Icon } from "@iconify/vue";
@@ -61,6 +63,7 @@ const $props = defineProps<{
     board: () => Board;
     show: Ref<boolean>;
     labels: SDLabel[];
+    settings: SimpleData;
 
 }>();
 
@@ -69,6 +72,11 @@ function renderIcon (iconName: string) {
 }
 
 const menuOptions: MenuOption[] = [
+    {
+        label: 'Board',
+        key: 'board',
+        icon: renderIcon("fluent:grid-kanban-20-filled")
+    },
     {
         label: 'Labels',
         key: 'labels',
@@ -86,7 +94,7 @@ watch(showModel, ()=>{
 
 const collapsedModel = ref(false)
 
-const menuModel = ref("labels")
+const menuModel = ref(menuOptions[0].key)
 
 </script>
 

@@ -212,9 +212,8 @@ const inputHasFocus = ref(false)
 .list-lane {
   display: inline-block;
   vertical-align: top;
-  margin-right: 10px;
   width: 270px;
-  vertical-align: top;
+  min-width: 270px;
   height: 100%;
 }
 

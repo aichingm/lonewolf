@@ -52,20 +52,22 @@ function newButtonClicked() {
 
 <style scoped>
 .list {
-  width: 270px;
-  background-color: #e9e9ed;
-  padding: 10px;
-  display: inline-block;
-  border-radius: 4px;
-  vertical-align: top;
+    width: 270px;
+    min-width: 270px;
+    background-color: #e9e9ed;
+    padding: 10px;
+    display: inline-block;
+    border-radius: 4px;
+    display: inline-block;
+    height: 70px;
 }
 
 .list-name {
-  font-size: 1.5em;
+    font-size: 1.5em;
 }
 
 .cards {
-  max-height: 430px;
-  overflow-y: scroll;
+    max-height: 430px;
+    overflow-y: scroll;
 }
 </style>

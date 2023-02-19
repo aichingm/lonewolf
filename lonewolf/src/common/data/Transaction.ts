@@ -2,6 +2,7 @@ import { v4 as uuid } from "uuid";
 import List from "./List";
 import Card from "./Card";
 import Label from "./Label";
+import type Settings from "./Settings";
 import { SDBoard, SDList, SDCard } from "./extern/SimpleData";
 import type Board from "./Board";
 
@@ -644,3 +645,35 @@ export class LabelVisibilityChangeTransaction extends IdentifiableTransaction im
     }
 
 }
+
+type SettingsField = keyof typeof Settings;
+
+export class SettingsTransaction<T> extends IdentifiableTransaction implements Transaction {
+    private _field: string;
+    private _value: T;
+
+
+    constructor (field: string, value: T) {
+        super()
+        this._field = field
+        this._value = value
+    }
+
+    public apply(board: Board): boolean{
+        console.log("SettingsTransaction", this._field, this._value)
+        const field = this._field as SettingsField;
+        if (board.settings[field] == undefined) {
+            throw new Error("Settings[" + this._field + "] not found")
+        }
+
+        board.settings[field] = this._value
+        return true
+    }
+
+    public mutate(t: SDBoard, _board: Board): boolean {
+        t.settings.version = this.id
+        return true
+    }
+
+}
+
