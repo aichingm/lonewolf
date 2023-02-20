@@ -1,6 +1,6 @@
 <template>
-    <div class="row">
-        <n-icon :color="$props.color" :size="$props.size" :style="style">
+    <div class="iconed-box">
+        <n-icon :color="$props.color" :size="$props.iconSize" :style="style">
             <icon :icon="$props.icon" />
         </n-icon>
         <slot class="slot"></slot>
@@ -13,42 +13,33 @@ import { computed } from 'vue'
 const $props = withDefaults(defineProps<{
     icon?: string;
     color?: string;
-    size?: number;
-    paddingTop?: number;
-    paddingLeft?: number;
-    paddingRight?: number;
-    paddingBottom?: number;
-    width?: string;
+    iconSize?: number;
+    contentOffsetX?: number;
+    iconOffsetY?: number;
 }>(),{
     icon: "fluent:rename-20-filled",
     color: "gray",
-    size: 24,
-    paddingTop : 0,
-    paddingLeft : 0,
-    paddingRight : 0,
-    paddingBottom : 0,
-    width : "40px",
+    iconSize: 24,
+    contentOffsetX: 0,
+    iconOffsetY: 0,
 });
 
 const style = computed(()=> ({
-    paddingLeft: $props.paddingLeft + 'px',
-    paddingTop: $props.paddingTop + 'px',
-    paddingRight: $props.paddingRight + 'px',
-    paddingBottom: $props.paddingBottom + 'px',
-    width: $props.width
+    "paddingRight": $props.contentOffsetX + "px",
+    "paddingTop": $props.iconOffsetY + "px",
+
 }))
 
 </script>
 
 <style scoped>
 
-.row {
-    display: inline-flex;
-    width:100%;
+.iconed-box {
+    display: flex;
+    flex-grow: 1;
 }
 
 .slot {
-    width: inherit;
 }
 
 </style>

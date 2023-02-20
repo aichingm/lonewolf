@@ -4,22 +4,25 @@
     >
         <n-card
             class="card"
-            title="Modal"
             :bordered="false"
             size="huge"
             role="dialog"
             aria-modal="true"
+            content-style="padding-left: 32px; padding-right: 32px;"
         >
-            <template #header>
-                <InitialFocus />
-                <TitleInput :title="titleModel" @update:title="emitTitle"/>
-            </template>
-            <template #header-extra>
-            </template>
-            Card edit Content
-            <template #footer>
-                Footer
-            </template>
+            <InitialFocus />
+            <n-scrollbar class="scrollbar scroll-shadow-fixer-outer" >
+                <div class="scroll-shadow-fixer-inner">
+                    <n-space vertical>
+                        <IconedBox icon="fluent:rename-20-filled" :contentOffsetX="12" :iconOffsetY="8">
+                            <TextInput fontSize="20px" v-model:value="titleModel" @update:value="emitTitle" placeholder="Title" commitOnBlur commitOnEnter selectOnEdit/>
+                        </IconedBox>
+                        <IconedBox icon="fluent:book-question-mark-20-filled" :contentOffsetX="24" :iconOffsetY="8">
+                            <n-space class="flex-grow" justify="space-between" align="center">Cards are Closed <n-switch :round="false" v-model:value="cardsClosed" /></n-space>
+                        </IconedBox>
+                    </n-space>
+                </div>
+            </n-scrollbar>
         </n-card>
     </n-modal>
 </template>
@@ -28,8 +31,9 @@
 import { ref, watch } from "vue";
 import type { Ref } from "vue";
 import InitialFocus from "@/components/InitialFocus.vue";
-import TitleInput from "@/components/TitleInput.vue";
-import { ListRenameTransaction } from "@/common/data/Transaction";
+import TextInput from "@/components/inputs/TextInput.vue";
+import IconedBox from "@/components/IconedBox.vue";
+import { ListRenameTransaction, ListChangeCardsAreClosedTransaction } from "@/common/data/Transaction";
 import type List from "@/common/data/List";
 import type Board from "@/common/data/Board";
 
@@ -45,6 +49,7 @@ const $emit = defineEmits(["transaction", "update:show"]);
 const emitTitle = (title: string) => $emit("transaction", new ListRenameTransaction($props.id.value, title))
 
 const titleModel = ref("")
+const cardsClosed = ref(false)
 const showModel = ref(false)
 
 const reloadList = () => {
@@ -54,8 +59,12 @@ const reloadList = () => {
 
 const setRefs = (list: List) => {
     titleModel.value = list.name
+    cardsClosed.value = list.cardsAreClosed
 }
 
+watch(cardsClosed, ()=>{
+    $emit("transaction", new ListChangeCardsAreClosedTransaction($props.id.value, cardsClosed.value))
+})
 
 watch($props.id, ()=>reloadList())
 watch($props.show, () => showModel.value = $props.show.value)
@@ -69,7 +78,24 @@ watch(showModel, ()=>{
 
 <style scoped>
 .card {
-    width: 600px;
+    width: 900px;
 }
 
+:deep() .card .n-card__content {
+    padding-left: 32px;
+    padding-right: 32px;
+}
+
+:deep() .scrollbar{
+    height: calc(100vh - 222px) !important;
+}
+
+.scroll-shadow-fixer-inner {
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.flex-grow {
+    flex-grow: 1;
+}
 </style>

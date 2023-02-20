@@ -8,7 +8,7 @@
                         <div class="color-picker-circle" :style="labelStyle(l.color)"></div>
                     </template>
                 </ColorPicker>
-                <TextInput v-model:value="l.name" @update:value="(name)=>onLabelNameChangeHandler(l, name)" placeholder="Label Name" saveable resetable commitOnBlur commitOnEnter/>
+                <TextInput v-model:value="l.name" @update:value="(name)=>onLabelNameChangeHandler(l, name)" placeholder="Label Name" saveable resetable commitOnBlur commitOnEnter selectOnEdit/>
             </n-space>
             <n-space justify="end" class="actions" align="center">
                 <n-switch v-model:value="shownSwitches[index].value" @update:value="(v: boolean)=>handleVisibilityChange(v, l, index)">

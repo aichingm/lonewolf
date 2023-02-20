@@ -7,29 +7,23 @@
             role="dialog"
             aria-modal="true"
             tabindex="0"
+            content-style="padding-left: 32px; padding-right: 32px;"
         >
-            <template #header>
-                <InitialFocus />
-                <div class="card-reset">
-                    <IconedBox icon="fluent:rename-20-filled">
-                        <TitleInput :title="titleModel" @update:title="emitTitle" />
-                    </IconedBox>
-                </div>
-            </template>
-            <template #header-extra>
-            </template>
+            <InitialFocus />
             <n-scrollbar class="scrollbar scroll-shadow-fixer-outer" >
                 <div class="scroll-shadow-fixer-inner">
-                    <IconedBox icon="fluent:tag-20-filled" class="IconedBox">
-                        <div class="iconed-box-content-wrapper">
+                    <n-space vertical>
+                        <IconedBox icon="fluent:rename-20-filled" :contentOffsetX="12" :iconOffsetY="8">
+                            <TextInput fontSize="20px" v-model:value="titleModel" @update:value="emitTitle" placeholder="Title" commitOnBlur commitOnEnter selectOnEdit/>
+                        </IconedBox>
+                        <IconedBox icon="fluent:tag-20-filled" :contentOffsetX="24">
                             <LabelSelector :labels="$props.labels" :activeLabels="activeLabels" :board="$props.board" @add="addLabel" @remove="removeLabel"/>
-                        </div>
-                    </IconedBox>
-                    <IconedBox icon="fluent:code-text-20-filled" class="IconedBox">
-                        <div class="iconed-box-content-wrapper">
+                        </IconedBox>
+                        <IconedBox icon="fluent:code-text-20-filled" :contentOffsetX="24">
                             <Editor v-model:content="descriptionModel" v-model:editMode="editMode.ref" />
-                        </div>
-                    </IconedBox>
+                        </IconedBox>
+                        <div>&nbsp;<!-- this is needed to allow the editor to blur, remove when adding a new iconed box below the editor--></div>
+                    </n-space>
                 </div>
             </n-scrollbar>
         </n-card>
@@ -43,7 +37,7 @@ import { ref, watch, computed } from "vue";
 import type { Ref } from "vue";
 import InitialFocus from "@/components/InitialFocus.vue";
 import IconedBox from "@/components/IconedBox.vue";
-import TitleInput from "@/components/TitleInput.vue";
+import TextInput from "@/components/inputs/TextInput.vue";
 import { CardRenameTransaction, CardDescriptionTransaction, CardAddLabelTransaction, CardRemoveLabelTransaction } from "@/common/data/Transaction";
 import { RefProtector } from "@/utils/vue";
 import type Card from "@/common/data/Card";
@@ -108,44 +102,23 @@ function removeLabel(labelId: string) {
 
 </script>
 <style scoped>
-.component-root {
-    height: calc(100% - 60px);
-    width: 900px;
-    position: fixed;
-    top: 30px;
-    left: calc(50% - 450px);
-}
-
 .card {
     width: 900px;
 }
 
-.card-reset{
-    margin-left: -40px;
-    width: calc(100% + 40px);
+:deep() .card .n-card__content {
+    padding-left: 32px;
+    padding-right: 32px;
 }
 
 :deep() .scrollbar{
-    max-height: calc(100vh - 222px) !important;
-}
-
-:deep() .scroll-shadow-fixer-outer {
-    margin-left: -40px;
-    width: calc(100% + 40px + 2px);
+    height: calc(100vh - 222px) !important;
 }
 
 .scroll-shadow-fixer-inner {
-    width: calc(100% - 2px);
     padding-top: 2px;
     padding-bottom: 2px;
 }
 
-.IconedBox {
-    margin-bottom: 28px;
-}
-.iconed-box-content-wrapper {
-    border-top: 1px solid #e4e4e4;
-    width:100%;
-    padding-top: 28px;
-}
+
 </style>

@@ -24,13 +24,13 @@
                 </template>
                 18
             </n-tag>
-            <n-tag size="small" type="success" :bordered="false">
+            <n-tag v-if="tasks[1] > 0" size="small" type="success" :bordered="false">
                 <template #icon>
                     <n-icon size="20" color="#18a058">
-                        <icon icon="fluent:checkbox-checked-24-regular" />
+                        <icon :icon="tasks[0]==0?'fluent:checkbox-unchecked-20-regular':tasks[0] == tasks[1]?'fluent:checkbox-checked-20-regular':'fluent:checkbox-indeterminate-20-regular'" />
                     </n-icon>
                 </template>
-                3/18
+                {{ tasks[0] + "/" + tasks[1]}}
             </n-tag>
         </div>
     </div>
@@ -53,6 +53,9 @@ import { CardSortTransaction, CardMoveTransaction, } from "@/common/data/Transac
 
 import ActionDropdownOption from "@/common/ActionDropdownOption";
 import { assignArray } from "@/utils/vue";
+import { taskStats } from "@/utils/markdown";
+
+
 
 const $props = defineProps<{
     card: SDCard;
@@ -71,6 +74,7 @@ const cards = computed(()=>$props.cards.map((t: SDCard) : Card|null => $props.bo
 const activeLabels = ref([...card.value.labels.filter(l=>l.visibility)])
 watch([$props.labels, $props.card], ()=> assignArray(activeLabels, card.value.labels.filter(l=>l.visibility)))
 
+const tasks = computed(()=>taskStats(card.value.description))
 /*
 $props.card.version: why?
 lists.value, cards.value: for actions wich have the name of other lists or cards included (move, moveTo)

@@ -3,7 +3,7 @@
         <div class="list-header list-part list-dragger" @click="$emit('list-edit', list)">
             <div class="list-name">{{ list.name }}</div>
             <n-space :size="34" item-style="display: flex;">
-                <n-badge :value="cards.length" show-zero :offset="[20, 11]" color="#d0d0d0">
+                <n-badge class="badge-reset" :value="cards.length" show-zero :offset="[20, 11]" color="#d0d0d0">
                     <div>
                     </div>
                 </n-badge>
@@ -215,6 +215,11 @@ const inputHasFocus = ref(false)
 </script>
 
 <style scoped>
+
+:deep() .badge-reset .n-badge-sup {
+    pointer-events: none;
+}
+
 .list-lane {
   display: inline-block;
   vertical-align: top;

@@ -10,7 +10,7 @@
                         </n-icon>
                     </template>
                 </n-button>
-                <BiDirTitleInput :title="title.ref" @update:title="title.update"/>
+                <TextInput fontSize="20px" :value="title.ref" @update:value="title.update" placeholder="Title" autosize commitOnBlur commitOnEnter selectOnEdit/>
             </n-space>
             <n-space class="app-header-nav-space" justify="center">
                 <n-input v-model:value="searchValue" type="text" placeholder="Search" clearable>
@@ -22,6 +22,19 @@
                 </n-input>
             </n-space>
             <n-space class="app-header-nav-space" justify="right">
+                <n-tooltip trigger="hover">
+                    <template #trigger>
+                        <n-badge class="badge-reset" :value="cardsStat[0]" color="#d0d0d0" :max="99">
+                        </n-badge>
+                    </template>
+                    {{ cardsStat[0] }} cards of {{ cardsStat[0] + cardsStat[1] }} are open, {{ cardsStat[1] }} are closed
+                </n-tooltip>
+                <n-tooltip v-if="cardsStat[0]==0" trigger="hover">
+                    <template #trigger>
+                        {{ emo("tada") }}
+                    </template>
+                    All done, take a break!
+                </n-tooltip>
                 <n-button quaternary circle style="margin-right: 8px" @click="settingsDialogShow.assign(true)">
                     <template #icon>
                         <n-icon size="18" color="gray">
@@ -49,10 +62,11 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { ref, reactive, watch } from "vue";
+import type { Ref } from "vue";
 import { useThemeVars } from 'naive-ui'
 import BoardVue from "@/components/Board.vue";
-import BiDirTitleInput from "@/components/BiDirTitleInput.vue";
+import TextInput from "@/components/inputs/TextInput.vue";
 import CardDialog from "@/components/CardDialog.vue";
 import ListDialog from "@/components/ListDialog.vue";
 import SettingsDialog from "@/components/SettingsDialog.vue";
@@ -67,12 +81,17 @@ import { SDRoot, SDCardHolder, SDCard } from "@/common/data/extern/SimpleData";
 import  { NewBoardTransaction, BoardRenameTransaction } from "@/common/data/Transaction";
 import  { BrowserNativeStorage } from "@/common/storage/BrowserStorage";
 
+import toEmoji from "emoji-name-map";
+
+const emo = (name: string): string => toEmoji.get(name)
+
 const theme  = useThemeVars();
 const borderColor = theme.value.borderColor;
 
 const fileMenu = {state: ref(false), show: (value: boolean)=>fileMenu.state.value=value, actionHandler: actionHandler}
 
 const searchValue = ref();
+const cardsStat = ref([0,0])
 
 const cardDialogCard = reactive(new SDCardHolder(new SDCard("", "")))
 const cardDialogShow =  new RefProtector(ref(false))
@@ -83,15 +102,26 @@ const listDialog = {show: ref(false), id: ref("")};
 
 const title = new RefProtector(ref(""), (newTitle: string)=> {
     title.assign(newTitle);
-    new BoardRenameTransaction(title.ref.value).apply(board)
+    new BoardRenameTransaction(title.ref.value).apply(board.value)
 })
 
 
-let board = MostRecent.exists() ? MostRecent.load() as Board : newBoard(); // as Board because typescript is stupid and can't see that .exist checks if it is null...
+const board = ref(MostRecent.exists() ? MostRecent.load() as Board : newBoard()) as Ref<Board>; // as Board because typescript is stupid and can't see that .exist checks if it is null...
 
-const boardFn = () => board;
+title.assign(board.value.name)
+cardsStat.value = board.value.cardOpenClosedStatistic()
 
-const simpleDataRoot = reactive(new SDRoot("root-node", "no-transaction-id", board.toSimpleData()))
+watch(board, ()=>{
+    title.assign(board.value.name)
+    cardsStat.value = board.value.cardOpenClosedStatistic()
+})
+
+const boardFn = (): Board => board.value;
+
+const simpleDataRoot = reactive(new SDRoot("root-node", "no-transaction-id", board.value.toSimpleData()))
+
+// we need simpleDataRoot here in case a new board gets loaded
+watch([simpleDataRoot, simpleDataRoot.board.lists], ()=>{cardsStat.value = board.value.cardOpenClosedStatistic()})
 
 const showCardDialog = (_card: Card, simpleCard: SDCard) => {
     cardDialogShow.assign(true);
@@ -109,7 +139,7 @@ function createTransactionHandler(board: Board) {
     }
 }
 
-const storage= new BrowserNativeStorage();
+const storage = new BrowserNativeStorage();
 
 function actionHandler(action: string) {
 
@@ -120,16 +150,16 @@ function actionHandler(action: string) {
 
         simpleDataRoot.reset()
 
-        board = newBoard()
+        board.value = newBoard()
 
-        simpleDataRoot.board = board.toSimpleData()
+        simpleDataRoot.board = board.value.toSimpleData()
         break;
 
     case 'save':
         //https://github.com/ankitrohatgi/tarballjs
         //https://github.com/Stuk/jszip
         //local storage
-        storage.save(board)
+        storage.save(board.value)
         break;
     case 'open':
         if (storage.isListable()) {
@@ -138,8 +168,7 @@ function actionHandler(action: string) {
             storage.load("").then((b: Board)=>{
                 simpleDataRoot.reset()
                 simpleDataRoot.board = b.toSimpleData()
-                board = b
-                title.ref.value = board.name
+                board.value = b
             })
         }
         break;
@@ -151,13 +180,14 @@ function actionHandler(action: string) {
 }
 
 
-function newBoard(){
+function newBoard () {
     const board = new Board()
     board.name = "Untitled Board"
-    title.ref.value = board.name
     new NewBoardTransaction().apply(board)
     return board
 }
+
+
 
 </script>
 <style scoped>
@@ -195,6 +225,10 @@ function newBoard(){
     margin-left: 10px;
     margin-right: 10px;
     height: calc(100% - 10px);
+}
+
+:deep() .badge-reset .n-badge-sup {
+    pointer-events: none;
 }
 
 </style>

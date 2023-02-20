@@ -339,25 +339,14 @@ export class CardRenameTransaction extends IdentifiableTransaction implements Tr
 
 }
 
-export class ListRenameTransaction extends IdentifiableTransaction implements Transaction {
-    private _listId: string;
-    private _title: string;
 
-    constructor (listId: string, title: string) {
+export class ListChangeTransaction extends IdentifiableTransaction {
+
+    protected _listId: string;
+
+    constructor (listId: string) {
         super()
         this._listId = listId
-        this._title = title
-
-    }
-
-    public apply(board: Board): boolean{
-        console.log("ListRenameTransaction", this._listId, this._title)
-        const list = board.findList(this._listId)
-        if (list == null) {
-            throw new Error("List[" + this._listId + "] not found")
-        }
-        list.name = this._title
-        return true
     }
 
     public mutate(t: SDBoard, board: Board): boolean {
@@ -370,9 +359,47 @@ export class ListRenameTransaction extends IdentifiableTransaction implements Tr
         t.version = this.id
         return true
     }
+}
+
+export class ListRenameTransaction extends ListChangeTransaction implements Transaction {
+    private _title: string;
+
+    constructor (listId: string, title: string) {
+        super(listId)
+        this._title = title
+    }
+
+    public apply(board: Board): boolean{
+        console.log("ListRenameTransaction", this._listId, this._title)
+        const list = board.findList(this._listId)
+        if (list == null) {
+            throw new Error("List[" + this._listId + "] not found")
+        }
+        list.name = this._title
+        return true
+    }
 
 }
 
+export class ListChangeCardsAreClosedTransaction extends ListChangeTransaction implements Transaction {
+    private _value: boolean;
+
+    constructor (listId: string, value: boolean) {
+        super(listId)
+        this._value = value
+
+    }
+
+    public apply(board: Board): boolean{
+        console.log("ListChangeCardsAreClosedTransaction", this._listId, this._value)
+        const list = board.findList(this._listId)
+        if (list == null) {
+            throw new Error("List[" + this._listId + "] not found")
+        }
+        list.cardsAreClosed = this._value
+        return true
+    }
+}
 
 export class CardDescriptionTransaction extends IdentifiableTransaction implements Transaction {
     private _cardId: string;

@@ -10,6 +10,7 @@ import { SDList } from "./extern/SimpleData";
 
 export default class List extends Indexable {
     private _cards = new IndexedMap<Card>();
+    private _cardsAreClosed = false
 
     private _board: Board;
 
@@ -24,6 +25,14 @@ export default class List extends Indexable {
 
     public get cards(): IndexedMap<Card> {
         return this._cards;
+    }
+
+    public get cardsAreClosed(): boolean {
+        return this._cardsAreClosed;
+    }
+
+    public set cardsAreClosed(status: boolean) {
+        this._cardsAreClosed = status;
     }
 
     public addCard(c: Card): void {
@@ -49,12 +58,14 @@ export default class List extends Indexable {
         l.id = this.id
         l.name = this.name
         l.position = this.position
+        l.cardsAreClosed = this.cardsAreClosed
         return l;
     }
 
     public static fromSerializable(board: Board, s: SerializableList) {
         const l = new List(board, s.id, s.name)
         l.position = s.position
+        l.cardsAreClosed = s.cardsAreClosed || false
         return l;
     }
 
@@ -70,4 +81,5 @@ export class SerializableList {
     public id = "";
     public name = "";
     public position = -1;
+    public cardsAreClosed = false;
 }

@@ -65,6 +65,13 @@ export default class Board extends NamedIdentifiable {
         return l == undefined ? null : l;
     }
 
+    public cardOpenClosedStatistic(): number[] {
+        return [
+            this.lists.items.filter(l=>!l.cardsAreClosed).reduce((a,list)=>a+list.cards.items.length, 0),
+            this.lists.items.filter(l=>l.cardsAreClosed).reduce((a,list)=>a+list.cards.items.length, 0)
+        ]
+    }
+
     public get transactions(): Transaction[] {
         return this._transactions;
     }

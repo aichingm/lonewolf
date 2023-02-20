@@ -9,6 +9,8 @@
             size="huge"
             role="dialog"
             aria-modal="true"
+            content-style="padding-left: 32px; padding-right: 32px;"
+            header-style="padding-left: 32px; padding-right: 32px;"
 
         >
             <template #header>
@@ -104,7 +106,7 @@ const menuModel = ref(menuOptions[0].key)
 }
 
 .reset-left-card-margin {
-    margin-left: -40px;
+    margin-left: -32px;
 }
 
 .settings-content-pane {

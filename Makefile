@@ -1,5 +1,5 @@
 
-.PHONY: default build check container container-force dev lint npm-install shell type-check
+.PHONY: default build check container container-force dev lint npm-install shell shell-light type-check
 
 default: dev
 
@@ -25,6 +25,9 @@ npm-install:
 
 shell:
 	podman run --rm -it -p 5173:5173 -v .:/app lonewolf:build bash -c 'cd /app; bash'
+
+shell-light:
+	podman run --rm -it -v .:/app lonewolf:build bash -c 'cd /app; bash'
 
 type-check:
 	podman run --rm -t -v .:/app lonewolf:build bash -c 'cd /app/lonewolf/; npm run type-check'

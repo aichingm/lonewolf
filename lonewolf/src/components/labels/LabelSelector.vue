@@ -1,8 +1,6 @@
 <template>
     <n-space>
-        <n-space>
-            <n-tag   v-for="l in $props.activeLabels" :key="l.id" :theme-overrides="themeOverwrite(l.color)" :color="tagColor(l.color)" closable @close="removeLabel(l)">{{ l.name }}</n-tag>
-        </n-space>
+        <n-tag   v-for="l in $props.activeLabels" :key="l.id" :theme-overrides="themeOverwrite(l.color)" :color="tagColor(l.color)" closable @close="removeLabel(l)">{{ l.name }}</n-tag>
         <n-popover ref="labelPopUp" trigger="click" placement="bottom" show-arrow v-model:show="showAddBoxModel">
             <template #trigger>
                 <n-button dashed class="tag-sized-button">+</n-button>

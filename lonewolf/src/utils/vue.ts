@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { toRaw } from 'vue'
+import { toRaw, isRef } from 'vue'
 
 export class RefProtector<T>{
 
@@ -43,4 +43,11 @@ export function assignArray<T>(target: Ref<T[]>, values: T[]) {
     }
     target.value.splice(0, target.value.length)
     values.forEach(v => target.value.push(v))
+}
+
+export function typeName(o: unknown): string {
+    if (isRef(o)) {
+        return "Ref<" + (typeof o.value) + ">"
+    }
+    return typeof o
 }
