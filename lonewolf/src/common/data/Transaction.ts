@@ -6,7 +6,7 @@ import type Settings from "./Settings";
 import { SDBoard, SDList, SDCard } from "./extern/SimpleData";
 import type Board from "./Board";
 
-export default interface Transaction {
+export interface Transaction {
     id: string
     apply(b: Board): boolean
     // NOTICE keep this limitations in mind https://v2.vuejs.org/v2/guide/reactivity.html#For-Arrays

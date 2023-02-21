@@ -19,6 +19,9 @@
                         <IconedBox icon="fluent:tag-20-filled" :contentOffsetX="24">
                             <LabelSelector :labels="$props.labels" :activeLabels="activeLabels" :board="$props.board" @add="addLabel" @remove="removeLabel"/>
                         </IconedBox>
+                        <IconedBox icon="fluent:timer-20-regular" :contentOffsetX="24">
+                            <n-date-picker v-model:value="timestampModel" type="datetime" placeholder="Due Date" clearable size="small" />
+                        </IconedBox>
                         <IconedBox icon="fluent:code-text-20-filled" :contentOffsetX="24">
                             <Editor v-model:content="descriptionModel" v-model:editMode="editMode.ref" />
                         </IconedBox>
@@ -39,11 +42,15 @@ import InitialFocus from "@/components/InitialFocus.vue";
 import IconedBox from "@/components/IconedBox.vue";
 import TextInput from "@/components/inputs/TextInput.vue";
 import { CardRenameTransaction, CardDescriptionTransaction, CardAddLabelTransaction, CardRemoveLabelTransaction } from "@/common/data/Transaction";
+import { DueDateTransaction } from "@/common/data/transactions/CardTransactions";
 import { RefProtector } from "@/utils/vue";
 import type Card from "@/common/data/Card";
 import type Board from "@/common/data/Board";
 import type { SDCardHolder, SDLabel } from "@/common/data/extern/SimpleData";
 
+import dayjs from 'dayjs'
+import timezone from 'dayjs/plugin/timezone'
+dayjs.extend(timezone)
 
 const $props = defineProps<{
     cardHolder: SDCardHolder;
@@ -68,29 +75,47 @@ const activeLabels = computed(() => {
 })
 
 const titleModel = ref(card.value!=null?card.value.name:"")
+
 let descriptionOriginal = card.value!=null?card.value.description:""
 const descriptionModel = ref(card.value!=null?card.value.description:"")
 
-const setRefs = (card: Card)=>{
-    titleModel.value = card.name
-    descriptionOriginal = card.description
-    descriptionModel.value = card.description
-}
-
-watch(descriptionModel, ()=>{
+watch(descriptionModel, () => {
     if (descriptionModel.value != descriptionOriginal) {
         $emit("transaction", new CardDescriptionTransaction($props.cardHolder.card.id, descriptionModel.value))
     }
 })
+
+function timestampOrNull(timestamp: number | null): number | null {
+    if(timestamp == null || card.value == null){
+        return null
+    }
+    return card.value.dueDate
+}
+
+let timestampOriginal = card.value != null ? timestampOrNull(card.value.dueDate): null
+const timestampModel = ref(card.value != null ? timestampOrNull(card.value.dueDate): null)
+
+watch(timestampModel, ()=> {
+    if (timestampModel.value != timestampOriginal) {
+        $emit("transaction", new DueDateTransaction($props.cardHolder.card.id, timestampModel.value))
+    }
+})
+
+const setRefs = (card: Card) => {
+    titleModel.value = card.name
+    descriptionOriginal = card.description
+    descriptionModel.value = card.description
+    timestampOriginal = timestampOrNull(card.dueDate)
+    timestampModel.value = timestampOrNull(card.dueDate)
+}
+
+
 
 const showModel = ref(true)
 watch($props.show, ()=>{showModel.value = $props.show.value;})
 watch(showModel, ()=>$emit("update:show", showModel))
 
 const editMode = new RefProtector(ref(false));
-
-
-
 
 function addLabel(labelId: string) {
     $emit("transaction", new CardAddLabelTransaction($props.cardHolder.card.id, labelId))

@@ -9,7 +9,7 @@ import type { SerializableLabel } from "@/common/data/Label";
 import Card from "@/common/data/Card";
 import Label from "@/common/data/Label";
 import type { SerializableCard } from "@/common/data/Card";
-import type Transaction from "@/common/data/Transaction";
+import type { Transaction } from "@/common/data/Transaction";
 import { SDBoard } from "./extern/SimpleData";
 
 export default class Board extends NamedIdentifiable {

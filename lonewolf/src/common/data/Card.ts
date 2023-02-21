@@ -10,6 +10,7 @@ export default class Card extends Indexable{
     private _list: List;
     private _description = "";
     private _labels = new Array<Label>();
+    private _dueDate: number | null = null; //this is in utc ALWAYS!!!
 
 
     constructor(list: List, id: string, name: string) {
@@ -41,14 +42,23 @@ export default class Card extends Indexable{
         this._description = description
     }
 
+    public get dueDate(): number | null {
+        return this._dueDate
+    }
+
+    public set dueDate(dueDate: number | null){
+        this._dueDate = dueDate
+    }
+
     public toSerializable() {
         const c = new SerializableCard();
         c.id = this.id
         c.name = this.name
         c.position = this.position
         c.listId = this.list.id
-        c.description = this._description
         c.labels = this.labels.map((l: Label) => l.id);
+        c.description = this.description
+        c.dueDate = this.dueDate
 
         return c
     }
@@ -62,7 +72,7 @@ export default class Card extends Indexable{
         c.position = s.position
         c.list.cards.put(c)
         c.description = s.description
-        c.description = s.description
+        c.dueDate = s.dueDate
         if (s.labels) {  // FIXME old version had no labels... DELETE this check on product release
             s.labels.forEach((labelId)=> {const l = board.findLabel(labelId); if(l!=null){c.labels.push(l)}})
         }
@@ -83,4 +93,5 @@ export class SerializableCard {
     public position = -1;
     public description = "";
     public labels = new Array<string>();
+    public dueDate: number | null = null; //this is in utc ALWAYS!!!
 }

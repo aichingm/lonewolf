@@ -75,7 +75,7 @@ import Board from "@/common/data/Board";
 import type Card from "@/common/data/Card";
 import type List from "@/common/data/List";
 import MostRecent from "@/common/MostRecent";
-import type Transaction from "@/common/data/Transaction";
+import type { Transaction } from "@/common/data/Transaction";
 import { RefProtector } from "@/utils/vue";
 import { SDRoot, SDCardHolder, SDCard } from "@/common/data/extern/SimpleData";
 import  { NewBoardTransaction, BoardRenameTransaction } from "@/common/data/Transaction";
