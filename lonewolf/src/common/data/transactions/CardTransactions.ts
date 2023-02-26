@@ -2,6 +2,7 @@ import { IdentifiableTransaction } from "../Transaction";
 import type { Transaction } from "../Transaction";
 import type Board from "../Board";
 import type Card from "../Card";
+import CardComment from "../CardComment";
 import type { SDBoard } from "../extern/SimpleData";
 
 
@@ -45,6 +46,23 @@ export class DueDateTransaction extends CardChangeTransaction implements Transac
         console.log("DueDateTransaction", this._cardId, this._dueDate)
         const card = this.card(board)
         card.dueDate = this._dueDate
+        return true
+    }
+
+}
+
+export class AddCommentTransaction extends CardChangeTransaction implements Transaction {
+    private _content: string;
+
+    constructor (cardId: string, content: string) {
+        super(cardId)
+        this._content = content
+    }
+
+    public apply(board: Board): boolean{
+        console.log("AddCommentTransaction", this._cardId, this._content)
+        const card = this.card(board)
+        card.comments.push(CardComment.create(this._content))
         return true
     }
 

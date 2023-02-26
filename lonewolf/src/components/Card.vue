@@ -14,22 +14,15 @@
                         <icon icon="fluent:timer-20-regular" />
                     </n-icon>
                 </template>
-                <n-tooltip trigger="hover">
-                    <template #trigger>
-                        <!--{{ dayjs(card.dueDate).fromNow() }}-->
-                        <TimedUpdate :data="card.dueDate" :text="(data: unknown)=>dayjs(card.dueDate).fromNow()" :nextInterval="dueDateNextInterval"/>
-                    </template>
-                    {{ dayjs(card.dueDate).utc(true).tz(dayjs.tz.guess()) }}
-                </n-tooltip>
-
+                <AutoTime :data="card.dueDate || 0" /><!-- passing 0 only to make the compiler happy card.dueDate can not be null since the component is only shown if hasDueDate == true -->
             </n-tag>
-            <n-tag size="small" round :bordered="false">
+            <n-tag v-if="card.comments.length > 0" size="small" round :bordered="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:comment-48-regular" />
                     </n-icon>
                 </template>
-                9
+                {{ card.comments.filter(c=>!c.deleted).length }}
             </n-tag>
             <n-tag size="small" round :bordered="false">
                 <template #icon>
@@ -55,8 +48,8 @@
 import { computed, watch, ref } from "vue";
 import type { Ref } from "vue";
 
-import ActionDropdown from "./ActionDropdown.vue";
 import CardLabelBadge from "./CardLabelBadge.vue";
+import AutoTime from "./AutoTime.vue";
 
 import type Board from "@/common/data/Board";
 import type Card from "@/common/data/Card";
@@ -65,18 +58,10 @@ import type { SDCard, SDList, SDLabel } from "@/common/data/extern/SimpleData";
 import type List from "@/common/data/List";
 import { CardSortTransaction, CardMoveTransaction, } from "@/common/data/Transaction";
 
+import ActionDropdown from "./ActionDropdown.vue";
 import ActionDropdownOption from "@/common/ActionDropdownOption";
-import TimedUpdate from "@/components/TimedUpdate.vue";
 import { assignArray } from "@/utils/vue";
 import { taskStats } from "@/utils/markdown";
-
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
-import utc from 'dayjs/plugin/utc'
-import timezone from 'dayjs/plugin/timezone'
-dayjs.extend(relativeTime)
-dayjs.extend(utc)
-dayjs.extend(timezone)
 
 const $props = defineProps<{
     card: SDCard;
@@ -211,39 +196,14 @@ function actionMenuSelected(
     }
 }
 
-function dueDateNextInterval(data: unknown) {
-    const now = dayjs().unix() * 1000
-    const diff = (now - (data as number)) / 1000
-    let interval = 0
-
-    if (diff < -2*60*60) { // in less than 2 hours
-        interval = 60*15*1000 // 15 mins
-    } else if(diff < -60*60) { // in less than 1 hours
-        interval = 6000 // 1 min
-    } else if(diff < -2*60) { // in less than 2 mins
-        interval = 1* 1000 // 1 sec
-    } else if (diff < 60) {
-        interval = 10*1000 // 10 secs
-    } else if (diff < 3600) { // less that an hour
-        interval = 60*1000 // 1 min
-    } else if (diff < 60*60*24) { // less than a day
-        interval = 60*15*1000 // 15 mins
-    }else {
-        interval = 60*60*1000 // 1 day
-    }
-
-    //console.log(data, now, diff, interval);
-    return interval
-}
-
 function dueDateType (dueDate: number | null): string {
     if(dueDate == null || card.value.list.cardsAreClosed) {
         return "default"
     }
-    if(dueDate < (dayjs().unix()*1000)) {
+    if(dueDate < Date.now()) {
         return 'error'
     }else{
-        if(dueDate > ((dayjs().unix()+60*60*24)*1000)) {
+        if(dueDate > Date.now() + (60*60*24)*1000) {
             return 'default'
         }
         return 'warning'

@@ -3,19 +3,10 @@
         <n-el tag="div">
             <transition name="editor" :duration=".3">
                 <n-el tag="div" class="editor" v-if="editMode">
-                    <ToolbarVue v-if="viewReady && $props.showToolbar && editMode" :editor-view="view as EditorView" @previewToggleChanged="setEditMode"
-                                showCreateBold
-                                showCreateItalic
-                                showCreateCode
-                                showCreateLink
-                                showCreateImage
-                                showCreateHeadline1
-                                showCreateHeadline2
-                                showCreateList
-                                showCreateOrderedList
-                                showCreateTaskList
-                                showDone
-
+                    <ToolbarVue :id="toolbarId" v-if="viewReady && $props.showToolbar && editMode" :editor-view="view as EditorView" @previewToggleChanged="setEditMode"
+                                :toolbarConfig="$props.toolbarConfig"
+                                @save="commit(); hide();"
+                                @reset="reset()"
                     />
                     <Codemirror
                         class="cm6"
@@ -28,22 +19,24 @@
                         @ready="handleReady"
                         @change="log"
                         @focus="log"
-                        @blur="setEditMode(false)"
+                        @blur="onBlur"
                     />
                     <div class="editor-decoration editor-decoration-border"></div>
                     <div class="editor-decoration editor-decoration-shadow"></div>
                 </n-el>
             </transition >
-            <div class="preview" v-html="previewHtml" v-if="!editMode" @click="setEditMode(true)"></div>
-            <n-text depth="3" v-if="previewHtml=='' && !editMode" @click="setEditMode(true)">Description...</n-text>
+            <!--<div class="preview" v-html="previewHtml" v-if="!editMode" @click="setEditMode(true)"></div>-->
+            <Markdown :value="previewHtml" v-if="!editMode" @click="setEditMode(true)"/>
+            <n-text depth="3" v-if="previewHtml=='' && !editMode" @click="setEditMode(true)">{{ $props.placeholder }}</n-text>
         </n-el>
     </n-config-provider>
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef, computed, watch } from 'vue'
-import type { Ref } from 'vue'
+import { ref, shallowRef, computed } from 'vue'
 import { useThemeVars } from 'naive-ui'
+import { v1 as uuid } from "uuid";
+
 
 
 
@@ -60,30 +53,71 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
 import ToolbarVue from "./Toolbar.vue"
+import ToolbarConfig from "./ToolbarConfig"
+import { isChildOfId } from "@/utils/dom"
+import Markdown from "../Markdown.vue"
 
 const $props = withDefaults(defineProps<{
-    content: string
-    editMode: Ref<boolean>
+    value: string
     showToolbar?: boolean
+    toolbarConfig?: ToolbarConfig
+    placeholder?: string
+    updateOnBlur?: boolean
+    updateOnCtrlEnter?: boolean
+    exitOnEsc?: boolean
+    clearAfterEdit?: boolean
 }>(),{
-    showToolbar: true
+    showToolbar: true,
+    toolbarConfig: ()=>ToolbarConfig.withAll(),
+    placeholder: "",
+    updateOnBlur: false,
+    updateOnCtrlEnter: true,
+    exitOnEsc: true,
+    clearAfterEdit: false,
 });
 
-const $emit = defineEmits(["update:content", "update:editMode"]);
+const $emit = defineEmits(["update:value"]);
 
 const theme = useThemeVars()
-const editMode = ref($props.editMode)
+const editMode = ref(false)
 const setEditMode = (value: boolean) => editMode.value = value
 
-watch(editMode, ()=> {
-    $emit("update:editMode", editMode)
-    if (editorContent.value != originalEditorContent) {
-        $emit("update:content", editorContent.value)
-    }
-})
+const toolbarId = uuid()
 
-const originalEditorContent = ref($props.content).value
-const editorContent = ref($props.content)
+const commit = () => {
+    if (editorContent.value != originalEditorContent) {
+        $emit("update:value", editorContent.value)
+    }
+}
+
+const reset = () => {
+    editorContent.value = originalEditorContent
+}
+
+const hide = () => {
+    editMode.value = false
+    if ($props.clearAfterEdit) {
+        editorContent.value = ""
+    }
+}
+
+const onBlur = () => {
+    const target = document.activeElement as Element
+
+    if(isChildOfId(toolbarId, target)) {
+        return false
+    }
+
+
+    if ($props.updateOnBlur) {
+        commit()
+    }
+
+    hide()
+}
+
+const originalEditorContent = ref($props.value).value
+const editorContent = ref($props.value)
 
 //debug  helper
 const log = ()=>false
@@ -137,13 +171,43 @@ const previewHtml = computed(() => {
 
 
 const extensions = [
+    EditorView.domEventHandlers({ // NOTICE the keyevents have to have the highest priority! Even higher than minimalSetup
+        keyup(event) {
+            if(event.keyCode == 13 && event.ctrlKey && $props.updateOnCtrlEnter){
+                commit()
+                hide()
+                event.preventDefault()
+                event.stopPropagation()
+                return false
+            }
+        },
+        keydown(event) {
+            if(event.keyCode == 13 && event.ctrlKey && $props.updateOnCtrlEnter){
+                event.preventDefault()
+                event.stopPropagation()
+                return false
+            }
+
+            if(event.keyCode == 27) {
+                if ($props.exitOnEsc ) {
+                    reset()
+                    hide()
+                }
+                event.preventDefault()
+                event.stopPropagation()
+                return false
+            }
+
+        }
+    }),
     minimalSetup,
     markdown({codeLanguages: languages}),
     EditorView.contentAttributes.of({spellcheck: "true"}),
     dropCursor(),
     autocompletion(/*{override: [myCompletions, myCompletions1]}*/),
+    //    keymap.of([{key: "Alt-l", run: moveToLine}]),
     EditorView.domEventHandlers({
-        ondragover(event, _view) {
+        dragover(event, _view) {
             event.preventDefault();
         },
         drop(event, view) {

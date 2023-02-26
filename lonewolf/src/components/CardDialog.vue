@@ -19,11 +19,69 @@
                         <IconedBox icon="fluent:tag-20-filled" :contentOffsetX="24">
                             <LabelSelector :labels="$props.labels" :activeLabels="activeLabels" :board="$props.board" @add="addLabel" @remove="removeLabel"/>
                         </IconedBox>
-                        <IconedBox icon="fluent:timer-20-regular" :contentOffsetX="24">
+                        <IconedBox icon="fluent:timer-20-filled" :contentOffsetX="24">
                             <n-date-picker v-model:value="timestampModel" type="datetime" placeholder="Due Date" clearable size="small" />
                         </IconedBox>
                         <IconedBox icon="fluent:code-text-20-filled" :contentOffsetX="24">
-                            <Editor v-model:content="descriptionModel" v-model:editMode="editMode.ref" />
+                            <Editor v-model:value="descriptionModel"
+                                    updateOnBlur
+                                    placeholder="Add Description..."
+                            />
+                        </IconedBox>
+                        <IconedBox icon="fluent:comment-20-filled" :contentOffsetX="24">
+                            <div style="display: flex;flex-grow: 1;flex-direction: column;gap: 8px;">
+                                <Editor value=""
+                                        @update:value="emitNewCommentTransaction"
+                                        placeholder="Add Comment..."
+                                        :toolbarConfig="ToolbarConfig.forNewComment()"
+                                        :updateOnBlur="false"
+                                        updateOnCtrlEnter
+                                        exitOnEsc
+                                        clearAfterEdit
+                                />
+                                <n-timeline>
+                                    <n-timeline-item v-for="comment in comments" :key="comment.id" type="info">
+                                        <n-space justify="space-between" align="center" style="height: 34px;">
+                                            <n-space >
+                                                <n-text depth="3">You commented <AutoTime :data="comment.createdAt" /></n-text>
+                                            </n-space>
+                                            <n-space>
+                                                <n-button-group>
+                                                    <!--<n-button round size='tiny' ghost color="rgb(118, 124, 130)" quaternary>
+                                                    edit
+                                                </n-button>-->
+                                                    <n-popconfirm :show-icon="false" :negative-text="'Delete it'" :positive-text="'Oh, nevermind'" :negative-button-props="{type:'error'}" :positive-button-props="{type:'default'}" @negative-click="handleDeleteComment(comment)">
+                                                        <template #trigger>
+                                                            <n-button round size='tiny' color="rgb(118, 124, 130)" quaternary>
+                                                                delete
+                                                            </n-button>
+                                                        </template>
+                                                        Deleting a comment can not be  undone, are U sure?
+                                                    </n-popconfirm>
+                                                </n-button-group>
+                                            </n-space>
+                                        </n-space>
+
+                                        <div class="comment">
+                                            <Editor :value="comment.content"
+                                                    @update:value="(value: string)=>handleEditComment(comment, value)"
+                                                    placeholder=""
+                                                    :toolbarConfig="ToolbarConfig.forComment()"
+                                                    :updateOnBlur="true"
+                                                    updateOnCtrlEnter
+                                                    exitOnEsc
+                                            />
+                                        </div>
+
+                                        <template #icon>
+                                            <n-icon>
+                                                <icon icon="fluent:comment-20-regular" />
+                                            </n-icon>
+                                        </template>
+                                    </n-timeline-item>
+                                </n-timeline>
+
+                            </div>
                         </IconedBox>
                         <div>&nbsp;<!-- this is needed to allow the editor to blur, remove when adding a new iconed box below the editor--></div>
                     </n-space>
@@ -35,18 +93,22 @@
 
 <script setup lang="ts">
 import Editor from "@/components/editor/Editor.vue";
+import ToolbarConfig from "@/components/editor/ToolbarConfig";
 import LabelSelector from "@/components/labels/LabelSelector.vue";
 import { ref, watch, computed } from "vue";
 import type { Ref } from "vue";
 import InitialFocus from "@/components/InitialFocus.vue";
 import IconedBox from "@/components/IconedBox.vue";
 import TextInput from "@/components/inputs/TextInput.vue";
+import AutoTime from "@/components/AutoTime.vue";
 import { CardRenameTransaction, CardDescriptionTransaction, CardAddLabelTransaction, CardRemoveLabelTransaction } from "@/common/data/Transaction";
-import { DueDateTransaction } from "@/common/data/transactions/CardTransactions";
-import { RefProtector } from "@/utils/vue";
+import { DueDateTransaction, AddCommentTransaction } from "@/common/data/transactions/CardTransactions";
+import { CardCommentChangeTransaction } from "@/common/data/transactions/CardCommentTransactions";
 import type Card from "@/common/data/Card";
+import type CardComment from "@/common/data/CardComment";
 import type Board from "@/common/data/Board";
 import type { SDCardHolder, SDLabel } from "@/common/data/extern/SimpleData";
+
 
 import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'
@@ -85,6 +147,26 @@ watch(descriptionModel, () => {
     }
 })
 
+const comments = computed(()=>card.value == null?[]:Array.from(card.value.comments).filter(c=>!c.deleted).reverse() )
+
+const emitNewCommentTransaction = (value: string) => {
+    if (value != "") {
+        $emit("transaction", new AddCommentTransaction($props.cardHolder.card.id, value))
+    }
+}
+
+function handleDeleteComment(comment: CardComment) {
+    if (card.value != null) {
+        $emit('transaction', new CardCommentChangeTransaction(card.value.id, comment.id, 'deleted', true))
+    }
+}
+
+function handleEditComment(comment: CardComment, value: string) {
+    if (card.value != null) {
+        $emit('transaction', new CardCommentChangeTransaction(card.value.id, comment.id, 'content', value))
+    }
+}
+
 function timestampOrNull(timestamp: number | null): number | null {
     if(timestamp == null || card.value == null){
         return null
@@ -115,7 +197,6 @@ const showModel = ref(true)
 watch($props.show, ()=>{showModel.value = $props.show.value;})
 watch(showModel, ()=>$emit("update:show", showModel))
 
-const editMode = new RefProtector(ref(false));
 
 function addLabel(labelId: string) {
     $emit("transaction", new CardAddLabelTransaction($props.cardHolder.card.id, labelId))
@@ -143,6 +224,13 @@ function removeLabel(labelId: string) {
 .scroll-shadow-fixer-inner {
     padding-top: 2px;
     padding-bottom: 2px;
+}
+
+.comment {
+    background-color: #f5f5f5ab;
+    border-radius: 3px;
+    box-shadow: 0 8px 6px -6px #b5b5b5;
+    padding: 8px;
 }
 
 

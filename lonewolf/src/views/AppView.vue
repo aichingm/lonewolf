@@ -62,7 +62,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, reactive, watch } from "vue";
+import { ref, reactive, watch, shallowRef } from "vue";
 import type { Ref } from "vue";
 import { useThemeVars } from 'naive-ui'
 import BoardVue from "@/components/Board.vue";
@@ -106,7 +106,8 @@ const title = new RefProtector(ref(""), (newTitle: string)=> {
 })
 
 
-const board = ref(MostRecent.exists() ? MostRecent.load() as Board : newBoard()) as Ref<Board>; // as Board because typescript is stupid and can't see that .exist checks if it is null...
+const board = shallowRef(MostRecent.exists() ? MostRecent.load() as Board : newBoard()) as Ref<Board>; // as Board because typescript is stupid and can't see that .exist checks if it is null...
+
 
 title.assign(board.value.name)
 cardsStat.value = board.value.cardOpenClosedStatistic()

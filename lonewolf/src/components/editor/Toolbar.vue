@@ -1,21 +1,21 @@
 <template>
     <div class="toolbar">
         <div class="left">
-            <n-button v-if="$props.showCreateBold" quaternary @click="editorInteractions.bold" :focusable="false">
+            <n-button v-if="$props.toolbarConfig.showCreateBold" quaternary @click="editorInteractions.bold" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-bold-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.showCreateItalic" quaternary @click="editorInteractions.italic" :focusable="false">
+            <n-button v-if="$props.toolbarConfig.showCreateItalic" quaternary @click="editorInteractions.italic" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-italic-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.showCreateCode" quaternary @click="editorInteractions.code" :focusable="false">
+            <n-button v-if="$props.toolbarConfig.showCreateCode" quaternary @click="editorInteractions.code" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:code-20-regular" />
@@ -23,14 +23,14 @@
                 </template>
             </n-button>
             <div class="new-section"></div>
-            <n-button v-if="$props.showCreateLink" quaternary @click="editorInteractions.link" :focusable="false">
+            <n-button v-if="$props.toolbarConfig.showCreateLink" quaternary @click="editorInteractions.link" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:link-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.showCreateImage" quaternary @click="editorInteractions.image" :focusable="false">
+            <n-button v-if="$props.toolbarConfig.showCreateImage" quaternary @click="editorInteractions.image" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:image-20-regular" />
@@ -38,21 +38,21 @@
                 </template>
             </n-button>
             <div class="new-section"></div>
-            <n-button v-if="$props.showCreateHeadline1" quaternary @click="editorInteractions.headline" :focusable="false">
+            <n-button v-if="$props.toolbarConfig.showCreateHeadline1" quaternary @click="editorInteractions.headline" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-header-1-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.showCreateCodeFence" quaternary @click="editorInteractions.codeFence" :focusable="false">
+            <n-button v-if="$props.toolbarConfig.showCreateCodeFence" quaternary @click="editorInteractions.codeFence" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:braces-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.showCreateBlockquote" quaternary @click="editorInteractions.blockqoute" :focusable="false">
+            <n-button v-if="$props.toolbarConfig.showCreateBlockquote" quaternary @click="editorInteractions.blockqoute" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-quote-20-regular" />
@@ -60,28 +60,28 @@
                 </template>
             </n-button>
             <div class="new-section"></div>
-            <n-button v-if="$props.showCreateList" quaternary @click="editorInteractions.list" :focusable="false">
+            <n-button v-if="$props.toolbarConfig.showCreateList" quaternary @click="editorInteractions.list" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-bullet-list-ltr-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.showCreateOrderedList" quaternary @click="editorInteractions.orderedList" :focusable="false">
+            <n-button v-if="$props.toolbarConfig.showCreateOrderedList" quaternary @click="editorInteractions.orderedList" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-number-list-ltr-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.showCreateTaskList" quaternary @click="editorInteractions.taskList" :focusable="false">
+            <n-button v-if="$props.toolbarConfig.showCreateTaskList" quaternary @click="editorInteractions.taskList" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:task-list-ltr-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.showCreateTable" quaternary @click="editorInteractions.table" :focusable="false">
+            <n-button v-if="$props.toolbarConfig.showCreateTable" quaternary @click="editorInteractions.table" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:table-20-regular" />
@@ -90,7 +90,7 @@
             </n-button>
         </div>
         <div class="right">
-            <n-switch v-if="$props.showPreviewToggle" class="preview-toggle" size="small" @update:value="(value: boolean) => $emit('previewToggleChanged', value)" :rail-style="previewRailStyle" :focusable="false">
+            <n-switch v-if="$props.toolbarConfig.showPreviewToggle" class="preview-toggle" size="small" @update:value="(value: boolean) => $emit('previewToggleChanged', value)" :rail-style="previewRailStyle" >
                 <template #checked>
                     Preview
                 </template>
@@ -98,17 +98,24 @@
                     Editing
                 </template>
             </n-switch>
-            <n-button v-if="$props.showMarkdownReference" quaternary tag="a" href="https://www.markdownguide.org/basic-syntax/" target="_blank" :focusable="false">
+            <n-button v-if="$props.toolbarConfig.showMarkdownReference" quaternary tag="a" href="https://www.markdownguide.org/basic-syntax/" target="_blank" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:calendar-info-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.showDone" quaternary >
+            <n-button v-if="$props.toolbarConfig.resetable" quaternary @click="$emit('reset')">
                 <template #icon>
                     <n-icon size="20" color="gray">
-                        <icon icon="fluent:save-20-regular" />
+                        <icon icon="fluent:arrow-reset-20-filled" />
+                    </n-icon>
+                </template>
+            </n-button>
+            <n-button v-if="$props.toolbarConfig.saveable" quaternary @click="$emit('save')" >
+                <template #icon>
+                    <n-icon size="20" color="gray">
+                        <icon :icon="$props.toolbarConfig.saveIcon" />
                     </n-icon>
                 </template>
             </n-button>
@@ -123,27 +130,15 @@ import { useThemeVars } from 'naive-ui'
 import type { EditorView } from "codemirror"
 import { EditorSelection } from '@codemirror/state'
 import type { SelectionRange, Line } from '@codemirror/state'
+import type ToolbarConfig from './ToolbarConfig'
 
 const $props = defineProps<{
     editorView: EditorView;
-    showCreateBold?: boolean;
-    showCreateItalic?: boolean;
-    showCreateCode?: boolean;
-    showCreateLink?: boolean;
-    showCreateImage?: boolean;
-    showCreateHeadline1?: boolean;
-    showCreateCodeFence?: boolean;
-    showCreateList?: boolean;
-    showCreateOrderedList?: boolean;
-    showCreateTaskList?: boolean;
-    showCreateBlockquote?: boolean;
-    showCreateTable?: boolean;
-    showMarkdownReference?: boolean
-    showPreviewToggle?: boolean;
-    showDone?: boolean;
-}>();
+    toolbarConfig: ToolbarConfig
+}>()
 
-const $emit = defineEmits(["previewToggleChanged"]);
+
+const $emit = defineEmits(["previewToggleChanged", "save", "reset"]);
 
 // preview switcher theme
 const theme  = useThemeVars();
