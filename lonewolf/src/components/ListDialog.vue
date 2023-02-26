@@ -33,7 +33,7 @@ import type { Ref } from "vue";
 import InitialFocus from "@/components/InitialFocus.vue";
 import TextInput from "@/components/inputs/TextInput.vue";
 import IconedBox from "@/components/IconedBox.vue";
-import { ListRenameTransaction, ListChangeCardsAreClosedTransaction } from "@/common/data/Transaction";
+import { ListChangeTransaction } from "@/common/data/transactions/ListTransactions";
 import type List from "@/common/data/List";
 import type Board from "@/common/data/Board";
 
@@ -46,7 +46,7 @@ const $props = defineProps<{
 
 const $emit = defineEmits(["transaction", "update:show"]);
 
-const emitTitle = (title: string) => $emit("transaction", new ListRenameTransaction($props.id.value, title))
+const emitTitle = (title: string) => $emit("transaction", new ListChangeTransaction($props.id.value, 'name', title))
 
 const titleModel = ref("")
 const cardsClosed = ref(false)
@@ -63,7 +63,7 @@ const setRefs = (list: List) => {
 }
 
 watch(cardsClosed, ()=>{
-    $emit("transaction", new ListChangeCardsAreClosedTransaction($props.id.value, cardsClosed.value))
+    $emit("transaction", new ListChangeTransaction($props.id.value, 'cardsAreClosed', cardsClosed.value))
 })
 
 watch($props.id, ()=>reloadList())

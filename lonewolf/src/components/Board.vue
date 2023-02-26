@@ -38,7 +38,7 @@ import draggable from "vuedraggable";
 import ListVue from "./List.vue";
 import NewList from "./NewList.vue";
 
-import { NewListTransaction, ListSortTransaction } from "@/common/data/Transaction";
+import { NewListTransaction, ListSortTransaction } from "@/common/data/transactions/ListTransactions";
 import { isChrome } from "@/utils/browser-comp";
 
 import type Board from "@/common/data/Board";

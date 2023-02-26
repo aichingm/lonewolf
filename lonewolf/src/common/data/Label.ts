@@ -7,30 +7,14 @@ import type Board from "./Board";
 
 export default class Label extends NamedIdentifiable {
 
-    private _color: string
-    private _visibility: boolean
+    public color: string
+    public visibility: boolean
     //private _icon ???
 
-    constructor() {
-        super(uuid(), "")
-        this._color = ""
-        this._visibility = true
-    }
-
-    public get color(): string {
-        return this._color
-    }
-
-    public set color(color: string) {
-        this._color = color
-    }
-
-    public get visibility(): boolean {
-        return this._visibility
-    }
-
-    public set visibility(visibility: boolean) {
-        this._visibility = visibility
+    constructor(id: string, name: string) {
+        super(uuid(), name)
+        this.color = ""
+        this.visibility = true
     }
 
     public toSerializable() {
@@ -43,9 +27,7 @@ export default class Label extends NamedIdentifiable {
     }
 
     public static fromSerializable(board: Board, s: SerializableLabel) {
-        const l = new Label()
-        l.id = s.id
-        l.name = s.name
+        const l = new Label(s.id, s.name)
         l.color = s.color
         l.visibility = s.visibility
         return l;
@@ -55,20 +37,10 @@ export default class Label extends NamedIdentifiable {
         return new SDLabel(this.id, "no-new-transaction");
     }
 
-    public clone(): Label{
-        const l = new Label()
-        l.id = this.id
-        l.name = this.name
-        l.color = this.color
-        l.visibility = this.visibility
-        return l
-    }
-
 }
 
 
 export class SerializableLabel {
-
     public id = "";
     public name = "";
     public color = "";

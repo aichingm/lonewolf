@@ -101,8 +101,7 @@ import InitialFocus from "@/components/InitialFocus.vue";
 import IconedBox from "@/components/IconedBox.vue";
 import TextInput from "@/components/inputs/TextInput.vue";
 import AutoTime from "@/components/AutoTime.vue";
-import { CardRenameTransaction, CardDescriptionTransaction, CardAddLabelTransaction, CardRemoveLabelTransaction } from "@/common/data/Transaction";
-import { DueDateTransaction, AddCommentTransaction } from "@/common/data/transactions/CardTransactions";
+import { CardAddLabelTransaction, CardRemoveLabelTransaction, CardChangeTransaction, AddCommentTransaction } from "@/common/data/transactions/CardTransactions";
 import { CardCommentChangeTransaction } from "@/common/data/transactions/CardCommentTransactions";
 import type Card from "@/common/data/Card";
 import type CardComment from "@/common/data/CardComment";
@@ -123,7 +122,7 @@ const $props = defineProps<{
 
 const $emit = defineEmits(["transaction", "update:show"]);
 
-const emitTitle = (title: string) => $emit("transaction", new CardRenameTransaction($props.cardHolder.card.id, title))
+const emitTitle = (title: string) => $emit("transaction", new CardChangeTransaction($props.cardHolder.card.id, 'name', title))
 
 const card = computed(()=>{$props.cardHolder.card.version; return $props.board().findCard($props.cardHolder.card.id)})
 
@@ -143,7 +142,7 @@ const descriptionModel = ref(card.value!=null?card.value.description:"")
 
 watch(descriptionModel, () => {
     if (descriptionModel.value != descriptionOriginal) {
-        $emit("transaction", new CardDescriptionTransaction($props.cardHolder.card.id, descriptionModel.value))
+        $emit("transaction", new CardChangeTransaction($props.cardHolder.card.id, 'description', descriptionModel.value))
     }
 })
 
@@ -179,7 +178,7 @@ const timestampModel = ref(card.value != null ? timestampOrNull(card.value.dueDa
 
 watch(timestampModel, ()=> {
     if (timestampModel.value != timestampOriginal) {
-        $emit("transaction", new DueDateTransaction($props.cardHolder.card.id, timestampModel.value))
+        $emit("transaction", new CardChangeTransaction($props.cardHolder.card.id, 'dueDate', timestampModel.value))
     }
 })
 

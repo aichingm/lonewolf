@@ -78,7 +78,7 @@ import MostRecent from "@/common/MostRecent";
 import type { Transaction } from "@/common/data/Transaction";
 import { RefProtector } from "@/utils/vue";
 import { SDRoot, SDCardHolder, SDCard } from "@/common/data/extern/SimpleData";
-import  { NewBoardTransaction, BoardRenameTransaction } from "@/common/data/Transaction";
+import  { NewBoardTransaction, BoardChangeTransaction } from "@/common/data/transactions/BoardTransactions";
 import  { BrowserNativeStorage } from "@/common/storage/BrowserStorage";
 
 import toEmoji from "emoji-name-map";
@@ -102,7 +102,8 @@ const listDialog = {show: ref(false), id: ref("")};
 
 const title = new RefProtector(ref(""), (newTitle: string)=> {
     title.assign(newTitle);
-    new BoardRenameTransaction(title.ref.value).apply(board.value)
+    const t = new BoardChangeTransaction('name', title.ref.value)
+    createTransactionHandler(board.value)(t)
 })
 
 

@@ -56,7 +56,7 @@ import type Card from "@/common/data/Card";
 import type { SDCard, SDList, SDLabel } from "@/common/data/extern/SimpleData";
 
 import type List from "@/common/data/List";
-import { CardSortTransaction, CardMoveTransaction, } from "@/common/data/Transaction";
+import { CardSortTransaction, CardMoveTransaction } from "@/common/data/transactions/CardTransactions";
 
 import ActionDropdown from "./ActionDropdown.vue";
 import ActionDropdownOption from "@/common/ActionDropdownOption";

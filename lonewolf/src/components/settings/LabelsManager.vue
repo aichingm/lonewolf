@@ -55,7 +55,8 @@ import { ref, watch } from "vue";
 import type { Ref } from "vue";
 import type Board from "@/common/data/Board";
 import type Label from "@/common/data/Label";
-import { CreateLabelTransaction, LabelColorChangeTransaction, LabelNameChangeTransaction, DeleteLabelTransaction, CardRemoveLabelTransaction, LabelVisibilityChangeTransaction } from "@/common/data/Transaction";
+import { NewLabelTransaction, DeleteLabelTransaction, LabelChangeTransaction } from "@/common/data/transactions/LabelTransactions";
+import { CardRemoveLabelTransaction } from "@/common/data/transactions/CardTransactions";
 import ColorPicker from "@/components/inputs/ColorPicker.vue";
 import TextInput from "@/components/inputs/TextInput.vue";
 import InitialFocus from "@/components/InitialFocus.vue";
@@ -104,7 +105,7 @@ watch(newLabelColor, ()=> {
 
 function emitNewLabel() {
     if (newLabelName.value != "") {
-        $emit("transaction", new CreateLabelTransaction(newLabelName.value, newLabelColor.value))
+        $emit("transaction", new NewLabelTransaction(newLabelName.value, newLabelColor.value))
     }
 
     newLabelColorButtonStyle.value = getButtonStyle("#ffffff", "#18a058")
@@ -112,11 +113,11 @@ function emitNewLabel() {
 }
 
 function onConfirmLabelColorHandler(label: Label, color: string) {
-    $emit("transaction", new LabelColorChangeTransaction(label.id, color))
+    $emit("transaction", new LabelChangeTransaction(label.id, 'color', color))
 }
 
 function onLabelNameChangeHandler(label: Label, name: string) {
-    $emit("transaction", new LabelNameChangeTransaction(label.id, name))
+    $emit("transaction", new LabelChangeTransaction(label.id, 'name', name))
 }
 
 const labels = ref(Array.from($props.board().labels.values())) as Ref<Label[]>
@@ -135,7 +136,7 @@ function handleDeleteClick(l: Label, _index: number){
 }
 
 function handleVisibilityChange(value: boolean, l: Label, _index: number) {
-    $emit("transaction", new LabelVisibilityChangeTransaction(l.id, value))
+    $emit("transaction", new LabelChangeTransaction(l.id, 'visibility', value))
 }
 
 </script>

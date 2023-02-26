@@ -1,16 +1,12 @@
-import { v4 as uuid } from "uuid";
-
 import Indexable from "@/common/Indexable";
 import IndexedMap from "@/common/IndexedMap";
 import type Board from "./Board";
 import type Card from "./Card";
 import { SDList } from "./extern/SimpleData";
 
-
-
 export default class List extends Indexable {
     private _cards = new IndexedMap<Card>();
-    private _cardsAreClosed = false
+    public cardsAreClosed = false
 
     private _board: Board;
 
@@ -19,20 +15,8 @@ export default class List extends Indexable {
         this._board = board;
     }
 
-    public static create(board: Board, title: string): List {
-        return new List(board, uuid(), title)
-    }
-
     public get cards(): IndexedMap<Card> {
         return this._cards;
-    }
-
-    public get cardsAreClosed(): boolean {
-        return this._cardsAreClosed;
-    }
-
-    public set cardsAreClosed(status: boolean) {
-        this._cardsAreClosed = status;
     }
 
     public addCard(c: Card): void {

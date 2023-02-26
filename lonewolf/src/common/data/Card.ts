@@ -1,4 +1,3 @@
-import { v1 as uuid } from "uuid";
 
 import type List from "@/common/data/List";
 import type Label from "@/common/data/Label";
@@ -10,19 +9,15 @@ import Indexable from "@/common/Indexable"
 
 export default class Card extends Indexable{
     private _list: List;
-    private _description = "";
+    public description = "";
     private _labels = new Array<Label>();
     private _comments = new Array<CardComment>();
-    private _dueDate: number | null = null; //this is in utc ALWAYS!!!
+    public dueDate: number | null = null; //this is in utc ALWAYS!!!
 
 
     constructor(list: List, id: string, name: string) {
         super(id, name, -1)
         this._list = list;
-    }
-
-    public static create(list: List, title: string): Card {
-        return new Card(list, uuid(), title)
     }
 
     public attachTo(list: List) {
@@ -39,22 +34,6 @@ export default class Card extends Indexable{
 
     public get comments(): Array<CardComment>{
         return this._comments
-    }
-
-    public get description(): string {
-        return this._description
-    }
-
-    public set description(description: string){
-        this._description = description
-    }
-
-    public get dueDate(): number | null {
-        return this._dueDate
-    }
-
-    public set dueDate(dueDate: number | null){
-        this._dueDate = dueDate
     }
 
     public toSerializable() {

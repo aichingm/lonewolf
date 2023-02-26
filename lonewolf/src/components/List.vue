@@ -73,7 +73,8 @@ import type { SDList, SDLabel } from "@/common/data/extern/SimpleData";
 import type Card from "@/common/data/Card";
 
 
-import { NewCardTransaction, ListSortTransaction, CardSortTransaction, CardMoveTransaction } from "@/common/data/Transaction";
+import { ListSortTransaction } from "@/common/data/transactions/ListTransactions";
+import { NewCardTransaction, CardSortTransaction, CardMoveTransaction } from "@/common/data/transactions/CardTransactions";
 
 const $props = defineProps<{
     board: () => Board;

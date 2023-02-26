@@ -18,7 +18,7 @@ import { ref, watch } from "vue";
 
 import InitialFocus from "@/components/InitialFocus.vue";
 import type Board from "@/common/data/Board";
-import { SettingsTransaction } from "@/common/data/Transaction";
+import { SettingsChangeTransaction } from "@/common/data/transactions/SettingsTransactions";
 
 
 const $props = defineProps<{
@@ -37,8 +37,8 @@ const $emit = defineEmits(["transaction"]);
 const showNewList = ref($props.board().settings.boardShowNewList)
 const listsJustification = ref(reverseTranslate($props.board().settings.boardListsJustification))
 
-watch(showNewList, ()=>$emit("transaction", new SettingsTransaction("boardShowNewList", showNewList.value)))
-watch(listsJustification, ()=>$emit("transaction", new SettingsTransaction("boardListsJustification", translateValue(listsJustification.value))))
+watch(showNewList, ()=>$emit("transaction", new SettingsChangeTransaction("boardShowNewList", showNewList.value)))
+watch(listsJustification, ()=>$emit("transaction", new SettingsChangeTransaction("boardListsJustification", translateValue(listsJustification.value))))
 
 function translateValue(value: number): string{
     switch(value){
