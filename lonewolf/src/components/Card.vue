@@ -16,7 +16,7 @@
                 </template>
                 <AutoTime :data="card.dueDate || 0" /><!-- passing 0 only to make the compiler happy card.dueDate can not be null since the component is only shown if hasDueDate == true -->
             </n-tag>
-            <n-tag v-if="card.comments.length > 0" size="small" round :bordered="false">
+            <n-tag v-if="card.comments.filter(c=>!c.deleted).length > 0" size="small" round :bordered="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:comment-48-regular" />
