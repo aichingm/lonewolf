@@ -1,0 +1,134 @@
+<template>
+    <n-dropdown
+        :options="options"
+        trigger="hover"
+        placement="bottom"
+        @select="handleSelect"
+    >
+        <slot></slot>
+    </n-dropdown>
+</template>
+
+<script setup lang="ts">
+import { downloadUri } from "@/utils/download";
+
+import ConfirmButton from "@/components/buttons/ConfirmButton.vue";
+import type CardAttachment from "@/common/data/CardAttachment";
+
+import { h } from 'vue'
+import { NAvatar, NText, NIcon } from 'naive-ui'
+import { Icon } from "@iconify/vue";
+
+const $props = defineProps<{
+    attachment: CardAttachment
+    url: string
+}>()
+
+const $emit = defineEmits(["delete"]);
+
+const options = [
+    {
+        key: 'header',
+        type: 'render',
+        render: renderCustomHeader
+    },
+    {
+        key: 'first-devider',
+        type: 'divider'
+    },
+    {
+        label: 'Copy Markdown',
+        key: 'copy-markdown'
+    },
+    {
+        label: 'Download',
+        key: 'download'
+    },
+    {
+        key: 'delete',
+        type: 'render',
+        render: renderCustomDelete
+    },
+]
+
+function renderCustomHeader () {
+    return h(
+        'div',
+        {
+            style: 'display: flex; align-items: center; padding: 8px 12px;'
+        },
+        [
+            attachmentAvatar($props.attachment.mime),
+            h('div', null, [
+                h('div', null, [
+                    h(NText, { depth: 2 }, { default: () => $props.attachment.name })
+                ]),
+                h('div', { style: 'font-size: 12px;' }, [
+                    h(NText, { depth: 3 }, { default: () => $props.attachment.mime  })
+                ])
+            ])
+        ]
+    )
+}
+
+function attachmentAvatar(mime: string) {
+    if(mime.startsWith("image/")){
+        return h(NAvatar, {style: 'margin-right: 12px;',src: $props.url})
+    }
+    return h(NIcon, {color:'gray', size:'36', style:''},  {default:()=>h(Icon, {icon:'fluent:document-20-filled'})})
+}
+
+function attachmentToMarkdown() {
+    if($props.attachment.mime.startsWith("image/")){
+        return `![${$props.attachment.name}](${$props.attachment.location})`
+    }
+    return `[${$props.attachment.name}](${$props.attachment.location})`
+}
+
+function renderCustomDelete() {
+    return h(
+        ConfirmButton,
+        {
+            buttonProps: {type:"default", quaternary:true},
+            buttonClass: "dropdown-button-04aec8f5-4fd4-42e2-a43d-9ab34aea0a86",
+            confirmProps: {type:"error", quaternary:true},
+            confirmClass: "dropdown-button-04aec8f5-4fd4-42e2-a43d-9ab34aea0a86",
+            'onConfirm': ()=> $emit("delete", $props.attachment.id),
+        },
+        {
+            button: ()=>false,
+            confirm: ()=>"R U sure?",
+            confirmTooltip: ()=>false,
+        }
+    )
+}
+
+function handleSelect (key: string | number) {
+    switch(key){
+    case "download":
+        downloadUri($props.attachment.name, $props.url)
+        break;
+    case "copy-markdown":
+        navigator.clipboard.writeText(attachmentToMarkdown());
+        break;
+    }
+
+}
+</script>
+<style scoped>
+:global(.dropdown-button-04aec8f5-4fd4-42e2-a43d-9ab34aea0a86) { /* this needs to be global since the actual menu is transportet into an emelemt somewhere in the parrants-cain of the dom */
+  width: calc(100% - 8px);
+  margin: 4px;
+  justify-content: start;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+:global(.dropdown-button-04aec8f5-4fd4-42e2-a43d-9ab34aea0a86:hover) {/* this needs to be global since the actual menu is transportet into an emelemt somewhere in the parrants-cain of the dom */
+  background-color: var(--n-option-color-hover) !important;
+}
+:global(.dropdown-button-04aec8f5-4fd4-42e2-a43d-9ab34aea0a86 > .n-button__content) {/* this needs to be global since the actual menu is transportet into an emelemt somewhere in the parrants-cain of the dom */
+  justify-content: space-between;
+  display: inline-flex;
+  flex-grow: 1;
+}
+</style>

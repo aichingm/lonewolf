@@ -5,8 +5,12 @@
                 <n-el tag="div" class="editor" v-if="editMode">
                     <ToolbarVue :id="toolbarId" v-if="viewReady && $props.showToolbar && editMode" :editor-view="view as EditorView" @previewToggleChanged="setEditMode"
                                 :toolbarConfig="$props.toolbarConfig"
+                                :attachmentStore="$props.attachmentStore"
+                                :attachments="$props.attachments"
+
                                 @save="commit(); hide();"
                                 @reset="reset()"
+                                @addAttachment="emitAddAttachment"
                     />
                     <Codemirror
                         class="cm6"
@@ -26,19 +30,21 @@
                 </n-el>
             </transition >
             <!--<div class="preview" v-html="previewHtml" v-if="!editMode" @click="setEditMode(true)"></div>-->
-            <Markdown :value="previewHtml" v-if="!editMode" @click="setEditMode(true)"/>
-            <n-text depth="3" v-if="previewHtml=='' && !editMode" @click="setEditMode(true)">{{ $props.placeholder }}</n-text>
+            <Markdown
+                v-if="!editMode" @click="(e)=>e.defaultPrevented||setEditMode(true)"
+                :value="editorContent"
+                :imageInterceptor="markdownHandler.image"
+                :linkClickInterceptor="markdownHandler.linkClicked"
+            />
+            <n-text depth="3" v-if="editorContent=='' && !editMode" @click="setEditMode(true)">{{ $props.placeholder }}</n-text>
         </n-el>
     </n-config-provider>
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef, computed } from 'vue'
+import { ref, shallowRef } from 'vue'
 import { useThemeVars } from 'naive-ui'
 import { v1 as uuid } from "uuid";
-
-
-
 
 import { minimalSetup, EditorView } from "codemirror"
 
@@ -49,16 +55,18 @@ import { markdown } from "@codemirror/lang-markdown"
 import { languages } from "@codemirror/language-data"
 import { autocompletion } from "@codemirror/autocomplete"
 
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
-
 import ToolbarVue from "./Toolbar.vue"
 import ToolbarConfig from "./ToolbarConfig"
 import { isChildOfId } from "@/utils/dom"
 import Markdown from "../Markdown.vue"
 
+import type { Store as AttachmentStore } from "@/common/attachments/Store";
+import type CardAttachment from "@/common/data/CardAttachment";
+
 const $props = withDefaults(defineProps<{
     value: string
+    attachmentStore?: AttachmentStore
+    attachments?: CardAttachment[]
     showToolbar?: boolean
     toolbarConfig?: ToolbarConfig
     placeholder?: string
@@ -76,7 +84,7 @@ const $props = withDefaults(defineProps<{
     clearAfterEdit: false,
 });
 
-const $emit = defineEmits(["update:value"]);
+const $emit = defineEmits(["update:value", "add-attachment"]);
 
 const theme = useThemeVars()
 const editMode = ref(false)
@@ -103,11 +111,9 @@ const hide = () => {
 
 const onBlur = () => {
     const target = document.activeElement as Element
-
-    if(isChildOfId(toolbarId, target)) {
+    if(isChildOfId(toolbarId, target) || target.className=="cm-content") {
         return false
     }
-
 
     if ($props.updateOnBlur) {
         commit()
@@ -122,13 +128,34 @@ const editorContent = ref($props.value)
 //debug  helper
 const log = ()=>false
 
-// preview editor switching variable
-//watch($props.editMode, ()=>editMode = ref($props.editMode))
 
-// marked-preview rendering
-const previewHtml = computed(() => {
-    return DOMPurify.sanitize(marked(editorContent.value))
-})
+const markdownHandler = {
+    image(e: Element) {
+        if ($props.attachmentStore && e.hasAttribute("src")) {
+            $props.attachmentStore.url(e.getAttribute("src") as string).then((url)=>e.setAttribute("src", url)) // type annotation is ok because of hasAttribute("src")
+        }
+
+    },
+    linkClicked(e: Event) {
+        if ($props.attachmentStore && e.target != null && "hasAttribute" in e.target) {
+            const element = e.target as Element
+            if (element.hasAttribute("href") ) {
+                $props.attachmentStore.url(element.getAttribute("href") as string).then((url)=>{ // type annotation is ok because of hasAttribute("href")
+                    window.open(url, "_blank")
+                })
+            }
+        }
+        e.preventDefault()
+        return false
+    }
+}
+
+function emitAddAttachment(location: string, name: string, type: string){
+    $emit('add-attachment', location, name, type)
+}
+
+
+
 
 // setup codemirror
 
@@ -231,11 +258,12 @@ const extensions = [
                 return false
             }
         }
-    })
+    }),
+    EditorView.lineWrapping
 ]
 
 function dropText(view: EditorView, event: DragEvent, text: string, _direct: boolean) {
-    // sight modification of https://github.com/codemirror/view/blob/1b7d7f1eb9bc809b717e21bee525d8c1393f33fa/src/input.ts#L537
+    // slight modification of https://github.com/codemirror/view/blob/1b7d7f1eb9bc809b717e21bee525d8c1393f33fa/src/input.ts#L537
     if (!text) return
     event.preventDefault()
 
@@ -265,9 +293,8 @@ const handleReady = (payload: { view: EditorView; state: EditorState; container:
 <style scoped>
 
 .editor-root {
-    display: inline-block;
-    width: 100%;
     position: relative;
+    width: calc(100% - 50px);
 }
 
 .cm6 {
@@ -289,8 +316,6 @@ const handleReady = (payload: { view: EditorView; state: EditorState; container:
 }
 
 .editor {
-    width:100%;
-    display:inline-block;
 }
 .editor-decoration {
     position:absolute;

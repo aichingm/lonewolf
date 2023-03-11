@@ -2,6 +2,7 @@
 import type List from "@/common/data/List";
 import type Label from "@/common/data/Label";
 import CardComment from "@/common/data/CardComment";
+import type CardAttachment from "@/common/data/CardAttachment";
 import type { SerializableCardComment } from "@/common/data/CardComment";
 import { SDCard } from "./extern/SimpleData";
 import type Board from "@/common/data/Board";
@@ -12,6 +13,7 @@ export default class Card extends Indexable{
     public description = "";
     private _labels = new Array<Label>();
     private _comments = new Array<CardComment>();
+    private _attachments = new Array<CardAttachment>();
     public dueDate: number | null = null; //this is in utc ALWAYS!!!
 
 
@@ -36,6 +38,18 @@ export default class Card extends Indexable{
         return this._comments
     }
 
+    public get attachments(): Array<CardAttachment>{
+        return this._attachments
+    }
+
+    public findAttachment(attachmentId: string): CardAttachment | null {
+        return this.attachments.find(a=>a.id==attachmentId) || null
+    }
+
+    public findAttachmentByLocation(location: string): CardAttachment | null {
+        return this.attachments.find(a=>a.location==location) || null
+    }
+
     public toSerializable() {
         const c = new SerializableCard();
         c.id = this.id
@@ -44,6 +58,7 @@ export default class Card extends Indexable{
         c.listId = this.list.id
         c.labels = this.labels.map((l: Label) => l.id);
         c.comments = this.comments.map((c: CardComment) => c.toSerializable());
+        c.attachments = [...this._attachments]
         c.description = this.description
         c.dueDate = this.dueDate
 
@@ -59,6 +74,7 @@ export default class Card extends Indexable{
         card.position = s.position
         card.list.cards.put(card)
         card.description = s.description
+        card.attachments.push(...(s.attachments||[])) // FIXME old version had no attachments... DELETE this check on product release
         card.dueDate = s.dueDate
         if (s.labels) {  // FIXME old version had no labels... DELETE this check on product release
             s.labels.forEach((labelId)=> {const l = board.findLabel(labelId); if(l!=null){card.labels.push(l)}})
@@ -86,4 +102,5 @@ export class SerializableCard {
     public labels = new Array<string>();
     public dueDate: number | null = null; //this is in utc ALWAYS!!!
     public comments = new Array<SerializableCardComment>();
+    public attachments = new Array<CardAttachment>();
 }

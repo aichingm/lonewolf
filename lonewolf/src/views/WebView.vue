@@ -44,6 +44,8 @@ import { ref } from "vue";
 import { useThemeVars } from 'naive-ui'
 import Board from "@/common/data/Board";
 
+import { Factory as StoreFactory } from "@/common/attachments/Store";
+
 
 const theme  = useThemeVars();
 const borderColor = theme.value.borderColor;
@@ -80,7 +82,10 @@ const leftDrawerMenuOptions = [
     },
 ]
 
-const board = ref(new Board())
+
+const storeDescriptor = StoreFactory.createDescriptor("inline")
+
+const board = ref(new Board(StoreFactory.createStore(storeDescriptor)))
 
 const leftDrawerMenuClicked = function (key: string) {
     leftDrawer.show(false)

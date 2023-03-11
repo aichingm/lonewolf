@@ -78,8 +78,10 @@ import MostRecent from "@/common/MostRecent";
 import type { Transaction } from "@/common/data/Transaction";
 import { RefProtector } from "@/utils/vue";
 import { SDRoot, SDCardHolder, SDCard } from "@/common/data/extern/SimpleData";
-import  { NewBoardTransaction, BoardChangeTransaction } from "@/common/data/transactions/BoardTransactions";
-import  { BrowserNativeStorage } from "@/common/storage/BrowserStorage";
+import { NewBoardTransaction, BoardChangeTransaction } from "@/common/data/transactions/BoardTransactions";
+import { BrowserNativeStorage } from "@/common/storage/BrowserStorage";
+import { Factory as StoreFactory } from "@/common/attachments/Store";
+
 
 import toEmoji from "emoji-name-map";
 
@@ -183,7 +185,10 @@ function actionHandler(action: string) {
 
 
 function newBoard () {
-    const board = new Board()
+
+    const storeDescriptor = StoreFactory.createDescriptor("inline") // TODO inline should be configurable before a board is created
+
+    const board = new Board(StoreFactory.createStore(storeDescriptor))
     board.name = "Untitled Board"
     new NewBoardTransaction().apply(board)
     return board

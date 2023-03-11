@@ -35,7 +35,6 @@ const newLabels = computed(
     ).filter(
         (l) => (l != null && l.visibility && $props.activeLabels.findIndex((al) => al.id == l.id) == -1)
     ) as Label[]) // get all labels except those which are in the activeLables array
-
 const labelPopUp = ref(null) as Ref<typeof NPopover | null>;
 
 function addById(id: string) {

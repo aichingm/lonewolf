@@ -51,3 +51,22 @@ export function typeName(o: unknown): string {
     }
     return typeof o
 }
+
+
+export class AsyncRef<T>{
+
+    private _ref: Ref<T>
+    private _promise: Promise<T>
+
+    constructor(promise: Promise<T>, ref: Ref<T>) {
+        this._ref = ref
+        this._promise = promise
+
+        //this._promise.then((arg: T)=>this._ref.value = arg)
+    }
+
+    public get ref(): Ref<T> {
+        return this._ref
+    }
+
+}

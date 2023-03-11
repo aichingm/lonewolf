@@ -5,6 +5,7 @@ import type List from "../List";
 import Card from "../Card";
 import type Label from "../Label";
 import CardComment from "../CardComment";
+import CardAttachment from "../CardAttachment";
 import type { SDBoard } from "../extern/SimpleData";
 import { SDCard } from "../extern/SimpleData";
 
@@ -36,6 +37,14 @@ export class CardTransaction extends MutateTransaction {
             throw new Error("Label[" + labelId + "] not found")
         }
         return label
+    }
+
+    protected attachment(board: Board, attachmentId: string): CardAttachment {
+        const attachment = this.card(board).findAttachment(attachmentId)
+        if (attachment == null) {
+            throw new Error("Attachment[" + attachmentId + "] not found")
+        }
+        return attachment
     }
 
     protected list(board: Board, listId: string): List {
@@ -119,6 +128,45 @@ export class AddCommentTransaction extends CardTransaction implements Transactio
         console.log("AddCommentTransaction", this._cardId, this._content)
         const card = this.card(board)
         card.comments.push(CardComment.create(this._content))
+        return true
+    }
+
+}
+
+export class AddAttachmentTransaction extends CardTransaction implements Transaction {
+    private _location: string;
+    private _name: string;
+    private _mime: string;
+
+    constructor (cardId: string, location: string, name: string, mime: string) {
+        super(cardId)
+        this._location = location
+        this._name = name
+        this._mime = mime
+    }
+
+    public apply(board: Board): boolean{
+        console.log("AddAttachmentTransaction", this._cardId, this._location, this._name, this._mime)
+        const card = this.card(board)
+        card.attachments.push(CardAttachment.create(this._location, this._name, this._mime))
+        return true
+    }
+
+}
+
+export class CardRemoveAttachmentTransaction extends CardTransaction implements Transaction {
+    private _attachmentId: string;
+
+    constructor (cardId: string, attachmentId: string) {
+        super(cardId)
+        this._attachmentId = attachmentId
+    }
+
+    public apply(board: Board): boolean{
+        console.log("CardRemoveAttachmentTransaction", this._cardId, this._attachmentId)
+        const card = this.card(board)
+        const attachment = this.attachment(board, this._attachmentId)
+        card.attachments.splice(card.attachments.findIndex((a)=>a.id == attachment.id), 1)
         return true
     }
 

@@ -11,6 +11,8 @@ import Label from "@/common/data/Label";
 import type { SerializableCard } from "@/common/data/Card";
 import type { Transaction } from "@/common/data/Transaction";
 import { SDBoard } from "./extern/SimpleData";
+import { Factory as StoreFactory } from "@/common/attachments/Store";
+import type { Store as AttachmentStore } from "@/common/attachments/Store";
 
 export default class Board extends NamedIdentifiable {
 
@@ -18,22 +20,16 @@ export default class Board extends NamedIdentifiable {
     private _cards = new Map<string, Card>();
     private _labels = new Map<string, Label>();
     private _settings = new Settings();
+    private _attachmentStore: AttachmentStore;
 
     public createdAt = 0
 
     private _transactions: Transaction[];
 
-    constructor() {
+    constructor(attachmentStore: AttachmentStore) {
         super(uuid(), "")
         this._transactions = []
-
-        /*for(const l of [["High", "#D00000"], ["OK", "#FFBA08"], ["Low", "#55AA55"], ["dark", "black"]]) {
-            const label = new Label();
-            label.name = l[0]
-            label.color = l[1]
-            this.labels.set(label.id, label)
-        }*/
-
+        this._attachmentStore = attachmentStore
     }
 
     public get lists(): IndexedMap<List> {
@@ -65,6 +61,17 @@ export default class Board extends NamedIdentifiable {
         return l == undefined ? null : l;
     }
 
+    public attachmentStore(): AttachmentStore {
+        return this._attachmentStore
+    }
+
+    public countAttachmentUsage(location: string){
+        const attachmentCount = Array.from(this.cards.values()).reduce((a, card)=>card.findAttachmentByLocation(location)==null?a:a+1, 0)
+        const descriptionCount =  Array.from(this.cards.values()).reduce((a, card)=>card.description.includes(location)?a+1:a, 0)
+        const commentCount =  Array.from(this.cards.values()).reduce((a, card)=>a+card.comments.reduce((A, comment)=>((!comment.deleted)&&comment.content.includes(location))?A+1:A, 0), 0)
+        return attachmentCount+descriptionCount+commentCount
+    }
+
     public cardOpenClosedStatistic(): number[] {
         return [
             this.lists.items.filter(l=>!l.cardsAreClosed).reduce((a,list)=>a+list.cards.items.length, 0),
@@ -92,11 +99,15 @@ export default class Board extends NamedIdentifiable {
         b.labels = Array.from(this.labels.values()).map( (l: Label) => {return l.toSerializable();});
         b.cards = Array.from(this.cards.values()).map( (c: Card) => {return c.toSerializable();});
         b.settings = this.settings
+        b.attachmentStore = this.attachmentStore().descriptor.serializable((id: string)=>this.countAttachmentUsage(id))
         return b
     }
 
     public static fromSerializable(s: SerializableBoard) {
-        const b = new Board()
+
+        const storeDescriptor = StoreFactory.createDescriptor(s.attachmentStore)
+
+        const b = new Board(StoreFactory.createStore(storeDescriptor)) // FIXME old version had no attachment stores... DELETE this check on product release
         b.id = s.id
         b.name = s.name
         b.createdAt = s.createdAt
@@ -130,6 +141,7 @@ export class SerializableBoard {
     public id = "";
     public name = "";
     public createdAt = 0;
+    public attachmentStore: string | object | null = null
 
 }
 

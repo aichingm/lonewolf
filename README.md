@@ -31,6 +31,10 @@ npm run build
 
 ## Libraries
 
+# Vue3
+
+* vue css modifiers https://stackoverflow.com/questions/48032006/how-do-i-use-deep-or-or-v-deep-in-vue-js
+
 ### Typescript
 
 * https://typescript.tv/errors/

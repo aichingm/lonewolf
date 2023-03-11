@@ -1,4 +1,3 @@
-import { v1 as uuid } from "uuid";
 
 import NamedIdentifiable from "@/common/NamedIdentifiable";
 import { SDLabel } from "./extern/SimpleData";
@@ -9,10 +8,9 @@ export default class Label extends NamedIdentifiable {
 
     public color: string
     public visibility: boolean
-    //private _icon ???
 
     constructor(id: string, name: string) {
-        super(uuid(), name)
+        super(id, name)
         this.color = ""
         this.visibility = true
     }

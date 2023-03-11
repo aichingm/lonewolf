@@ -88,6 +88,23 @@
                     </n-icon>
                 </template>
             </n-button>
+            <n-dropdown v-if="attachmentOptions.length > 0" trigger="click" @clickoutside="attachmentOptionsShow=false" :options="attachmentOptions" :show="attachmentOptionsShow" :show-arrow="true">
+                <n-button v-if="$props.attachments != undefined" quaternary @click="attachmentOptionsShow=!attachmentOptionsShow">
+                    <template #icon>
+                        <n-icon size="20" color="gray">
+                            <icon icon="fluent:attach-20-filled" />
+                        </n-icon>
+                    </template>
+                </n-button>
+            </n-dropdown>
+            <n-button v-if="$props.attachmentStore != undefined" quaternary @click="editorInteractions.attachment" >
+                <template #icon>
+                    <n-icon size="20" color="gray">
+                        <icon icon="fluent:document-add-20-regular" />
+                    </n-icon>
+                </template>
+            </n-button>
+
         </div>
         <div class="right">
             <n-switch v-if="$props.toolbarConfig.showPreviewToggle" class="preview-toggle" size="small" @update:value="(value: boolean) => $emit('previewToggleChanged', value)" :rail-style="previewRailStyle" >
@@ -125,20 +142,85 @@
 
 <script setup lang="ts">
 
-import type { CSSProperties} from 'vue'
-import { useThemeVars } from 'naive-ui'
+import { h, ref, watch } from 'vue'
+import type { CSSProperties, Ref} from 'vue'
+import { NAvatar, NText, NIcon, useThemeVars } from 'naive-ui'
+import type { DropdownRenderOption } from 'naive-ui'
+import { Icon } from "@iconify/vue";
+
 import type { EditorView } from "codemirror"
 import { EditorSelection } from '@codemirror/state'
 import type { SelectionRange, Line } from '@codemirror/state'
+
 import type ToolbarConfig from './ToolbarConfig'
+
+import { AttachmentMeta } from "@/common/attachments/Store";
+import type { Store as AttachmentStore, Location } from "@/common/attachments/Store";
+import type CardAttachment from "@/common/data/CardAttachment";
+
+
+
 
 const $props = defineProps<{
     editorView: EditorView;
-    toolbarConfig: ToolbarConfig
+    toolbarConfig: ToolbarConfig;
+    attachmentStore?: AttachmentStore
+    attachments?: CardAttachment[]
+
 }>()
 
+const $emit = defineEmits(["previewToggleChanged", "save", "reset", "add-attachment"]);
 
-const $emit = defineEmits(["previewToggleChanged", "save", "reset"]);
+const attachmentOptions = ref([]) as Ref<DropdownRenderOption[]>
+const attachmentOptionsShow = ref(false)
+
+watch($props, ()=>{
+    attachmentOptions.value.splice(0, attachmentOptions.value.length)
+    loadUrls()
+})
+
+async function loadUrls() {
+    if($props.attachments != undefined && $props.attachmentStore != undefined){
+        for (const attachment of $props.attachments) {
+            attachmentOptions.value = [...attachmentOptions.value, {
+                key: 'header',
+                type: 'render',
+                render: renderAttachmentOption(attachment, await $props.attachmentStore.url(attachment.location))
+            }]
+        }
+    }
+}
+loadUrls()
+
+function renderAttachmentOption(attachment: CardAttachment, url: string){
+    return ()=>h(
+        'div',
+        {
+            style: 'display: flex; align-items: center; padding: 8px 12px;',
+            class:'dropdown-button-0',
+            onClick:(_e: Event)=>{editorInteractions.insertAttachment(attachment, url); attachmentOptionsShow.value=false},
+        },
+        [
+            attachmentAvatar(attachment, url),
+            h('div', null, [
+                h('div', null, [
+                    h(NText, { depth: 2 }, { default: () => attachment.name })
+                ]),
+                h('div', { style: 'font-size: 12px;' }, [
+                    h(NText, { depth: 3 }, { default: () => attachment.mime })
+                ])
+            ])
+        ]
+    )
+}
+
+function attachmentAvatar(attachment: CardAttachment, url: string) {
+    if(attachment.mime.startsWith("image/")){
+        return h(NAvatar, {style: 'margin-right: 12px;',src: url})
+    }
+    return h(NIcon, {color:'gray', size:'36', style:''},  {default:()=>h(Icon, {icon:'fluent:document-20-filled'})})
+}
+
 
 // preview switcher theme
 const theme  = useThemeVars();
@@ -153,6 +235,14 @@ const previewRailStyle = ({focused, checked}: {focused: boolean, checked: boolea
 
 const editorInteractions = {
 
+    insertText(text: string) {
+        $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => (
+            {
+                changes: [{from: range.from, insert: text}],
+                range: EditorSelection.range(range.from + text.length, range.from + text.length)
+            }
+        )))
+    },
     wrap (range: SelectionRange, start: string, end: string) {
         const transaction = {
             changes: [{from: range.from, insert: start}, {from: range.to, insert: end}],
@@ -302,7 +392,44 @@ const editorInteractions = {
         )))
 
         $props.editorView.focus()
+    },
+    attachment(){
+
+        const input = document.createElement('input');
+        input.type = "file"
+        input.click();
+
+        input.addEventListener('change', (e)=>{
+            const target = e.target as HTMLInputElement
+            if (target == null || target.files == null) {
+                return;
+            }
+            const file = target.files[0]
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const target = e.target
+                if(target != null && target.result != null && $props.attachmentStore){
+                    const store = $props.attachmentStore
+                    const meta = new AttachmentMeta()
+                    meta.name = file.name
+                    meta.mime = file.type
+                    store.createLocation(meta).then((location: Location)=>{
+                        editorInteractions.insertText((file.type.startsWith("image/")?"!":"") + "[" + file.name + "](" + location + ")")
+                        store.pushData(location, target.result as ArrayBuffer) // this can be said because we use readAsArrayBuffer
+                        $emit("add-attachment", location, file.name, file.type)
+                    })
+                }
+            };
+            reader.readAsArrayBuffer(file);// NOTICE if this is changed the type anontation has to change too!!
+        }, false);
+
+    },
+    insertAttachment(attachment: CardAttachment, _url: string){
+        editorInteractions.insertText((attachment.mime.startsWith("image/")?"!":"") + "[" + attachment.name + "](" + attachment.location + ")")
+        $props.editorView.focus()
     }
+
 
 }
 </script>
@@ -332,5 +459,20 @@ const editorInteractions = {
   display: inline-block;
   border-right: 1px solid black;
   height: 20px;
+}
+
+
+.dropdown-button-0 { /* this needs to be global since the actual menu is transportet into an emelemt somewhere in the parrants-cain of the dom */
+margin: 4px;
+cursor:pointer;
+transition: background-color .3s var(--n-bezier);
+}
+.dropdown-button-0:hover {/* this needs to be global since the actual menu is transportet into an emelemt somewhere in the parrants-cain of the dom */
+  background-color: var(--n-option-color-hover) !important;
+}
+:global(.dropdown-button-04aec8f5-4fd4-42e2-a43d-9ab34aea0a861 > .n-button__content) {/* this needs to be global since the actual menu is transportet into an emelemt somewhere in the parrants-cain of the dom */
+  justify-content: space-between;
+  display: inline-flex;
+  flex-grow: 1;
 }
 </style>

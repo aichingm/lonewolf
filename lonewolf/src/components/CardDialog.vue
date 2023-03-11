@@ -26,7 +26,14 @@
                             <Editor v-model:value="descriptionModel"
                                     updateOnBlur
                                     placeholder="Add Description..."
+                                    :attachmentStore="$props.board().attachmentStore()"
+                                    :attachments="attachments"
+                                    @addAttachment="handleNewAttachment"
+
                             />
+                        </IconedBox>
+                        <IconedBox icon="fluent:document-20-filled" :contentOffsetX="24">
+                            <AttachmentManager :attachments="attachments" @delete="handleDeleteAttachment" :board="$props.board" @add="handleNewAttachment"/>
                         </IconedBox>
                         <IconedBox icon="fluent:comment-20-filled" :contentOffsetX="24">
                             <div style="display: flex;flex-grow: 1;flex-direction: column;gap: 8px;">
@@ -38,6 +45,9 @@
                                         updateOnCtrlEnter
                                         exitOnEsc
                                         clearAfterEdit
+                                        :attachmentStore="$props.board().attachmentStore()"
+                                        @addAttachment="handleNewAttachment"
+
                                 />
                                 <n-timeline>
                                     <n-timeline-item v-for="comment in comments" :key="comment.id" type="info">
@@ -70,6 +80,8 @@
                                                     :updateOnBlur="true"
                                                     updateOnCtrlEnter
                                                     exitOnEsc
+                                                    :attachmentStore="$props.board().attachmentStore()"
+                                                    @addAttachment="handleNewAttachment"
                                             />
                                         </div>
 
@@ -92,16 +104,21 @@
 </template>
 
 <script setup lang="ts">
-import Editor from "@/components/editor/Editor.vue";
-import ToolbarConfig from "@/components/editor/ToolbarConfig";
-import LabelSelector from "@/components/labels/LabelSelector.vue";
 import { ref, watch, computed } from "vue";
 import type { Ref } from "vue";
-import InitialFocus from "@/components/InitialFocus.vue";
-import IconedBox from "@/components/IconedBox.vue";
-import TextInput from "@/components/inputs/TextInput.vue";
+
+import Editor from "@/components/editor/Editor.vue";
+import ToolbarConfig from "@/components/editor/ToolbarConfig";
+
 import AutoTime from "@/components/AutoTime.vue";
-import { CardAddLabelTransaction, CardRemoveLabelTransaction, CardChangeTransaction, AddCommentTransaction } from "@/common/data/transactions/CardTransactions";
+import TextInput from "@/components/inputs/TextInput.vue";
+import IconedBox from "@/components/IconedBox.vue";
+import InitialFocus from "@/components/InitialFocus.vue";
+
+import LabelSelector from "@/components/labels/LabelSelector.vue";
+import AttachmentManager from "@/components/attachments/AttachmentManager.vue";
+
+import { CardAddLabelTransaction, CardRemoveLabelTransaction, CardChangeTransaction, AddCommentTransaction, AddAttachmentTransaction, CardRemoveAttachmentTransaction } from "@/common/data/transactions/CardTransactions";
 import { CardCommentChangeTransaction } from "@/common/data/transactions/CardCommentTransactions";
 import type Card from "@/common/data/Card";
 import type CardComment from "@/common/data/CardComment";
@@ -131,6 +148,13 @@ watch($props.cardHolder, ()=>{if(card.value!= null) setRefs(card.value)})
 const activeLabels = computed(() => {
     if (card.value != null) {
         return card.value.labels.filter(l=>l.visibility);
+    }
+    return [];
+})
+
+const attachments = computed(() => {
+    if (card.value != null) {
+        return [...card.value.attachments];
     }
     return [];
 })
@@ -166,6 +190,18 @@ function handleEditComment(comment: CardComment, value: string) {
     }
 }
 
+function handleNewAttachment(location: string, name: string, type: string) {
+    if (card.value != null) {
+        $emit('transaction', new AddAttachmentTransaction(card.value.id, location, name, type))
+    }
+}
+
+function handleDeleteAttachment(attachmentId: string) {
+    if (card.value != null) {
+        $emit('transaction', new CardRemoveAttachmentTransaction(card.value.id, attachmentId))
+    }
+}
+
 function timestampOrNull(timestamp: number | null): number | null {
     if(timestamp == null || card.value == null){
         return null
@@ -189,8 +225,6 @@ const setRefs = (card: Card) => {
     timestampOriginal = timestampOrNull(card.dueDate)
     timestampModel.value = timestampOrNull(card.dueDate)
 }
-
-
 
 const showModel = ref(true)
 watch($props.show, ()=>{showModel.value = $props.show.value;})
@@ -232,5 +266,9 @@ function removeLabel(labelId: string) {
     padding: 8px;
 }
 
+
+.block {
+    display: block;
+}
 
 </style>
