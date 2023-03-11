@@ -2,7 +2,7 @@
     <div style="height:100%;">
         <FileMenu v-model:show="fileMenu.state" @action="(action: string)=>fileMenu.actionHandler(action)"/>
         <div class="app-header-nav" :style="'border-bottom-color:' + borderColor + ';'">
-            <n-space class="app-header-nav-space" justify="left">
+            <n-space class="app-header-nav-space" justify="left" allign="center">
                 <n-button @click="fileMenu.show(true)" :ghost ="true" :block="true" :bordered="false">
                     <template #icon>
                         <n-icon size="24" color="gray">
@@ -11,6 +11,14 @@
                     </template>
                 </n-button>
                 <TextInput fontSize="20px" :value="title.ref" @update:value="title.update" placeholder="Title" autosize commitOnBlur commitOnEnter selectOnEdit/>
+                <n-tooltip v-if="!SavedObserver.getInstance().isSavedRef().value" trigger="hover">
+                    <template #trigger>
+                        <n-icon size="24" :color="theme.warningColor" style="display:block;">
+                            <icon icon="fluent:warning-20-filled" />
+                        </n-icon>
+                    </template>
+                    The board has unsaved changes!
+                </n-tooltip>
             </n-space>
             <n-space class="app-header-nav-space" justify="center">
                 <div></div>
@@ -46,19 +54,20 @@
                     class="board"
                     @card-edit="showCardDialog"
                     @list-edit="showListDialog"
-                    @transaction="(t)=>createTransactionHandler(boardFn())(t)"
+                    @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)"
                 />
             </div>
-            <CardDialog  v-if="cardDialogCard.card.id != ''" :cardHolder="cardDialogCard" :board="boardFn" :labels="simpleDataRoot.board.labels" v-model:show="cardDialogShow.ref" @transaction="(t)=>createTransactionHandler(boardFn())(t)" />
-            <ListDialog :id="listDialog.id" :board="boardFn" v-model:show="listDialog.show" @transaction="(t)=>createTransactionHandler(boardFn())(t)" />
-            <SettingsDialog :board="boardFn" v-model:show="settingsDialogShow.ref" :labels="simpleDataRoot.board.labels" :settings="simpleDataRoot.board.settings" @transaction="(t)=>createTransactionHandler(boardFn())(t)" />
+            <CardDialog  v-if="cardDialogCard.card.id != ''" :cardHolder="cardDialogCard" :board="boardFn" :labels="simpleDataRoot.board.labels" v-model:show="cardDialogShow.ref" @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)" />
+            <ListDialog :id="listDialog.id" :board="boardFn" v-model:show="listDialog.show" @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)" />
+            <SettingsDialog :board="boardFn" v-model:show="settingsDialogShow.ref" :labels="simpleDataRoot.board.labels" :settings="simpleDataRoot.board.settings" @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)" />
         </div>
     </div>
 </template>
 <script setup lang="ts">
 import { ref, reactive, watch, shallowRef } from "vue";
 import type { Ref } from "vue";
-import { useThemeVars } from 'naive-ui'
+import { useThemeVars, useDialog } from 'naive-ui'
+
 import BoardVue from "@/components/Board.vue";
 import TextInput from "@/components/inputs/TextInput.vue";
 import CardDialog from "@/components/CardDialog.vue";
@@ -69,6 +78,7 @@ import Board from "@/common/data/Board";
 import type Card from "@/common/data/Card";
 import type List from "@/common/data/List";
 import MostRecent from "@/common/MostRecent";
+import SavedObserver from "@/common/SavedObserver";
 import type { Transaction } from "@/common/data/Transaction";
 import { RefProtector } from "@/utils/vue";
 import { SDRoot, SDCardHolder, SDCard } from "@/common/data/extern/SimpleData";
@@ -76,10 +86,11 @@ import { NewBoardTransaction, BoardChangeTransaction } from "@/common/data/trans
 import { BrowserNativeStorage } from "@/common/storage/BrowserStorage";
 import { Factory as StoreFactory } from "@/common/attachments/Store";
 
-
 import toEmoji from "emoji-name-map";
 
 const emo = (name: string): string => toEmoji.get(name)
+
+const dialog = useDialog()
 
 const theme  = useThemeVars();
 const borderColor = theme.value.borderColor;
@@ -101,9 +112,9 @@ const title = new RefProtector(ref(""), (newTitle: string)=> {
     createTransactionHandler(board.value)(t)
 })
 
+SavedObserver.getInstance().persist()
 
 const board = shallowRef(MostRecent.exists() ? MostRecent.load() as Board : newBoard()) as Ref<Board>; // as Board because typescript is stupid and can't see that .exist checks if it is null...
-
 
 title.assign(board.value.name)
 cardsStat.value = board.value.cardOpenClosedStatistic()
@@ -132,6 +143,7 @@ function createTransactionHandler(board: Board) {
             transaction.mutate(simpleDataRoot.board, board)
             board.transactions.push(transaction)
             MostRecent.put(board)
+            SavedObserver.getInstance().dirty()
         }
     }
 }
@@ -140,33 +152,54 @@ const storage = new BrowserNativeStorage();
 
 function actionHandler(action: string) {
 
+    const openNewBoard = () => {
+        simpleDataRoot.reset()
+        board.value = newBoard()
+        simpleDataRoot.board = board.value.toSimpleData()
+    }
+
+    const openBoard = () => {
+        storage.load("").then((b: Board)=>{
+            simpleDataRoot.reset()
+            simpleDataRoot.board = b.toSimpleData()
+            board.value = b
+            SavedObserver.getInstance().clear()
+        })
+    }
     switch (action) {
     case 'new':
 
-        // TODO here should be a check if the board is saved
-
-        simpleDataRoot.reset()
-
-        board.value = newBoard()
-
-        simpleDataRoot.board = board.value.toSimpleData()
+        if (!SavedObserver.getInstance().isSaved()) {
+            dialog.warning({
+                title: 'Unsaved changes',
+                content: 'The currently open board is not saved, are you sure you want to open a new one? Unsaved changes will be lost!',
+                positiveText: 'New Board',
+                negativeText: 'Cancel',
+                onPositiveClick: openNewBoard
+            })
+        } else {
+            openNewBoard()
+        }
         break;
-
     case 'save':
         //https://github.com/ankitrohatgi/tarballjs
         //https://github.com/Stuk/jszip
         //local storage
-        storage.save(board.value)
+        storage.save(board.value).then(()=>SavedObserver.getInstance().clear())
         break;
     case 'open':
         if (storage.isListable()) {
             const _entries = storage.list()
-        } else {
-            storage.load("").then((b: Board)=>{
-                simpleDataRoot.reset()
-                simpleDataRoot.board = b.toSimpleData()
-                board.value = b
+        } else if (!SavedObserver.getInstance().isSaved()) {
+            dialog.warning({
+                title: 'Unsaved changes',
+                content: 'The currently open board is not saved, are you sure you want to open a different one? Unsaved changes will be lost!',
+                positiveText: 'Discard changes',
+                negativeText: 'Cancel',
+                onPositiveClick: openBoard
             })
+        } else {
+            openBoard()
         }
         break;
     default:
@@ -184,6 +217,8 @@ function newBoard () {
     const board = new Board(StoreFactory.createStore(storeDescriptor))
     board.name = "Untitled Board"
     new NewBoardTransaction().apply(board)
+    SavedObserver.getInstance().clear()
+
     return board
 }
 

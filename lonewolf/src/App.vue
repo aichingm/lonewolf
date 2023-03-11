@@ -14,7 +14,9 @@ const theme = null;
 <template>
     <n-config-provider :theme="theme" :theme-overrides="themeOverrides" class="app-config-wrapper">
         <n-global-style />
-        <AppView />
+        <n-dialog-provider>
+            <AppView />
+        </n-dialog-provider>
     </n-config-provider>
 </template>
 

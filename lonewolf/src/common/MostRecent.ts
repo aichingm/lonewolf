@@ -11,7 +11,7 @@ export default class MostRecent {
     }
 
     public static put(board: Board) {
-        localStorage.setItem("mostRecentBoard", JSON.stringify(board.toSerializable())) // localstorage
+        localStorage.setItem(MostRecent._localstorageKey, JSON.stringify(board.toSerializable())) // localstorage
     }
 
     public static load(): Board | null {
