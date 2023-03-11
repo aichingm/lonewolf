@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import AppView from "@/views/AppView.vue";
-import WebView from "@/views/WebView.vue";
 
 const themeOverrides = {
     common: {
@@ -15,8 +14,7 @@ const theme = null;
 <template>
     <n-config-provider :theme="theme" :theme-overrides="themeOverrides" class="app-config-wrapper">
         <n-global-style />
-        <AppView v-if="true"/>
-        <WebView v-if="false"/>
+        <AppView />
     </n-config-provider>
 </template>
 
