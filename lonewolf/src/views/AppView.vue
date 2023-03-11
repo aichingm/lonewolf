@@ -13,13 +13,7 @@
                 <TextInput fontSize="20px" :value="title.ref" @update:value="title.update" placeholder="Title" autosize commitOnBlur commitOnEnter selectOnEdit/>
             </n-space>
             <n-space class="app-header-nav-space" justify="center">
-                <n-input v-model:value="searchValue" type="text" placeholder="Search" clearable>
-                    <template #prefix>
-                        <n-icon color="gray">
-                            <icon icon="fluent:search-20-filled" />
-                        </n-icon>
-                    </template>
-                </n-input>
+                <div></div>
             </n-space>
             <n-space class="app-header-nav-space" justify="right">
                 <n-tooltip trigger="hover">
@@ -92,7 +86,6 @@ const borderColor = theme.value.borderColor;
 
 const fileMenu = {state: ref(false), show: (value: boolean)=>fileMenu.state.value=value, actionHandler: actionHandler}
 
-const searchValue = ref();
 const cardsStat = ref([0,0])
 
 const cardDialogCard = reactive(new SDCardHolder(new SDCard("", "")))
