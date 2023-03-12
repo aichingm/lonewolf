@@ -19,6 +19,14 @@
                     </template>
                     The board has unsaved changes!
                 </n-tooltip>
+                <n-tooltip v-if="MostRecent.failedRef().value" trigger="hover">
+                    <template #trigger>
+                        <n-icon size="24" :color="theme.errorColor" style="display:block;">
+                            <icon icon="fluent:warning-20-filled" />
+                        </n-icon>
+                    </template>
+                    The board is to large, in broswer storage disabled!
+                </n-tooltip>
             </n-space>
             <n-space class="app-header-nav-space" justify="center">
                 <div></div>

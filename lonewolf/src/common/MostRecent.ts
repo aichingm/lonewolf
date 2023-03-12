@@ -1,9 +1,16 @@
 
 import Board from './data/Board'
+import { ref } from "vue";
+import type { Ref } from "vue";
 
 export default class MostRecent {
 
     private static _localstorageKey = "mostRecentBoard"
+    private static _failedRef = ref(false)
+
+    public static failedRef(): Ref<boolean> {
+        return MostRecent._failedRef
+    }
 
     public static exists(): boolean {
         const mostRecentBoardString = localStorage.getItem(MostRecent._localstorageKey)
@@ -11,7 +18,14 @@ export default class MostRecent {
     }
 
     public static put(board: Board) {
-        localStorage.setItem(MostRecent._localstorageKey, JSON.stringify(board.toSerializable())) // localstorage
+        const dataStr = JSON.stringify(board.toSerializable())
+        if (new Blob([dataStr]).size <= 4000000) {
+            localStorage.setItem(MostRecent._localstorageKey, dataStr)
+            MostRecent._failedRef.value = false
+        } else {
+            localStorage.removeItem(MostRecent._localstorageKey)
+            MostRecent._failedRef.value = true
+        }
     }
 
     public static load(): Board | null {
