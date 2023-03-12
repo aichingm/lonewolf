@@ -23,6 +23,7 @@
     "dayjs": "^1.11.7",
     "dompurify": "^2.4.3",
     "emoji-name-map": "^1.2.9",
+    "github-markdown-css": "^5.2.0",
     "import": "^0.0.6",
     "marked": "^4.1.0",
     "pinia": "^2.0.17",

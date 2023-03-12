@@ -1,5 +1,5 @@
 <template>
-    <div ref="elem" class="content" v-html="previewHtml" @click="interceptLinkAction"></div>
+    <div ref="elem" class="content markdown-body" v-html="previewHtml" @click="interceptLinkAction"></div>
 </template>
 <script setup lang="ts">
 

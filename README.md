@@ -76,6 +76,10 @@ npm run build
 * https://github.com/markdown-it/markdown-it
     * https://github.com/revin/markdown-it-task-lists task lists
 
+#### Styling
+
+* https://github.com/sindresorhus/github-markdown-css
+
 #### Working idea 1
 
 Go with a editor like github which is just a textarea.
