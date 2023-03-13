@@ -32,13 +32,13 @@
                 </template>
                 {{ card.attachments.length }}
             </n-tag>
-            <n-tag v-if="tasks[1] > 0" size="small" type="success" :bordered="false">
+            <n-tag v-if="totalTasks[1] > 0" size="small" type="success" :bordered="false">
                 <template #icon>
                     <n-icon size="20" color="#18a058">
-                        <icon :icon="tasks[0]==0?'fluent:checkbox-unchecked-20-regular':tasks[0] == tasks[1]?'fluent:checkbox-checked-20-regular':'fluent:checkbox-indeterminate-20-regular'" />
+                        <icon :icon="totalTasks[0]==0?'fluent:checkbox-unchecked-20-regular':totalTasks[0] == totalTasks[1]?'fluent:checkbox-checked-20-regular':'fluent:checkbox-indeterminate-20-regular'" />
                     </n-icon>
                 </template>
-                {{ tasks[0] + "/" + tasks[1]}}
+                {{ totalTasks[0] + "/" + totalTasks[1]}}
             </n-tag>
         </n-space>
     </div>
@@ -81,6 +81,10 @@ const activeLabels = ref([...card.value.labels.filter(l=>l.visibility)])
 watch([$props.labels, $props.card], ()=> assignArray(activeLabels, card.value.labels.filter(l=>l.visibility)))
 
 const tasks = computed(()=>taskStats(card.value.description))
+
+const tasksComments = computed(()=>card.value.comments.map(c=>taskStats(c.content)).reduce((a, v)=> [a[0] + v[0], a[1] + v[1]], [0, 0]))
+
+const totalTasks = computed(()=>[tasks.value[0] + tasksComments.value[0], tasks.value[1] + tasksComments.value[1]])
 
 const hasDueDate = ref(card.value.dueDate!=null)
 watch($props.card, ()=> hasDueDate.value = (card.value.dueDate != null))
