@@ -9,41 +9,42 @@
             size="huge"
             role="dialog"
             aria-modal="true"
-            content-style="padding-left: 32px; padding-right: 32px;"
+            content-style="padding-left: 32px; padding-right: 32px;display:flex;"
             header-style="padding-left: 32px; padding-right: 32px;"
 
         >
             <template #header>
                 Settings
             </template>
-            <template #header-extra>
-            </template>
-            <n-space vertical class="reset-left-card-margin">
-                <n-layout has-sider>
-                    <n-layout-sider
-                        bordered
-                        collapse-mode="width"
-                        :collapsed-width="64"
-                        :width="240"
+            <n-layout has-sider
+                      class="reset-left-card-margin content"
+            >
+                <n-layout-sider
+                    :native-scrollbar="false"
+                    style="height:100%"
+                    bordered
+                    collapse-mode="width"
+                    :collapsed-width="64"
+                    :width="240"
+                    :collapsed="collapsedModel"
+                    show-trigger
+                    @collapse="collapsedModel = true"
+                    @expand="collapsedModel = false"
+                >
+                    <n-menu
+                        style="height:100%"
                         :collapsed="collapsedModel"
-                        show-trigger
-                        @collapse="collapsedModel = true"
-                        @expand="collapsedModel = false"
-                    >
-                        <n-menu
-                            :collapsed="collapsedModel"
-                            :collapsed-width="64"
-                            :collapsed-icon-size="22"
-                            :options="menuOptions"
-                            v-model:value="menuModel"
-                        />
-                    </n-layout-sider>
-                    <n-layout class="settings-content-pane">
-                        <LabelsManager v-if="menuModel == 'labels'" :board="$props.board" :labels="$props.labels" @transaction="(t)=>$emit('transaction', t)"/>
-                        <BoardManager v-if="menuModel == 'board'" :board="$props.board" @transaction="(t)=>$emit('transaction', t)"/>
-                    </n-layout>
+                        :collapsed-width="64"
+                        :collapsed-icon-size="22"
+                        :options="menuOptions"
+                        v-model:value="menuModel"
+                    />
+                </n-layout-sider>
+                <n-layout class="settings-content-pane" style="height:100%">
+                    <LabelsManager v-if="menuModel == 'labels'" :board="$props.board" :labels="$props.labels" @transaction="(t)=>$emit('transaction', t)"/>
+                    <BoardManager v-if="menuModel == 'board'" :board="$props.board" @transaction="(t)=>$emit('transaction', t)"/>
                 </n-layout>
-            </n-space>
+            </n-layout>
         </n-card>
     </n-modal>
 </template>
@@ -103,14 +104,19 @@ const menuModel = ref(menuOptions[0].key)
 <style scoped>
 .card {
     width: 900px;
+    height: calc(100vh - 222px) !important;
+    min-height: 240px;
 }
 
 .reset-left-card-margin {
     margin-left: -32px;
 }
 
+.content{
+    display: flex;
+}
+
 .settings-content-pane {
     padding-left: 24px;
-    margin-top: 2px;
 }
 </style>
