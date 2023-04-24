@@ -9,6 +9,10 @@
             <div>List arrangement</div>
             <n-slider style="width:300px;margin-right:20px;" v-model:value="listsJustification" :tooltip="false" :marks="marks" step="mark" />
         </n-space>
+        <n-space justify="space-between">
+            <div>List width</div>
+            <n-slider style="width:300px;margin-right:20px;" v-model:value="listsWidth" step="1" :min="160" :max="1600"/>
+        </n-space>
     </n-space>
 </template>
 
@@ -36,9 +40,12 @@ const $emit = defineEmits(["transaction"]);
 
 const showNewList = ref($props.board().settings.boardShowNewList)
 const listsJustification = ref(reverseTranslate($props.board().settings.boardListsJustification))
+const listsWidth = ref($props.board().settings.boardListsWidth)
 
 watch(showNewList, ()=>$emit("transaction", new SettingsChangeTransaction("boardShowNewList", showNewList.value)))
 watch(listsJustification, ()=>$emit("transaction", new SettingsChangeTransaction("boardListsJustification", translateValue(listsJustification.value))))
+watch(listsWidth, ()=>$emit("transaction", new SettingsChangeTransaction("boardListsWidth", listsWidth.value)))
+
 
 function translateValue(value: number): string{
     switch(value){

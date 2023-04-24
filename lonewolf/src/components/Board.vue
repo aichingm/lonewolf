@@ -16,6 +16,7 @@
             <template #item="{ element }">
                 <ListVue
                     :board="$props.board"
+                    :simpleBoard="$props.simpleBoard"
                     :simpleList="element"
                     :lists="lists"
                     :labels="$props.simpleBoard.labels"

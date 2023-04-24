@@ -1,5 +1,5 @@
 <template>
-    <div class="list-lane">
+    <div class="list-lane" :style="'width: ' + listWidth + 'px'">
         <div class="list-header list-part list-dragger" @click="$emit('list-edit', list, $props.simpleList)">
             <div class="list-name">{{ list.name }}</div>
             <n-space :size="34" item-style="display: flex;">
@@ -69,7 +69,8 @@ import { isChrome } from "@/utils/browser-comp";
 
 import type Board from "@/common/data/Board";
 import type List from "@/common/data/List";
-import type { SDList, SDLabel } from "@/common/data/extern/SimpleData";
+import type { SDList, SDLabel, SDBoard } from "@/common/data/extern/SimpleData";
+
 import type Card from "@/common/data/Card";
 
 
@@ -78,6 +79,7 @@ import { NewCardTransaction, CardSortTransaction, CardMoveTransaction } from "@/
 
 const $props = defineProps<{
     board: () => Board;
+    simpleBoard: SDBoard;
     simpleList: SDList;
     lists: SDList[];
     labels: SDLabel[];
@@ -89,7 +91,11 @@ const list = computed(()=>{$props.simpleList.version; return $props.board().find
 const cards = computed(()=>{$props.simpleList.version; return $props.simpleList.cards})
 
 const lists = computed(()=>{$props.simpleList.version; return $props.lists.map((t: SDList) : List|null => $props.board().findList(t.id)).filter(l=>l!=null) as List[]})
+
 const actions = computed(()=>{$props.simpleList.version; return generateActions(lists.value)})
+
+const listWidth = computed(()=>{$props.simpleBoard.settings.version; return $props.board().settings.boardListsWidth})
+
 
 function generateActions(lists: List[]): ActionDropdownOption[] {
     const children = filterMoveList(lists);
@@ -225,7 +231,7 @@ const inputHasFocus = ref(false)
   display: inline-block;
   vertical-align: top;
   width: 270px;
-  min-width: 270px;
+  min-width: 160px;
   height: 100%;
 }
 
