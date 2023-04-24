@@ -32,5 +32,7 @@ shell-light:
 type-check:
 	podman run --rm -t -v .:/app lonewolf:build bash -c 'cd /app/lonewolf/; npm run type-check'
 
+icons:
+	podman run --rm -it -v .:/app lonewolf:build bash -c 'cd /app/lonewolf/; convert -background transparent src/assets/logo.svg -resize 64x64 -format ico public/favicon.ico'
 
 
