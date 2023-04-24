@@ -180,7 +180,7 @@ watch($props, ()=>{
 })
 
 async function loadUrls() {
-    if($props.attachments != undefined && $props.attachmentStore != undefined){
+    if($props.attachments != undefined && $props.attachments.length > 0 && $props.attachmentStore != undefined){
         for (const attachment of $props.attachments) {
             attachmentOptions.value = [...attachmentOptions.value, {
                 key: 'header',

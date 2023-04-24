@@ -35,6 +35,16 @@ export class SDCardHolder extends SimpleData{
 
 }
 
+export class SDListHolder extends SimpleData{
+    public list: SDList
+
+    constructor (list: SDList) {
+        super("", "")
+        this.list = list
+    }
+
+}
+
 export class SDBoard extends SimpleData{
     public lists = new Array<SDList>();
     public labels = new Array<SDLabel>();

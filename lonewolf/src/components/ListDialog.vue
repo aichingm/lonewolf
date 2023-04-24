@@ -20,6 +20,9 @@
                         <IconedBox icon="fluent:book-question-mark-20-filled" :contentOffsetX="24" :iconOffsetY="8">
                             <n-space class="flex-grow" justify="space-between" align="center">Cards are Closed <n-switch :round="false" v-model:value="cardsClosed" /></n-space>
                         </IconedBox>
+                        <IconedBox icon="fluent:timeline-20-filled" :contentOffsetX="24">
+                            <ListDialogTimeline v-if="list != null" :logbook="logbook" @transaction="(t)=>$emit('transaction', t)" :board="$props.board" :list="list" />
+                        </IconedBox>
                     </n-space>
                 </div>
             </n-scrollbar>
@@ -28,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import type { Ref } from "vue";
 import InitialFocus from "@/components/InitialFocus.vue";
 import TextInput from "@/components/inputs/TextInput.vue";
@@ -36,26 +39,35 @@ import IconedBox from "@/components/IconedBox.vue";
 import { ListChangeTransaction } from "@/common/data/transactions/ListTransactions";
 import type List from "@/common/data/List";
 import type Board from "@/common/data/Board";
+import type { SDListHolder } from "@/common/data/extern/SimpleData";
+import ListDialogTimeline from "@/components/timeline/ListDialogTimeline.vue";
+import type { Entry as LogEntry } from "@/common/logs/LogEntry";
+
+
 
 
 const $props = defineProps<{
-    id: Ref<string>;
+    listHolder: SDListHolder;
     board: () => Board;
     show: Ref<boolean>;
 }>();
 
 const $emit = defineEmits(["transaction", "update:show"]);
 
-const emitTitle = (title: string) => $emit("transaction", new ListChangeTransaction($props.id.value, 'name', title))
+const emitTitle = (title: string) => $emit("transaction", new ListChangeTransaction($props.listHolder.list.id, 'name', title))
 
-const titleModel = ref("")
-const cardsClosed = ref(false)
-const showModel = ref(false)
+const list = computed(()=>{$props.listHolder.list.version; return $props.board().findList($props.listHolder.list.id)})
 
-const reloadList = () => {
-    const list =  $props.board().findList($props.id.value);
-    if(list != null) setRefs(list)
-}
+watch($props.listHolder, ()=>{if(list.value != null) setRefs(list.value)})
+
+const logbook = computed(()=>list.value == null?[]:list.value.logbook.map((tId)=>$props.board().logbook.get(tId)).filter(e=>e!=undefined) as LogEntry[])
+
+const showModel = ref(true)
+watch($props.show, ()=>{showModel.value = $props.show.value;})
+watch(showModel, ()=>$emit("update:show", showModel))
+
+const titleModel = ref(list.value!=null?list.value.name:"")
+const cardsClosed = ref(list.value!=null?list.value.cardsAreClosed:false)
 
 const setRefs = (list: List) => {
     titleModel.value = list.name
@@ -63,15 +75,10 @@ const setRefs = (list: List) => {
 }
 
 watch(cardsClosed, ()=>{
-    $emit("transaction", new ListChangeTransaction($props.id.value, 'cardsAreClosed', cardsClosed.value))
+    $emit("transaction", new ListChangeTransaction($props.listHolder.list.id, 'cardsAreClosed', cardsClosed.value))
 })
 
-watch($props.id, ()=>reloadList())
-watch($props.show, () => showModel.value = $props.show.value)
-watch(showModel, ()=>{
-    $emit("update:show", showModel)
-    reloadList()
-})
+
 
 
 </script>

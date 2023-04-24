@@ -49,51 +49,22 @@
                                         @addAttachment="handleNewAttachment"
 
                                 />
-                                <n-timeline>
-                                    <n-timeline-item v-for="comment in comments" :key="comment.id" type="info">
-                                        <n-space justify="space-between" align="center" style="height: 34px;">
-                                            <n-space >
-                                                <n-text depth="3">You commented <AutoTime :data="comment.createdAt" /></n-text>
-                                            </n-space>
-                                            <n-space>
-                                                <n-button-group>
-                                                    <!--<n-button round size='tiny' ghost color="rgb(118, 124, 130)" quaternary>
-                                                    edit
-                                                </n-button>-->
-                                                    <n-popconfirm :show-icon="false" :negative-text="'Delete it'" :positive-text="'Oh, nevermind'" :negative-button-props="{type:'error'}" :positive-button-props="{type:'default'}" @negative-click="handleDeleteComment(comment)">
-                                                        <template #trigger>
-                                                            <n-button round size='tiny' color="rgb(118, 124, 130)" quaternary>
-                                                                delete
-                                                            </n-button>
-                                                        </template>
-                                                        Deleting a comment can not be  undone, are U sure?
-                                                    </n-popconfirm>
-                                                </n-button-group>
-                                            </n-space>
-                                        </n-space>
-
-                                        <div class="comment">
-                                            <Editor :value="comment.content"
-                                                    @update:value="(value: string)=>handleEditComment(comment, value)"
-                                                    placeholder=""
-                                                    :toolbarConfig="ToolbarConfig.forComment()"
-                                                    :updateOnBlur="true"
-                                                    updateOnCtrlEnter
-                                                    exitOnEsc
-                                                    :attachmentStore="$props.board().attachmentStore()"
-                                                    @addAttachment="handleNewAttachment"
-                                            />
-                                        </div>
-
-                                        <template #icon>
-                                            <n-icon>
-                                                <icon icon="fluent:comment-20-regular" />
-                                            </n-icon>
-                                        </template>
-                                    </n-timeline-item>
-                                </n-timeline>
-
                             </div>
+                        </IconedBox>
+                        <IconedBox icon="fluent:timeline-20-filled" :contentOffsetX="24">
+                            <n-space vertical style="flex-grow: 1;">
+                                <n-space justify="right">
+                                    <n-switch v-model:value="timelineShowDetailsModel">
+                                        <template #checked>
+                                            Show details
+                                        </template>
+                                        <template #unchecked>
+                                            Hide details
+                                        </template>
+                                    </n-switch>
+                                </n-space>
+                                <CardDialogTimeline v-if="card != null" :show-details="timelineShowDetailsModel" :logbook="logbook" @transaction="(t)=>$emit('transaction', t)" :board="$props.board" :card="card" />
+                            </n-space>
                         </IconedBox>
                         <div>&nbsp;<!-- this is needed to allow the editor to blur, remove when adding a new iconed box below the editor--></div>
                     </n-space>
@@ -110,20 +81,22 @@ import type { Ref } from "vue";
 import Editor from "@/components/editor/Editor.vue";
 import ToolbarConfig from "@/components/editor/ToolbarConfig";
 
-import AutoTime from "@/components/AutoTime.vue";
 import TextInput from "@/components/inputs/TextInput.vue";
 import IconedBox from "@/components/IconedBox.vue";
 import InitialFocus from "@/components/InitialFocus.vue";
+import CardDialogTimeline from "@/components/timeline/CardDialogTimeline.vue";
 
 import LabelSelector from "@/components/labels/LabelSelector.vue";
 import AttachmentManager from "@/components/attachments/AttachmentManager.vue";
 
-import { CardAddLabelTransaction, CardRemoveLabelTransaction, CardChangeTransaction, AddCommentTransaction, AddAttachmentTransaction, CardRemoveAttachmentTransaction } from "@/common/data/transactions/CardTransactions";
-import { CardCommentChangeTransaction } from "@/common/data/transactions/CardCommentTransactions";
+import { CardAddLabelTransaction, CardRemoveLabelTransaction, CardChangeTransaction, AddCommentTransaction, AddAttachmentTransaction } from "@/common/data/transactions/CardTransactions";
+import { CardAttachmentChangeTransaction } from "@/common/data/transactions/CardAttachmentTransactions";
 import type Card from "@/common/data/Card";
-import type CardComment from "@/common/data/CardComment";
 import type Board from "@/common/data/Board";
 import type { SDCardHolder, SDLabel } from "@/common/data/extern/SimpleData";
+import type { Entry as LogEntry } from "@/common/logs/LogEntry";
+
+
 
 
 import dayjs from 'dayjs'
@@ -154,7 +127,7 @@ const activeLabels = computed(() => {
 
 const attachments = computed(() => {
     if (card.value != null) {
-        return [...card.value.attachments];
+        return [...card.value.attachments.filter(a=>a.deleted != true)];
     }
     return [];
 })
@@ -170,23 +143,14 @@ watch(descriptionModel, () => {
     }
 })
 
-const comments = computed(()=>card.value == null?[]:Array.from(card.value.comments).filter(c=>!c.deleted).reverse() )
+
+const logbook = computed(()=>card.value == null?[]:card.value.logbook.map((tId)=>$props.board().logbook.get(tId)).filter(e=>e!=undefined) as LogEntry[])
+
+const timelineShowDetailsModel = ref(false)
 
 const emitNewCommentTransaction = (value: string) => {
     if (value != "") {
         $emit("transaction", new AddCommentTransaction($props.cardHolder.card.id, value))
-    }
-}
-
-function handleDeleteComment(comment: CardComment) {
-    if (card.value != null) {
-        $emit('transaction', new CardCommentChangeTransaction(card.value.id, comment.id, 'deleted', true))
-    }
-}
-
-function handleEditComment(comment: CardComment, value: string) {
-    if (card.value != null) {
-        $emit('transaction', new CardCommentChangeTransaction(card.value.id, comment.id, 'content', value))
     }
 }
 
@@ -198,7 +162,7 @@ function handleNewAttachment(location: string, name: string, type: string) {
 
 function handleDeleteAttachment(attachmentId: string) {
     if (card.value != null) {
-        $emit('transaction', new CardRemoveAttachmentTransaction(card.value.id, attachmentId))
+        $emit('transaction', new CardAttachmentChangeTransaction(card.value.id, attachmentId, 'deleted', true))
     }
 }
 

@@ -20,7 +20,7 @@
                     :lists="lists"
                     :labels="$props.simpleBoard.labels"
                     @card-edit="(card, simpleCard)=>$emit('card-edit', card, simpleCard)"
-                    @list-edit="(list)=>$emit('list-edit', list)"
+                    @list-edit="(list, simpleList)=>$emit('list-edit', list, simpleList)"
                     @transaction="(t)=>$emit('transaction', t)"
                 />
             </template>

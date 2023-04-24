@@ -1,6 +1,6 @@
 <template>
     <n-space align="center">
-        <Async v-for="attachment in $props.attachments" :key="attachment.id"
+        <Async v-for="attachment in $props.attachments.filter(a=>!a.deleted)" :key="attachment.id"
                :promise="$props.board().attachmentStore().url(attachment.location)"
         ><template  #then="{then}">
             <AttachmentActions class="block" :attachment="attachment" :url="then!=null?then:''" @delete="(id)=>$emit('delete', id)">

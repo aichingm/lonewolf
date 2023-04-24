@@ -5,6 +5,8 @@ import type Card from "../Card";
 import type CardAttachment from "../CardAttachment";
 import type { SDBoard } from "../extern/SimpleData";
 
+import { Entry as LogEntry, Kind as LogKind, Action as LogAction } from "../../logs/LogEntry";
+
 type CardAttachmentField = keyof CardAttachment
 type CardAttachmentValue = CardAttachment[CardAttachmentField];
 
@@ -43,8 +45,16 @@ export class CardAttachmentChangeTransaction extends IdentifiableTransaction imp
         console.log("CardAttachmentChangeTransaction", this._cardId, this._attachmentId, this._field, this._value)
         const card = this.card(board)
         const attachment = this.attachment(card, this._attachmentId)
-        console.log(typeof this._field, typeof attachment[this._field], typeof this._value)
         Object.defineProperty(attachment, this._field, {value: this._value, writable: true });
+
+        this.applyLogEntry(board, this.defaultLogEntry()
+            .setSubjectKind(LogKind.Card)
+            .setSubjectId(this._cardId)
+            .setAction(LogAction.Disconnect)
+            .setObjectId(this._attachmentId)
+            .setObjectKind(LogKind.Attachment)
+            .setArguments(attachment.name))
+
         return true
     }
 
@@ -55,6 +65,17 @@ export class CardAttachmentChangeTransaction extends IdentifiableTransaction imp
         const cardTree = listTree.cards[card.position]
         cardTree.version = this.id
         return true
+    }
+
+    public defaultLogEntry(): LogEntry {
+        return (new LogEntry())
+            .setTimestamp(this.createdAt)
+            .setInitiator("self")
+    }
+
+    public applyLogEntry(board: Board, logEntry: LogEntry) {
+        board.logbook.set(logEntry.id, logEntry)
+        this.card(board).logbook.push(logEntry.id)
     }
 
 }

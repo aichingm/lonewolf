@@ -7,17 +7,21 @@ export default class CardAttachment {
     public location: string;
     public name: string;
     public mime: string;
+    public deleted: boolean;
 
 
-    constructor(id: string, location: string, name: string, mime: string) {
+
+    constructor(id: string, location: string, name: string, mime: string, deleted: boolean) {
         this.id = id;
         this.location = location;
         this.name = name;
         this.mime = mime;
+        this.deleted = deleted;
     }
 
-    public static create(location: string, name: string, mime: string): CardAttachment {
-        return new CardAttachment(uuid(), location, name, mime)
+    public static create(location: string, name: string, mime: string, deleted: boolean): CardAttachment {
+        return new CardAttachment(uuid(), location, name, mime, deleted)
     }
+
 }
 

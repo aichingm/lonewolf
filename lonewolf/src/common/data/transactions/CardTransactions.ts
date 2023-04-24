@@ -9,6 +9,8 @@ import CardAttachment from "../CardAttachment";
 import type { SDBoard } from "../extern/SimpleData";
 import { SDCard } from "../extern/SimpleData";
 
+import { Entry as LogEntry, Kind as LogKind, Action as LogAction } from "../../logs/LogEntry";
+
 import { v1 as uuid } from "uuid";
 
 
@@ -64,6 +66,19 @@ export class CardTransaction extends MutateTransaction {
         return true
     }
 
+    public defaultLogEntry(): LogEntry {
+        return (new LogEntry())
+            .setTimestamp(this.createdAt)
+            .setInitiator("self")
+            .setSubjectKind(LogKind.Card)
+            .setSubjectId(this._cardId)
+    }
+
+    public applyLogEntry(board: Board, logEntry: LogEntry) {
+        this.card(board).logbook.push(logEntry.id)
+        board.logbook.set(logEntry.id, logEntry)
+    }
+
 }
 
 export class CardChangeTransaction extends CardTransaction implements Transaction {
@@ -80,6 +95,13 @@ export class CardChangeTransaction extends CardTransaction implements Transactio
         console.log("CardChangeTransaction", this._cardId, this._field, this._value)
         const card = this.card(board)
         Object.defineProperty(card, this._field, {value: this._value, writable: true });
+
+        this.applyLogEntry(board, this.defaultLogEntry()
+            .setAction(LogAction.Change)
+            .setObjectId(this._field)
+            .setObjectKind(LogKind.Property)
+            .setArguments(this._value+""))
+
         return true
     }
 
@@ -103,6 +125,10 @@ export class NewCardTransaction extends CardTransaction implements Transaction {
         list.cards.add(card)
         board.cards.set(card.id, card)
 
+        this.applyLogEntry(board, this.defaultLogEntry()
+            .setAction(LogAction.Create)
+            .setArguments(this._listId, this._title))
+
         return true
     }
 
@@ -118,16 +144,24 @@ export class NewCardTransaction extends CardTransaction implements Transaction {
 
 export class AddCommentTransaction extends CardTransaction implements Transaction {
     private _content: string;
+    private _comment: CardComment;
 
     constructor (cardId: string, content: string) {
         super(cardId)
         this._content = content
+        this._comment = CardComment.create(this._content)
     }
 
     public apply(board: Board): boolean{
         console.log("AddCommentTransaction", this._cardId, this._content)
         const card = this.card(board)
-        card.comments.push(CardComment.create(this._content))
+        card.comments.push(this._comment)
+
+        this.applyLogEntry(board, this.defaultLogEntry()
+            .setAction(LogAction.Connect)
+            .setObjectId(this._comment.id)
+            .setObjectKind(LogKind.Comment))
+
         return true
     }
 
@@ -137,36 +171,23 @@ export class AddAttachmentTransaction extends CardTransaction implements Transac
     private _location: string;
     private _name: string;
     private _mime: string;
+    private _attachment: CardAttachment;
 
     constructor (cardId: string, location: string, name: string, mime: string) {
         super(cardId)
         this._location = location
         this._name = name
         this._mime = mime
+        this._attachment = CardAttachment.create(this._location, this._name, this._mime, false)
     }
 
     public apply(board: Board): boolean{
         console.log("AddAttachmentTransaction", this._cardId, this._location, this._name, this._mime)
         const card = this.card(board)
-        card.attachments.push(CardAttachment.create(this._location, this._name, this._mime))
-        return true
-    }
+        card.attachments.push(this._attachment)
 
-}
+        this.applyLogEntry(board, this.defaultLogEntry().setAction(LogAction.Connect).setObjectId(this._attachment.id).setObjectKind(LogKind.Attachment).setArguments(this._name))
 
-export class CardRemoveAttachmentTransaction extends CardTransaction implements Transaction {
-    private _attachmentId: string;
-
-    constructor (cardId: string, attachmentId: string) {
-        super(cardId)
-        this._attachmentId = attachmentId
-    }
-
-    public apply(board: Board): boolean{
-        console.log("CardRemoveAttachmentTransaction", this._cardId, this._attachmentId)
-        const card = this.card(board)
-        const attachment = this.attachment(board, this._attachmentId)
-        card.attachments.splice(card.attachments.findIndex((a)=>a.id == attachment.id), 1)
         return true
     }
 
@@ -186,6 +207,9 @@ export class CardAddLabelTransaction extends CardTransaction implements Transact
         const card = this.card(board)
         const label = this.label(board, this._labelId)
         card.labels.push(label)
+
+        this.applyLogEntry(board, this.defaultLogEntry().setAction(LogAction.Connect).setObjectId(this._labelId).setObjectKind(LogKind.Label))
+
         return true
     }
 
@@ -204,6 +228,9 @@ export class CardRemoveLabelTransaction extends CardTransaction implements Trans
         const card = this.card(board)
         const label = this.label(board, this._labelId)
         card.labels.splice(card.labels.findIndex((l)=>l.id == label.id), 1)
+
+        this.applyLogEntry(board, this.defaultLogEntry().setAction(LogAction.Disconnect).setObjectId(this._labelId).setObjectKind(LogKind.Label))
+
         return true
     }
 
@@ -265,6 +292,12 @@ export class CardMoveTransaction extends CardTransaction implements Transaction 
         oldList.cards.remove(card);
         card.position = this._newPosition
         newList.insertCard(card);
+
+        this.applyLogEntry(board, this.defaultLogEntry()
+            .setAction(LogAction.Change)
+            .setObjectId('list')
+            .setObjectKind(LogKind.Property)
+            .setArguments(this._oldListId, this._oldPosition.toString(), this._newListId, this._newPosition.toString()))
 
         return true
     }

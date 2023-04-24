@@ -5,8 +5,9 @@ import List from "../List";
 import type { SDBoard } from "../extern/SimpleData";
 import { SDList } from "../extern/SimpleData";
 
-import { v1 as uuid } from "uuid";
+import { Entry as LogEntry, Kind as LogKind, Action as LogAction } from "../../logs/LogEntry";
 
+import { v1 as uuid } from "uuid";
 
 
 type ListField = keyof List
@@ -36,6 +37,19 @@ export class ListTransaction extends MutateTransaction {
         return true
     }
 
+    public defaultLogEntry(): LogEntry {
+        return (new LogEntry())
+            .setTimestamp(this.createdAt)
+            .setInitiator("self")
+            .setSubjectKind(LogKind.List)
+            .setSubjectId(this._listId)
+    }
+
+    public applyLogEntry(board: Board, logEntry: LogEntry) {
+        this.list(board).logbook.push(logEntry.id)
+        board.logbook.set(logEntry.id, logEntry)
+    }
+
 }
 
 export class ListChangeTransaction extends ListTransaction implements Transaction {
@@ -52,6 +66,13 @@ export class ListChangeTransaction extends ListTransaction implements Transactio
         console.log("ListChangeTransaction", this._listId, this._field, this._value)
         const list = this.list(board)
         Object.defineProperty(list, this._field, {value: this._value, writable: true });
+
+        this.applyLogEntry(board, this.defaultLogEntry()
+            .setAction(LogAction.Change)
+            .setObjectId(this._field)
+            .setObjectKind(LogKind.Property)
+            .setArguments(this._value+""))
+
         return true
     }
 
@@ -71,6 +92,11 @@ export class NewListTransaction extends ListTransaction implements Transaction {
 
         const list = new List(board, this._listId, this._title);
         board.lists.add(list)
+
+        this.applyLogEntry(board, this.defaultLogEntry()
+            .setAction(LogAction.Create)
+            .setArguments(this._listId, this._title))
+
         return true
     }
 

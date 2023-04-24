@@ -65,8 +65,17 @@
                     @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)"
                 />
             </div>
-            <CardDialog  v-if="cardDialogCard.card.id != ''" :cardHolder="cardDialogCard" :board="boardFn" :labels="simpleDataRoot.board.labels" v-model:show="cardDialogShow.ref" @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)" />
-            <ListDialog :id="listDialog.id" :board="boardFn" v-model:show="listDialog.show" @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)" />
+            <CardDialog  v-if="cardDialogCard.card.id != ''"
+                         :cardHolder="cardDialogCard"
+                         :board="boardFn"
+                         :labels="simpleDataRoot.board.labels"
+                         v-model:show="cardDialogShow.ref"
+                         @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)" />
+            <ListDialog v-if="listDialogList.list.id != ''"
+                        :listHolder="listDialogList"
+                        :board="boardFn"
+                        v-model:show="listDialogShow.ref"
+                        @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)" />
             <SettingsDialog :board="boardFn" v-model:show="settingsDialogShow.ref" :labels="simpleDataRoot.board.labels" :settings="simpleDataRoot.board.settings" @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)" />
         </div>
     </div>
@@ -89,7 +98,7 @@ import MostRecent from "@/common/MostRecent";
 import SavedObserver from "@/common/SavedObserver";
 import type { Transaction } from "@/common/data/Transaction";
 import { RefProtector } from "@/utils/vue";
-import { SDRoot, SDCardHolder, SDCard } from "@/common/data/extern/SimpleData";
+import { SDRoot, SDCardHolder, SDCard, SDListHolder, SDList } from "@/common/data/extern/SimpleData";
 import { NewBoardTransaction, BoardChangeTransaction } from "@/common/data/transactions/BoardTransactions";
 import { BrowserNativeStorage } from "@/common/storage/BrowserStorage";
 import { Factory as StoreFactory } from "@/common/attachments/Store";
@@ -110,9 +119,10 @@ const cardsStat = ref([0,0])
 const cardDialogCard = reactive(new SDCardHolder(new SDCard("", "")))
 const cardDialogShow =  new RefProtector(ref(false))
 
-const settingsDialogShow =  new RefProtector(ref(false))
+const listDialogList= reactive(new SDListHolder(new SDList("", "")))
+const listDialogShow =  new RefProtector(ref(false))
 
-const listDialog = {show: ref(false), id: ref("")};
+const settingsDialogShow =  new RefProtector(ref(false))
 
 const title = new RefProtector(ref(""), (newTitle: string)=> {
     title.assign(newTitle);
@@ -143,13 +153,16 @@ const showCardDialog = (_card: Card, simpleCard: SDCard) => {
     cardDialogShow.assign(true);
     cardDialogCard.card = simpleCard;
 }
-const showListDialog = (list: List) => {listDialog.show.value = true; listDialog.id.value = list.id;}
+
+const showListDialog = (_list: List, simpleList: SDList) => {
+    listDialogShow.assign(true);
+    listDialogList.list = simpleList;
+}
 
 function createTransactionHandler(board: Board) {
     return function transactionHandler(transaction: Transaction) {
         if (transaction.apply(board)) {
             transaction.mutate(simpleDataRoot.board, board)
-            board.transactions.push(transaction)
             MostRecent.put(board)
             SavedObserver.getInstance().dirty()
         }

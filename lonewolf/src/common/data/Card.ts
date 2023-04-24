@@ -14,6 +14,7 @@ export default class Card extends Indexable{
     private _labels = new Array<Label>();
     private _comments = new Array<CardComment>();
     private _attachments = new Array<CardAttachment>();
+    private _logbook = new Array<string>();
     public dueDate: number | null = null; //this is in utc ALWAYS!!!
 
 
@@ -42,6 +43,10 @@ export default class Card extends Indexable{
         return this._attachments
     }
 
+    public get logbook() {
+        return this._logbook
+    }
+
     public findAttachment(attachmentId: string): CardAttachment | null {
         return this.attachments.find(a=>a.id==attachmentId) || null
     }
@@ -59,6 +64,7 @@ export default class Card extends Indexable{
         c.labels = this.labels.map((l: Label) => l.id);
         c.comments = this.comments.map((c: CardComment) => c.toSerializable());
         c.attachments = [...this._attachments]
+        c.logbook = [...this._logbook]
         c.description = this.description
         c.dueDate = this.dueDate
 
@@ -84,6 +90,11 @@ export default class Card extends Indexable{
             s.comments.forEach((comment: SerializableCardComment)=> {card.comments.push(CardComment.fromSerializable(board, comment))})
         }
 
+        if (s.logbook) {  // FIXME old version had no comments... DELETE this check on product release
+            s.logbook.forEach((logEntryId: string)=> {if(board.logbook.get(logEntryId) != undefined){card.logbook.push(logEntryId)}})
+
+        }
+
         return card;
     }
 
@@ -103,4 +114,5 @@ export class SerializableCard {
     public dueDate: number | null = null; //this is in utc ALWAYS!!!
     public comments = new Array<SerializableCardComment>();
     public attachments = new Array<CardAttachment>();
+    public logbook = new Array<string>();
 }

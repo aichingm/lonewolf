@@ -7,6 +7,8 @@ import { SDList } from "./extern/SimpleData";
 export default class List extends Indexable {
     private _cards = new IndexedMap<Card>();
     public cardsAreClosed = false
+    private _logbook = new Array<string>();
+
 
     private _board: Board;
 
@@ -17,6 +19,10 @@ export default class List extends Indexable {
 
     public get cards(): IndexedMap<Card> {
         return this._cards;
+    }
+
+    public get logbook() {
+        return this._logbook
     }
 
     public addCard(c: Card): void {
@@ -43,6 +49,7 @@ export default class List extends Indexable {
         l.name = this.name
         l.position = this.position
         l.cardsAreClosed = this.cardsAreClosed
+        l.logbook = [...this._logbook]
         return l;
     }
 
@@ -50,6 +57,12 @@ export default class List extends Indexable {
         const l = new List(board, s.id, s.name)
         l.position = s.position
         l.cardsAreClosed = s.cardsAreClosed || false
+        if (s.logbook) {  // FIXME old version had no comments... DELETE this check on product release
+            console.log("asd", s.logbook, Array.from(board.logbook.values()))
+            s.logbook.forEach((logEntryId: string)=> {if(board.logbook.get(logEntryId) != undefined){l.logbook.push(logEntryId)}})
+            console.log(l.logbook)
+
+        }
         return l;
     }
 
@@ -66,4 +79,6 @@ export class SerializableList {
     public name = "";
     public position = -1;
     public cardsAreClosed = false;
+    public logbook = new Array<string>();
+
 }

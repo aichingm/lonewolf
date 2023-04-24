@@ -294,7 +294,6 @@ const handleReady = (payload: { view: EditorView; state: EditorState; container:
 
 .editor-root {
     position: relative;
-    width: calc(100% - 50px);
 }
 
 .cm6 {

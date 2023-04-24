@@ -1,6 +1,6 @@
 <template>
     <div class="list-lane">
-        <div class="list-header list-part list-dragger" @click="$emit('list-edit', list)">
+        <div class="list-header list-part list-dragger" @click="$emit('list-edit', list, $props.simpleList)">
             <div class="list-name">{{ list.name }}</div>
             <n-space :size="34" item-style="display: flex;">
                 <n-badge class="badge-reset" :value="cards.length" show-zero :offset="[20, 11]" color="#d0d0d0">
@@ -164,7 +164,7 @@ function actionMenuSelected(
         }
     }
     if (optionObject.command == "edit") {
-        $emit("list-edit", list.value);
+        $emit("list-edit", list.value, $props.simpleList);
     }
 }
 

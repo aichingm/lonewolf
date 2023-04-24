@@ -8,11 +8,14 @@ export default class Label extends NamedIdentifiable {
 
     public color: string
     public visibility: boolean
+    public deleted: boolean
+
 
     constructor(id: string, name: string) {
         super(id, name)
         this.color = ""
         this.visibility = true
+        this.deleted = false
     }
 
     public toSerializable() {
@@ -21,6 +24,7 @@ export default class Label extends NamedIdentifiable {
         l.name = this.name
         l.color = this.color
         l.visibility = this.visibility
+        l.deleted = this.deleted
         return l;
     }
 
@@ -28,6 +32,7 @@ export default class Label extends NamedIdentifiable {
         const l = new Label(s.id, s.name)
         l.color = s.color
         l.visibility = s.visibility
+        l.deleted = s.deleted
         return l;
     }
 
@@ -43,6 +48,7 @@ export class SerializableLabel {
     public name = "";
     public color = "";
     public visibility = true;
+    public deleted = false;
 
 }
 
