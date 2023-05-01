@@ -3,7 +3,8 @@
 
 default: dev
 
-build:
+# type-check already included
+build: lint
 	podman run --rm -t -v .:/app lonewolf:build bash -c 'cd /app/lonewolf/; npm run build'
 
 check: lint type-check
