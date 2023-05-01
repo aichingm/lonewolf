@@ -1,5 +1,5 @@
 <template>
-    <div class="list" :id="scrollTargetId">
+    <div class="list" :id="scrollTargetId" :style="'width: ' + ($props.size - 20) + 'px;'">
         <div class="list-name">New List</div>
         <div class="cards">
             <n-input-group>
@@ -28,6 +28,12 @@ const listNameInput = ref(null);
 const listNameInputId = uuid1();
 const scrollTargetId = uuid1();
 
+const $props = withDefaults(defineProps<{
+    size?: number;
+}>(),{
+    size: 270,
+});
+
 const inputThemeOverrides = {
     border: '0px solid',
     boxShadowFocus: '0px solid',
@@ -52,8 +58,7 @@ function newButtonClicked() {
 
 <style scoped>
 .list {
-    width: 270px;
-    min-width: 270px;
+    min-width: 160px;
     background-color: #e9e9ed;
     padding: 10px;
     display: inline-block;

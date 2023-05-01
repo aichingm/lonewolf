@@ -26,7 +26,7 @@
                 />
             </template>
             <template #footer>
-                <NewList v-if="showNewList" @newList="newList" />
+                <NewList v-if="showNewList" @newList="newList" :size="listWidth"/>
             </template>
         </draggable>
     </div>
@@ -54,6 +54,8 @@ const $props = defineProps<{
 const $emit = defineEmits(["transaction", "card-edit", "list-edit"]);
 
 const lists = computed(()=>{$props.simpleBoard; $props.simpleBoard.version; return $props.simpleBoard.lists})
+
+const listWidth = computed(()=>{$props.simpleBoard.settings.version; return $props.board().settings.boardListsWidth})
 
 const showNewList = computed(()=>{$props.simpleBoard.settings.version; return $props.board().settings.boardShowNewList})
 
