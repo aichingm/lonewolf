@@ -76,7 +76,15 @@
                         :board="boardFn"
                         v-model:show="listDialogShow.ref"
                         @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)" />
-            <SettingsDialog :board="boardFn" v-model:show="settingsDialogShow.ref" :labels="simpleDataRoot.board.labels" :settings="simpleDataRoot.board.settings" @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)" />
+            <SettingsDialog
+                :board="boardFn"
+                v-model:show="settingsDialogShow.ref"
+                :cardArchive="simpleDataRoot.board.cardArchive"
+                :listArchive="simpleDataRoot.board.listArchive"
+                :lists="simpleDataRoot.board.lists"
+                :labels="simpleDataRoot.board.labels"
+                :settings="simpleDataRoot.board.settings"
+                @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)" />
         </div>
     </div>
 </template>

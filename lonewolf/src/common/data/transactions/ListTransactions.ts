@@ -22,7 +22,7 @@ export class ListTransaction extends MutateTransaction {
     }
 
     protected list(board: Board, ): List {
-        const list = board.findList(this._listId)
+        const list = board.findListInclArchives(this._listId)
         if (list == null) {
             throw new Error("List[" + this._listId + "] not found")
         }
@@ -131,6 +131,61 @@ export class ListSortTransaction extends ListTransaction {
             t.lists.splice(this._newPosition, 0, listSDBoard);
         }
 
+        t.version = this.id
+        return true
+    }
+
+}
+
+enum ArchiveDirection {
+    Archive,
+    Unarchive,
+}
+
+export class ListArchiveTransaction extends ListTransaction {
+
+    public static Archive = ArchiveDirection.Archive
+    public static Unarchive = ArchiveDirection.Unarchive
+
+    private _direction: ArchiveDirection
+    private _position: number
+
+    constructor (listId: string, position: number, direction: ArchiveDirection) {
+        super(listId)
+        this._direction = direction
+        this._position = position
+    }
+
+    public apply(board: Board): boolean {
+        console.log("ListArchiveTransaction", this._listId, this._direction)
+        const list = this.list(board)
+        if (this._direction == ArchiveDirection.Archive) {
+            board.lists.remove(list)
+            board.listArchive.add(list)
+        } else {
+            board.listArchive.remove(list)
+            board.lists.add(list)
+        }
+        this.applyLogEntry(board, this.defaultLogEntry()
+            .setAction(LogAction.Change)
+            .setObjectId("archived")
+            .setObjectKind(LogKind.Property)
+            .setArguments((this._direction == ArchiveDirection.Archive).toString()))
+        return true
+    }
+
+    public mutate(t: SDBoard, _b: Board): boolean {
+        if (this._direction == ArchiveDirection.Archive) {
+            const listSDBoard = t.lists[this._position]
+            t.listArchive.push(listSDBoard);
+            t.lists.splice(this._position, 1);
+            listSDBoard.version = this.id
+        } else {
+            const listSDBoard = t.listArchive[this._position]
+            t.listArchive.splice(this._position, 1);
+            t.lists.push(listSDBoard);
+            listSDBoard.version = this.id
+        }
         t.version = this.id
         return true
     }

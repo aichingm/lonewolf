@@ -2,7 +2,7 @@
     <n-timeline>
         <n-timeline-item v-for="entry in logbookEntries" :key="entry.id" :type="computeType(entry)">
             <n-space justify="space-between" align="center" >
-                <n-space >
+                <n-space>
                     <n-text depth="3">{{ computeText(entry) }} <AutoTime :data="entry.timestamp" /></n-text>
                 </n-space>
             </n-space>
@@ -30,10 +30,7 @@ const $props = defineProps<{
     board: () => Board;
     logbook: LogEntry[];
 }>();
-
-console.log($props.logbook)
 const logbookEntries = computed(()=> $props.logbook.filter(e=>e != undefined && typeOf(e) != TimelineKind.None).reverse())
-console.log(logbookEntries)
 
 function computeType(entry:LogEntry): string {
     switch(entry.action) {
@@ -64,6 +61,8 @@ function computeText(entry: LogEntry): string{
     switch (t) {
     case TimelineKind.NewList:
         return initiator(entry) + ' created this list'
+    case TimelineKind.ArchivedChange:
+        return initiator(entry) + ' ' + (entry.args[0]=="true"?'':'un') + 'archived this list'
     case TimelineKind.PropertyChange:
         return initiator(entry) + ' changed the ' + fieldToText(entry) + ' of this list'
     default:

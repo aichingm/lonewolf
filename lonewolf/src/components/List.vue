@@ -74,7 +74,7 @@ import type { SDList, SDLabel, SDBoard } from "@/common/data/extern/SimpleData";
 import type Card from "@/common/data/Card";
 
 
-import { ListSortTransaction } from "@/common/data/transactions/ListTransactions";
+import { ListSortTransaction, ListArchiveTransaction } from "@/common/data/transactions/ListTransactions";
 import { NewCardTransaction, CardSortTransaction, CardMoveTransaction } from "@/common/data/transactions/CardTransactions";
 
 const $props = defineProps<{
@@ -116,6 +116,15 @@ function generateActions(lists: List[]): ActionDropdownOption[] {
             null,
             children,
             children?.length == 0,
+            null
+        ),
+        new ActionDropdownOption(
+            "archiveKey",
+            "Archive",
+            "archive",
+            null,
+            null,
+            cards.value.length != 0,
             null
         ),
     ];
@@ -169,8 +178,13 @@ function actionMenuSelected(
             $emit("transaction", new ListSortTransaction(list.value.id, list.value.position, key))
         }
     }
+
     if (optionObject.command == "edit") {
         $emit("list-edit", list.value, $props.simpleList);
+    }
+
+    if (optionObject.command == "archive") {
+        $emit("transaction", new ListArchiveTransaction(list.value.id, list.value.position, ListArchiveTransaction.Archive));
     }
 }
 

@@ -118,6 +118,8 @@ function computeIcon(entry:LogEntry): string {
         return 'fluent:comment-dismiss-20-regular'
     case TimelineKind.NewCard:
         return 'fluent:tab-add-20-regular'
+    case TimelineKind.CardMove:
+        return 'fluent:arrow-exit-20-regular'
     default:
         return "fluent:pen-20-regular"
     }
@@ -143,7 +145,7 @@ function computeText(entry: LogEntry): string{
     case TimelineKind.PropertyChange:
         return initiator(entry) + ' changed the ' + fieldToText(entry) + ' of this card'
     case TimelineKind.CardMove:
-        return initiator(entry) + ' moved the card to ' + $props.board().findList(entry.args[2])?.name
+        return initiator(entry) + ' moved the card to ' + $props.board().findListInclArchives(entry.args[2])?.name
     default:
         throw new Error("Can not compute text for LogEntry[" + entry.id + "]")
     }

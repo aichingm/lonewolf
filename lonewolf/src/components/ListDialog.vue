@@ -18,7 +18,9 @@
                             <TextInput fontSize="20px" v-model:value="titleModel" @update:value="emitTitle" placeholder="Title" commitOnBlur commitOnEnter selectOnEdit/>
                         </IconedBox>
                         <IconedBox icon="fluent:book-question-mark-20-filled" :contentOffsetX="24" :iconOffsetY="8">
-                            <n-space class="flex-grow" justify="space-between" align="center">Cards are Closed <n-switch :round="false" v-model:value="cardsClosed" /></n-space>
+                            <n-space class="flex-grow" justify="space-between" align="center">Cards are Closed
+                                <n-switch :round="false" :value="cardsClosed" @update:value="handleCardsAreClosedChanged"/>
+                            </n-space>
                         </IconedBox>
                         <IconedBox icon="fluent:timeline-20-filled" :contentOffsetX="24">
                             <ListDialogTimeline v-if="list != null" :logbook="logbook" @transaction="(t)=>$emit('transaction', t)" :board="$props.board" :list="list" />
@@ -74,9 +76,10 @@ const setRefs = (list: List) => {
     cardsClosed.value = list.cardsAreClosed
 }
 
-watch(cardsClosed, ()=>{
+function handleCardsAreClosedChanged (value: boolean) {
+    cardsClosed.value = value
     $emit("transaction", new ListChangeTransaction($props.listHolder.list.id, 'cardsAreClosed', cardsClosed.value))
-})
+}
 
 
 

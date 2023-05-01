@@ -4,7 +4,7 @@ import NamedIdentifiable from "@/common/NamedIdentifiable";
 import IndexedMap from "@/common/IndexedMap";
 import List from "@/common/data/List";
 import Settings from "@/common/data/Settings";
-import type { SerializableList } from "@/common/data/List";
+import { SerializableList } from "@/common/data/List";
 import type { SerializableLabel } from "@/common/data/Label";
 import Card from "@/common/data/Card";
 import Label from "@/common/data/Label";
@@ -19,6 +19,8 @@ export default class Board extends NamedIdentifiable {
 
     private _lists = new IndexedMap<List>();
     private _cards = new Map<string, Card>();
+    private _cardArchive = new List(this, uuid(), "Archive")
+    private _listArchive = new IndexedMap<List>();
     private _labels = new Map<string, Label>();
     private _logbook = new Map<string, LogEntry>();
     private _settings = new Settings();
@@ -47,6 +49,14 @@ export default class Board extends NamedIdentifiable {
         return this._logbook
     }
 
+    public get cardArchive(): List {
+        return this._cardArchive
+    }
+
+    public get listArchive(): IndexedMap<List> {
+        return this._listArchive
+    }
+
     public get settings(): Settings {
         return this._settings
     }
@@ -57,6 +67,15 @@ export default class Board extends NamedIdentifiable {
 
     public findList(id: string): List | null {
         return this._lists.find(id)
+    }
+
+    public findListInclListArchive(id: string): List | null {
+        const archivedList = this.listArchive.find(id)
+        return archivedList != null ? archivedList : this.findList(id)
+    }
+
+    public findListInclArchives(id: string): List | null {
+        return id == this.cardArchive.id ? this.cardArchive : this.findListInclListArchive(id)
     }
 
     public findLabel(id: string): Label | null {
@@ -93,6 +112,8 @@ export default class Board extends NamedIdentifiable {
         const b = new SDBoard(this.id, "no-new-transaction");
         b.lists = Array.from(this.lists.items.map( (l: List) => {return l.toSimpleData();}));
         b.labels = Array.from(this.labels.values()).map( (l: Label) => {return l.toSimpleData();});
+        b.cardArchive = this.cardArchive.toSimpleData()
+        b.listArchive = this.listArchive.items.map(l=>l.toSimpleData())
         return b
     }
 
@@ -107,6 +128,8 @@ export default class Board extends NamedIdentifiable {
         b.settings = this.settings
         b.attachmentStore = this.attachmentStore().descriptor.serializable((id: string)=>this.countAttachmentUsage(id))
         b.logbook = Array.from(this.logbook.values())
+        b.cardArchive = this.cardArchive.toSerializable()
+        b.listArchive = this.listArchive.items.map(l => l.toSerializable())
         return b
     }
 
@@ -128,9 +151,18 @@ export default class Board extends NamedIdentifiable {
             b.labels.clear() // this is only needed to remove default labels, hack
             s.labels.forEach(l => b.labels.set(l.id, Label.fromSerializable(b, l)))
         }
+
         if (s.logbook) { // FIXME old version had no labels... DELETE this check on product release
             b.logbook.clear()
             s.logbook.filter(e=>e!=null).forEach(t => b.logbook.set(t.id, LogEntry.fromSerializable(t)))
+        }
+
+        if (s.cardArchive) { // FIXME old version had no cardArchive... DELETE this check on product release
+            b._cardArchive = List.fromSerializable(b, s.cardArchive)
+        }
+
+        if (s.listArchive) { // FIXME old version had no listArchive... DELETE this check on product release
+            s.listArchive.forEach(l => b._listArchive.put(List.fromSerializable(b, l)))
         }
 
         s.lists.forEach(l => b.lists.put(List.fromSerializable(b, l)))
@@ -146,6 +178,8 @@ export class SerializableBoard {
     public lists: SerializableList[] = new Array<SerializableList>();
     public labels: SerializableLabel[] = new Array<SerializableLabel>();
     public cards: SerializableCard[] = new Array<SerializableCard>();
+    public cardArchive: SerializableList = new SerializableList();
+    public listArchive: SerializableList[] = new Array<SerializableList>();
     public logbook = new Array<LogEntry>();
     public settings: Settings = new Settings()
     public id = "";

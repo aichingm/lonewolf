@@ -72,10 +72,12 @@ export default class Card extends Indexable{
     }
 
     public static fromSerializable(board: Board, s: SerializableCard) {
-        const list = board.findList(s.listId)
+        const list = board.findListInclArchives(s.listId);
         if (list == null) {
             throw new Error("List[" + s.listId + "] not found")
         }
+
+
         const card = new Card(list, s.id, s.name)
         card.position = s.position
         card.list.cards.put(card)

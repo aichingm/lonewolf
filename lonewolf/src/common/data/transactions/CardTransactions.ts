@@ -50,7 +50,7 @@ export class CardTransaction extends MutateTransaction {
     }
 
     protected list(board: Board, listId: string): List {
-        const list = board.findList(listId)
+        const list = board.findListInclArchives(listId)
         if (list == null) {
             throw new Error("List[" + listId + "] not found")
         }
@@ -307,8 +307,8 @@ export class CardMoveTransaction extends CardTransaction implements Transaction 
         const oldList = this.list(board, this._oldListId)
         const newList = this.list(board, this._newListId)
 
-        const oldListTree = t.lists[oldList.position]
-        const newListTree = t.lists[newList.position]
+        const oldListTree = board.cardArchive.id == oldList.id ? t.cardArchive : t.lists[oldList.position]
+        const newListTree = board.cardArchive.id == newList.id ? t.cardArchive : t.lists[newList.position]
 
         const cardTree = this.isMutationPrevented() ? newListTree.cards[this._newPosition] : oldListTree.cards[this._oldPosition];
 
@@ -323,4 +323,3 @@ export class CardMoveTransaction extends CardTransaction implements Transaction 
     }
 
 }
-

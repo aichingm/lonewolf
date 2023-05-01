@@ -9,7 +9,6 @@ export default class List extends Indexable {
     public cardsAreClosed = false
     private _logbook = new Array<string>();
 
-
     private _board: Board;
 
     constructor(board: Board, id: string, name: string) {
@@ -50,6 +49,7 @@ export default class List extends Indexable {
         l.position = this.position
         l.cardsAreClosed = this.cardsAreClosed
         l.logbook = [...this._logbook]
+
         return l;
     }
 
@@ -57,12 +57,10 @@ export default class List extends Indexable {
         const l = new List(board, s.id, s.name)
         l.position = s.position
         l.cardsAreClosed = s.cardsAreClosed || false
-        if (s.logbook) {  // FIXME old version had no comments... DELETE this check on product release
-            console.log("asd", s.logbook, Array.from(board.logbook.values()))
+        if (s.logbook) {  // FIXME old version had no logbook... DELETE this check on product release
             s.logbook.forEach((logEntryId: string)=> {if(board.logbook.get(logEntryId) != undefined){l.logbook.push(logEntryId)}})
-            console.log(l.logbook)
-
         }
+
         return l;
     }
 

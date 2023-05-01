@@ -5,11 +5,14 @@ export enum Kind {
     None,
     NewList,
     PropertyChange,
+    ArchivedChange,
 }
 
 export function typeOf(e: LogEntry): Kind {
     if (e.action == LogAction.Create && e.subjectKind == LogKind.List && e.objectKind == LogKind.None) {
         return Kind.NewList
+    } else if (e.objectKind == LogKind.Property && e.action == LogAction.Change && e.objectId == "archived") {
+        return Kind.ArchivedChange
     } else if (e.objectKind == LogKind.Property && e.action == LogAction.Change) {
         return Kind.PropertyChange
     }

@@ -47,6 +47,8 @@ export class SDListHolder extends SimpleData{
 
 export class SDBoard extends SimpleData{
     public lists = new Array<SDList>();
+    public cardArchive = new SDList("Archive", uuid());
+    public listArchive = new Array<SDList>();
     public labels = new Array<SDLabel>();
     public settings = new SimpleData("settings", uuid());
 
