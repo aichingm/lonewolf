@@ -307,8 +307,8 @@ const editorInteractions = {
         $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => {
             const fistLine = $props.editorView.state.doc.lineAt(range.from);
             const lastLine = $props.editorView.state.doc.lineAt(range.to);
-            const beforeLine = $props.editorView.state.doc.line(fistLine.number - 1)
-            const afterLine = $props.editorView.state.doc.line(lastLine.number + 1)
+            const beforeLine = $props.editorView.state.doc.line(Math.max(fistLine.number - 1, 1))
+            const afterLine = $props.editorView.state.doc.line(Math.min(lastLine.number + 1, 1))
 
             if (!beforeLine.text.startsWith("```") || afterLine.text != "```") {
                 return {
