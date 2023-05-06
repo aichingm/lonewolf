@@ -24,13 +24,13 @@
                 </template>
                 {{ card.comments.filter(c=>!c.deleted).length }}
             </n-tag>
-            <n-tag v-if="card.attachments.length > 0" size="small" round :bordered="false">
+            <n-tag v-if="card.attachments.filter(a=>!a.deleted).length > 0" size="small" round :bordered="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:attach-24-regular" />
                     </n-icon>
                 </template>
-                {{ card.attachments.length }}
+                {{ card.attachments.filter(a=>!a.deleted).length }}
             </n-tag>
             <n-tag v-if="totalTasks[1] > 0" size="small" type="success" :bordered="false">
                 <template #icon>

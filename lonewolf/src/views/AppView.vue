@@ -11,7 +11,7 @@
                     </template>
                 </n-button>
                 <TextInput fontSize="20px" :value="title.ref" @update:value="title.update" placeholder="Title" autosize commitOnBlur commitOnEnter selectOnEdit/>
-                <n-tooltip v-if="!SavedObserver.getInstance().isSavedRef().value" trigger="hover">
+                <n-tooltip v-if="!savedObserverExtension.isSavedRef().value" trigger="hover">
                     <template #trigger>
                         <n-icon size="24" :color="theme.warningColor" style="display:block;">
                             <icon icon="fluent:warning-20-filled" />
@@ -19,7 +19,7 @@
                     </template>
                     The board has unsaved changes!
                 </n-tooltip>
-                <n-tooltip v-if="MostRecent.failedRef().value" trigger="hover">
+                <n-tooltip v-if="mostRecentExtension.failedRef().value" trigger="hover">
                     <template #trigger>
                         <n-icon size="24" :color="theme.errorColor" style="display:block;">
                             <icon icon="fluent:warning-20-filled" />
@@ -41,7 +41,7 @@
                 </n-tooltip>
                 <n-tooltip v-if="cardsStat[0]==0" trigger="hover">
                     <template #trigger>
-                        {{ emo("tada") }}
+                        {{ toEmoji.get("tada") }}
                     </template>
                     All done, take a break!
                 </n-tooltip>
@@ -104,6 +104,7 @@ import type Card from "@/common/data/Card";
 import type List from "@/common/data/List";
 import MostRecent from "@/common/MostRecent";
 import SavedObserver from "@/common/SavedObserver";
+import { ExtensionManager } from "@/common/Extension";
 import type { Transaction } from "@/common/data/Transaction";
 import { RefProtector } from "@/utils/vue";
 import { SDRoot, SDCardHolder, SDCard, SDListHolder, SDList } from "@/common/data/extern/SimpleData";
@@ -113,16 +114,49 @@ import { Factory as StoreFactory } from "@/common/attachments/Store";
 
 import toEmoji from "emoji-name-map";
 
-const emo = (name: string): string => toEmoji.get(name)
-
 const dialog = useDialog()
 
 const theme  = useThemeVars();
 const borderColor = theme.value.borderColor;
 
+// Storage
+
+const boardStorage = new BrowserNativeStorage();
+
+const attachmentStoreDescriptor = ()=>StoreFactory.createDescriptor("inline") // TODO inline should be configurable before a board is created
+const attachmentStoreFactory = ()=>StoreFactory.createStore(attachmentStoreDescriptor())
+
+// Transactions
+
+function createTransactionHandler(board: Board) {
+    return function transactionHandler(transaction: Transaction) {
+        if (transaction.apply(board)) {
+            transaction.mutate(simpleDataRoot.board, board)
+            extensionManager.triggerOnTransaction(board, transaction)
+        }
+    }
+}
+
+
+// Extensions
+
+const extensionManager = new ExtensionManager()
+const savedObserverExtension = SavedObserver.getInstance()
+savedObserverExtension.persist()
+const mostRecentExtension = new MostRecent()
+
+extensionManager.use(savedObserverExtension)
+extensionManager.use(mostRecentExtension)
+
+
+
+
+// View Data
+
 const fileMenu = {state: ref(false), show: (value: boolean)=>fileMenu.state.value=value, actionHandler: actionHandler}
 
 const cardsStat = ref([0,0])
+
 
 const cardDialogCard = reactive(new SDCardHolder(new SDCard("", "")))
 const cardDialogShow =  new RefProtector(ref(false))
@@ -132,15 +166,13 @@ const listDialogShow =  new RefProtector(ref(false))
 
 const settingsDialogShow =  new RefProtector(ref(false))
 
+const board = shallowRef(mostRecentExtension.exists() ? mostRecentExtension.load() as Board : newBoard()) as Ref<Board>; // as Board because typescript is stupid and can't see that .exist checks if it is null...
+
 const title = new RefProtector(ref(""), (newTitle: string)=> {
     title.assign(newTitle);
     const t = new BoardChangeTransaction('name', title.ref.value)
     createTransactionHandler(board.value)(t)
 })
-
-SavedObserver.getInstance().persist()
-
-const board = shallowRef(MostRecent.exists() ? MostRecent.load() as Board : newBoard()) as Ref<Board>; // as Board because typescript is stupid and can't see that .exist checks if it is null...
 
 title.assign(board.value.name)
 cardsStat.value = board.value.cardOpenClosedStatistic()
@@ -167,41 +199,27 @@ const showListDialog = (_list: List, simpleList: SDList) => {
     listDialogList.list = simpleList;
 }
 
-function createTransactionHandler(board: Board) {
-    return function transactionHandler(transaction: Transaction) {
-        if (transaction.apply(board)) {
-            transaction.mutate(simpleDataRoot.board, board)
-            MostRecent.put(board)
-            SavedObserver.getInstance().dirty()
-        }
-    }
-}
-
-const storage = new BrowserNativeStorage();
-
 function actionHandler(action: string) {
 
     const openNewBoard = () => {
         simpleDataRoot.reset()
         board.value = newBoard()
         simpleDataRoot.board = board.value.toSimpleData()
-        MostRecent.put(board.value)
+        extensionManager.triggerOnNew(board.value)
     }
 
     const openBoard = () => {
-        storage.load("").then((b: Board)=>{
+        boardStorage.load("").then((b: Board)=>{
             simpleDataRoot.reset()
             simpleDataRoot.board = b.toSimpleData()
             board.value = b
-            MostRecent.put(b)
-            SavedObserver.getInstance().clear()
-
+            extensionManager.triggerOnLoad(board.value)
         })
     }
     switch (action) {
     case 'new':
 
-        if (!SavedObserver.getInstance().isSaved()) {
+        if (!savedObserverExtension.isSaved()) {
             dialog.warning({
                 title: 'Unsaved changes',
                 content: 'The currently open board is not saved, are you sure you want to open a new one? Unsaved changes will be lost!',
@@ -216,13 +234,15 @@ function actionHandler(action: string) {
     case 'save':
         //https://github.com/ankitrohatgi/tarballjs
         //https://github.com/Stuk/jszip
-        //local storage
-        storage.save(board.value).then(()=>SavedObserver.getInstance().clear())
+        //local boardStorage
+        boardStorage.save(board.value).then(()=>{
+            extensionManager.triggerOnLoad(board.value)
+        })
         break;
     case 'open':
-        if (storage.isListable()) {
-            const _entries = storage.list()
-        } else if (!SavedObserver.getInstance().isSaved()) {
+        if (boardStorage.isListable()) {
+            const _entries = boardStorage.list()
+        } else if (!savedObserverExtension.isSaved()) {
             dialog.warning({
                 title: 'Unsaved changes',
                 content: 'The currently open board is not saved, are you sure you want to open a different one? Unsaved changes will be lost!',
@@ -243,14 +263,9 @@ function actionHandler(action: string) {
 
 
 function newBoard () {
-
-    const storeDescriptor = StoreFactory.createDescriptor("inline") // TODO inline should be configurable before a board is created
-
-    const board = new Board(StoreFactory.createStore(storeDescriptor))
+    const board = new Board(attachmentStoreFactory())
     board.name = "Untitled Board"
     new NewBoardTransaction().apply(board)
-    SavedObserver.getInstance().clear()
-
     return board
 }
 
