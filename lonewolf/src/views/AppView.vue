@@ -185,6 +185,7 @@ function actionHandler(action: string) {
         simpleDataRoot.reset()
         board.value = newBoard()
         simpleDataRoot.board = board.value.toSimpleData()
+        MostRecent.put(board.value)
     }
 
     const openBoard = () => {
@@ -192,7 +193,9 @@ function actionHandler(action: string) {
             simpleDataRoot.reset()
             simpleDataRoot.board = b.toSimpleData()
             board.value = b
+            MostRecent.put(b)
             SavedObserver.getInstance().clear()
+
         })
     }
     switch (action) {
