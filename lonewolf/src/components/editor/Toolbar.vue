@@ -1,21 +1,21 @@
 <template>
     <div class="toolbar">
         <div class="left">
-            <n-button v-if="$props.toolbarConfig.showCreateBold" quaternary @click="editorInteractions.bold" >
+            <n-button v-if="$props.toolbarConfig.showCreateBold" quaternary @click="bold" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-bold-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.toolbarConfig.showCreateItalic" quaternary @click="editorInteractions.italic" >
+            <n-button v-if="$props.toolbarConfig.showCreateItalic" quaternary @click="italic" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-italic-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.toolbarConfig.showCreateCode" quaternary @click="editorInteractions.code" >
+            <n-button v-if="$props.toolbarConfig.showCreateCode" quaternary @click="code" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:code-20-regular" />
@@ -23,14 +23,14 @@
                 </template>
             </n-button>
             <div class="new-section"></div>
-            <n-button v-if="$props.toolbarConfig.showCreateLink" quaternary @click="editorInteractions.link" >
+            <n-button v-if="$props.toolbarConfig.showCreateLink" quaternary @click="link" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:link-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.toolbarConfig.showCreateImage" quaternary @click="editorInteractions.image" >
+            <n-button v-if="$props.toolbarConfig.showCreateImage" quaternary @click="image" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:image-20-regular" />
@@ -38,21 +38,21 @@
                 </template>
             </n-button>
             <div class="new-section"></div>
-            <n-button v-if="$props.toolbarConfig.showCreateHeadline1" quaternary @click="editorInteractions.headline" >
+            <n-button v-if="$props.toolbarConfig.showCreateHeadline1" quaternary @click="headline" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-header-1-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.toolbarConfig.showCreateCodeFence" quaternary @click="editorInteractions.codeFence" >
+            <n-button v-if="$props.toolbarConfig.showCreateCodeFence" quaternary @click="codeFence" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:braces-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.toolbarConfig.showCreateBlockquote" quaternary @click="editorInteractions.blockqoute" >
+            <n-button v-if="$props.toolbarConfig.showCreateBlockquote" quaternary @click="blockqoute" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-quote-20-regular" />
@@ -60,28 +60,28 @@
                 </template>
             </n-button>
             <div class="new-section"></div>
-            <n-button v-if="$props.toolbarConfig.showCreateList" quaternary @click="editorInteractions.list" >
+            <n-button v-if="$props.toolbarConfig.showCreateList" quaternary @click="list" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-bullet-list-ltr-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.toolbarConfig.showCreateOrderedList" quaternary @click="editorInteractions.orderedList" >
+            <n-button v-if="$props.toolbarConfig.showCreateOrderedList" quaternary @click="orderedList" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:text-number-list-ltr-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.toolbarConfig.showCreateTaskList" quaternary @click="editorInteractions.taskList" >
+            <n-button v-if="$props.toolbarConfig.showCreateTaskList" quaternary @click="taskList" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:task-list-ltr-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="$props.toolbarConfig.showCreateTable" quaternary @click="editorInteractions.table" >
+            <n-button v-if="$props.toolbarConfig.showCreateTable" quaternary @click="table" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:table-20-regular" />
@@ -97,7 +97,7 @@
                     </template>
                 </n-button>
             </n-dropdown>
-            <n-button v-if="$props.attachmentStore != undefined" quaternary @click="editorInteractions.attachment" >
+            <n-button v-if="$props.attachmentStore != undefined" quaternary @click="attachment" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:document-add-20-regular" />
@@ -198,7 +198,7 @@ function renderAttachmentOption(attachment: CardAttachment, url: string){
         {
             style: 'display: flex; align-items: center; padding: 8px 12px;',
             class:'dropdown-button-0',
-            onClick:(_e: Event)=>{editorInteractions.insertAttachment(attachment, url); attachmentOptionsShow.value=false},
+            onClick:(_e: Event)=>{insertAttachment(attachment, url); attachmentOptionsShow.value=false},
         },
         [
             attachmentAvatar(attachment, url),
@@ -233,205 +233,278 @@ const previewRailStyle = ({focused, checked}: {focused: boolean, checked: boolea
     return style
 }
 
-const editorInteractions = {
 
-    insertText(text: string) {
-        $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => (
-            {
-                changes: [{from: range.from, insert: text}],
-                range: EditorSelection.range(range.from + text.length, range.from + text.length)
-            }
-        )))
-    },
-    wrap (range: SelectionRange, start: string, end: string) {
-        const transaction = {
-            changes: [{from: range.from, insert: start}, {from: range.to, insert: end}],
-            range: EditorSelection.range(range.from == range.to?range.from+start.length:range.from, range.from == range.to?range.from+start.length:range.to+start.length+end.length)
+function insertText(text: string) {
+    $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => (
+        {
+            changes: [{from: range.from, insert: text}],
+            range: EditorSelection.range(range.from + text.length, range.from + text.length)
         }
-        return transaction;
-    },
-    wrapColapse (range: SelectionRange, pos: number, start: string, end: string) {
-        const transaction = {
-            changes: [{from: range.from, insert: start}, {from: range.to, insert: end}],
-            range: EditorSelection.range(pos, pos)
-        }
-        return transaction;
-    },
-    forEachLine<RetType>(
-        view: EditorView,
-        range: SelectionRange,
-        //callback: (line: Line, number: number) => {range: SelectionRange; changes: ChangeSpec}
-        callback: (line: Line, number: number) => RetType
-    ): RetType[] {
-        const firstLine = view.state.doc.lineAt(range.from)
-        const lastLine = view.state.doc.lineAt(range.to)
-        const accum = [];
-        for(let i = firstLine.number; i <= lastLine.number; i++) {
-            accum.push(callback(view.state.doc.line(i), i - firstLine.number));
-        }
-        return accum;
-    },
-    calcShiftingForLineStartingBlocks(range: SelectionRange, startChar: string): number {
-        return editorInteractions.forEachLine($props.editorView, range, (line: Line, _number: number):number => {return line.text.startsWith(startChar)?1:2}).reduce((partialSum, a) => partialSum + a, 0)
-    },
-    bold() {
-        $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => editorInteractions.wrap(range, "**", "**")))
-        $props.editorView.focus()
-    },
-    italic() {
-        $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => editorInteractions.wrap(range, "*", "*")))
-        $props.editorView.focus()
-    },
-    code() {
-        $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => editorInteractions.wrap(range, "`", "`")))
-        $props.editorView.focus()
-    },
-    link() {
-        $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => editorInteractions.wrapColapse(range, range.to+3, "[", "]()")))
-        $props.editorView.focus()
-    },
-    image() {
-        $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => editorInteractions.wrapColapse(range, range.to+4, "![", "]()")))
-        $props.editorView.focus()
-    },
-    headline() {
-        $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => (
-            {
-                changes: editorInteractions.forEachLine($props.editorView, range, (line: Line, _number: number) => ({from: line.from, insert: line.text.startsWith("#") ? "#" : "# "})),
-                range: EditorSelection.range(range.from + ($props.editorView.state.doc.lineAt(range.from).text.startsWith("#") ? 1 : 2), range.to + editorInteractions.calcShiftingForLineStartingBlocks(range, "#"))
-            }
-        )))
-        $props.editorView.focus()
-    },
-    codeFence() {
-        $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => {
-            const fistLine = $props.editorView.state.doc.lineAt(range.from);
-            const lastLine = $props.editorView.state.doc.lineAt(range.to);
-            const beforeLine = $props.editorView.state.doc.line(Math.max(fistLine.number - 1, 1))
-            const afterLine = $props.editorView.state.doc.line(Math.min(lastLine.number + 1, 1))
+    )))
+}
 
-            if (!beforeLine.text.startsWith("```") || afterLine.text != "```") {
-                return {
-                    changes: [
-                        {from: fistLine.from, insert: "```\n"},
-                        {from: lastLine.to, insert: "\n```"}
-                    ],
-                    range: EditorSelection.range(range.from + 4, range.to + 4)
-                }
-            }
-
-            if (beforeLine.text.startsWith("```") && afterLine.text == "```") {
-                return {
-                    changes: [
-                        {from: beforeLine.from, to: beforeLine.to + 1 , insert: ""},
-                        {from: afterLine.from, to: afterLine.to + 1 , insert: ""},
-                    ],
-                    range: EditorSelection.range(range.from - beforeLine.text.length - 1, range.to - beforeLine.text.length - 1)
-                }
-            }
-
-            return  {changes: [],range: range}
-        }))
-        $props.editorView.focus()
-    },
-    blockqoute() {
-
-        $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => (
-            {
-                changes: editorInteractions.forEachLine($props.editorView, range, (line) => ({from: line.from, insert: line.text.startsWith(">") ? ">" : "> "})),
-                range: EditorSelection.range(range.from + ($props.editorView.state.doc.lineAt(range.from).text.startsWith(">") ? 1 : 2), range.to + editorInteractions.calcShiftingForLineStartingBlocks(range, ">"))
-            }
-        )))
-
-        $props.editorView.focus()
-    },
-    list() {
-
-        $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => (
-            {
-                changes: editorInteractions.forEachLine($props.editorView, range, (line) => (
-                    {from: line.from, to: line.from + (line.text.startsWith("*") ? 2 : 0), insert: line.text.startsWith("*") ? "" : "* "}
-                )
-                ),
-                range: EditorSelection.range(range.from + ($props.editorView.state.doc.lineAt(range.from).text.startsWith("*") ? -2 : 2), range.to + ($props.editorView.state.doc.lineAt(range.from).text.startsWith("*") ? -2 : 2))
-            }
-
-            // TODO if starts with "* " remove and reset cusor (special case if curstor < 2) else add "* " and shift cursor 2 to the right
-
-        )))
-
-        $props.editorView.focus()
-    },
-    orderedList() {
-
-        $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => (
-            {
-                changes: editorInteractions.forEachLine($props.editorView, range, (line) => ({from: line.from, insert: line.text.startsWith(">") ? ">" : "> "})),
-                range: EditorSelection.range(range.from + ($props.editorView.state.doc.lineAt(range.from).text.startsWith(">") ? 1 : 2), range.to + editorInteractions.calcShiftingForLineStartingBlocks(range, ">"))
-            }
-        )))
-
-        $props.editorView.focus()
-    },
-    taskList() {
-        $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => (
-            {
-                changes: editorInteractions.forEachLine($props.editorView, range, (line) => ({from: line.from, insert: line.text.startsWith(">") ? ">" : "> "})),
-                range: EditorSelection.range(range.from + ($props.editorView.state.doc.lineAt(range.from).text.startsWith(">") ? 1 : 2), range.to + editorInteractions.calcShiftingForLineStartingBlocks(range, ">"))
-            }
-        )))
-
-        $props.editorView.focus()
-    },
-    table() {
-        $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => (
-            {
-                changes: editorInteractions.forEachLine($props.editorView, range, (line) => ({from: line.from, insert: line.text.startsWith(">") ? ">" : "> "})),
-                range: EditorSelection.range(range.from + ($props.editorView.state.doc.lineAt(range.from).text.startsWith(">") ? 1 : 2), range.to + editorInteractions.calcShiftingForLineStartingBlocks(range, ">"))
-            }
-        )))
-
-        $props.editorView.focus()
-    },
-    attachment(){
-
-        const input = document.createElement('input');
-        input.type = "file"
-        input.click();
-
-        input.addEventListener('change', (e)=>{
-            const target = e.target as HTMLInputElement
-            if (target == null || target.files == null) {
-                return;
-            }
-            const file = target.files[0]
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const target = e.target
-                if(target != null && target.result != null && $props.attachmentStore){
-                    const store = $props.attachmentStore
-                    const meta = new AttachmentMeta()
-                    meta.name = file.name
-                    meta.mime = file.type
-                    store.createLocation(meta).then((location: Location)=>{
-                        editorInteractions.insertText((file.type.startsWith("image/")?"!":"") + "[" + file.name + "](" + location + ")")
-                        store.pushData(location, target.result as ArrayBuffer) // this can be said because we use readAsArrayBuffer
-                        $emit("add-attachment", location, file.name, file.type)
-                    })
-                }
-            };
-            reader.readAsArrayBuffer(file);// NOTICE if this is changed the type anontation has to change too!!
-        }, false);
-
-    },
-    insertAttachment(attachment: CardAttachment, _url: string){
-        editorInteractions.insertText((attachment.mime.startsWith("image/")?"!":"") + "[" + attachment.name + "](" + attachment.location + ")")
-        $props.editorView.focus()
+function wrapKeepRange (range: SelectionRange, start: string, end: string) {
+    const transaction = {
+        changes: [{from: range.from, insert: start}, {from: range.to, insert: end}],
+        range: EditorSelection.range(range.from+start.length, range.to+start.length)
     }
+    return transaction;
+}
 
+function unwrapKeepRange (range: SelectionRange, start: string, end: string) {
+    const transaction = {
+        changes: [
+            {from: range.from - start.length, to: range.from, insert: ""},
+            {from: range.to, to: range.to + end.length, insert: ""}
+        ],
+        range: EditorSelection.range(range.from - start.length, range.to - start.length)
+    }
+    return transaction;
+}
+
+function toggleWrap (range: SelectionRange, start: string, end: string) {
+
+    const doc = $props.editorView.state.doc
+    const docLen = doc.length
+
+    const startUnwrapPossible = (range.from - start.length) >= 0
+    const endUnwrapPossible = (range.to + end.length) <= docLen
+
+    if (startUnwrapPossible && endUnwrapPossible) {
+        const unwrapableString = doc.sliceString(range.from - start.length, range.to + end.length)
+        if (unwrapableString.startsWith(start) && unwrapableString.endsWith(end)) {
+            return unwrapKeepRange(range, start, end)
+        }
+    }
+    return wrapKeepRange(range, start, end)
+}
+
+function wrapColapse (range: SelectionRange, pos: number, start: string, end: string) {
+    const transaction = {
+        changes: [{from: range.from, insert: start}, {from: range.to, insert: end}],
+        range: EditorSelection.range(pos, pos)
+    }
+    return transaction;
+}
+
+function forEachLine<RetType>(
+    view: EditorView,
+    range: SelectionRange,
+    callback: (line: Line, number: number, iterationIndex: number) => RetType
+): RetType[] {
+    const firstLine = view.state.doc.lineAt(range.from)
+    const lastLine = view.state.doc.lineAt(range.to)
+    const accum = [];
+    for(let i = firstLine.number; i <= lastLine.number; i++) {
+        accum.push(callback(view.state.doc.line(i), i, i - firstLine.number));
+    }
+    return accum;
+}
+
+function calcShiftingForLineStartingBlocks(range: SelectionRange, startChar: string): number {
+    return forEachLine($props.editorView, range, (line: Line, _number: number):number => {return line.text.startsWith(startChar)?1:2}).reduce((partialSum, a) => partialSum + a, 0)
+}
+
+function bold() {
+    $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => toggleWrap(range, "**", "**")))
+    $props.editorView.focus()
+}
+
+function italic() {
+    $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => toggleWrap(range, "*", "*")))
+    $props.editorView.focus()
+}
+
+function code() {
+    $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => toggleWrap(range, "`", "`")))
+    $props.editorView.focus()
+}
+
+function link() {
+    $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => wrapColapse(range, range.to+3, "[", "]()")))
+    $props.editorView.focus()
+}
+
+function image() {
+    $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => wrapColapse(range, range.to+4, "![", "]()")))
+    $props.editorView.focus()
+}
+
+function headline() {
+    $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => (
+        {
+            changes: forEachLine($props.editorView, range, (line: Line, _number: number) => ({from: line.from, insert: line.text.startsWith("#") ? "#" : "# "})),
+            range: EditorSelection.range(range.from + ($props.editorView.state.doc.lineAt(range.from).text.startsWith("#") ? 1 : 2), range.to + calcShiftingForLineStartingBlocks(range, "#"))
+        }
+    )))
+    $props.editorView.focus()
+}
+
+function codeFence() {
+
+    $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => {
+        const fistLine = $props.editorView.state.doc.lineAt(range.from);
+        const lastLine = $props.editorView.state.doc.lineAt(range.to);
+        const beforeLine = $props.editorView.state.doc.line(Math.max(fistLine.number - 1, 1))
+        const afterLine = $props.editorView.state.doc.line(Math.min(lastLine.number + 1, $props.editorView.state.doc.lines))
+
+        if (!beforeLine.text.startsWith("```") || afterLine.text != "```") {
+            return {
+                changes: [
+                    {from: fistLine.from, insert: "```\n"},
+                    {from: lastLine.to, insert: "\n```"}
+                ],
+                range: EditorSelection.range(range.from + 4, range.to + 4)
+            }
+        }
+
+        if (beforeLine.text.startsWith("```") && afterLine.text == "```") {
+            return {
+                changes: [
+                    {from: beforeLine.from, to: beforeLine.to+1 , insert: ""},
+                    {from: afterLine.from -1, to: afterLine.to, insert: ""},
+                ],
+                range: EditorSelection.range(range.from - beforeLine.text.length -1, range.to - beforeLine.text.length-1)
+            }
+        }
+
+        return  {changes: [],range: range}
+    }))
+    $props.editorView.focus()
+}
+
+function blockqoute() {
+    toggleLines(/^> /, (_lineIndex)=>"> ")
+    $props.editorView.focus()
+}
+
+function list() {
+    toggleLines(/^\* /, (_lineIndex)=>"* ")
+    $props.editorView.focus()
+}
+
+function toggleLines(markerPattern: RegExp, insertMarker: (lineIndex: number)=>string) {
+
+    $props.editorView.dispatch($props.editorView.state.changeByRange((range: SelectionRange) => {
+
+        const doc = $props.editorView.state.doc
+        const firstLine = doc.lineAt(range.from)
+        const lastLine = doc.lineAt(range.to)
+
+        const firstDynamicMarker = firstLine.text.match(markerPattern)
+        const lastDynamicMarker = lastLine.text.match(markerPattern)
+
+        const mode = firstDynamicMarker == null // true if marker should be added
+
+        const changesAndShifts = forEachLine($props.editorView, range, (line, _lineNumber, lineIndex): [{from: number, to: number, insert: string}, number] => {
+            const marker = insertMarker(lineIndex)
+            const dynamicMarker = line.text.match(markerPattern);
+            const hasMarker = dynamicMarker != null
+
+            if (mode && !hasMarker) { // Add marker if mode is "add" and line does not start with marker
+                return [
+                    {
+                        from: line.from,
+                        to: line.from,
+                        insert: marker
+                    },
+                    marker.length
+                ]
+            } else if (!mode && hasMarker) { // Remove marker if mode is "remove" and line does start with marker
+                return [
+                    {
+                        from: line.from,
+                        to: line.from + dynamicMarker[0].length,
+                        insert: ""
+                    },
+                    -dynamicMarker[0].length
+                ]
+            } else {
+                return [
+                    { // mode is "add" and line starts with marker OR mode is "remove" and line does not start with marker
+                        from: line.from,
+                        to: line.from,
+                        insert: ""
+                    },
+                    0
+                ]
+            }
+        })
+
+        const shift = changesAndShifts.map(x=>x[1]).reduce((v, a)=> v + a, 0)
+        const changes = changesAndShifts.map(x=>x[0])
+
+        return {
+            changes: changes,
+            range: EditorSelection.range(
+                Math.max(range.from + (firstLine.from == range.from ? 0 : changesAndShifts[0][1]), 0),
+                shift + (mode ? range.to : Math.max(range.to, lastLine.from + (lastDynamicMarker!=null?lastDynamicMarker[0].length : 0)))
+            )
+        };
+    }))
 
 }
+
+function orderedList() {
+    toggleLines(/^[0-9]+\. /, (lineIndex)=>(lineIndex + 1) + ". ")
+    $props.editorView.focus()
+}
+
+function taskList() {
+    toggleLines(/^\* \[[ x]\] /, (_lineIndex)=>"* [ ] ")
+    $props.editorView.focus()
+}
+
+function table() {
+
+    insertText("\n" +
+        "|left | center | right|\n" +
+        "|:----|:------:|-----:|\n" +
+        "|1    |2       |3     |\n" +
+        "|a    |b       |c     |\n\n"
+    )
+
+    $props.editorView.focus()
+}
+
+function attachment(){
+
+    const input = document.createElement('input');
+    input.type = "file"
+    input.click();
+
+    input.addEventListener('change', (e)=>{
+        const target = e.target as HTMLInputElement
+        if (target == null || target.files == null) {
+            return;
+        }
+        const file = target.files[0]
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const target = e.target
+            if(target != null && target.result != null && $props.attachmentStore){
+                const store = $props.attachmentStore
+                const meta = new AttachmentMeta()
+                meta.name = file.name
+                meta.mime = file.type
+                store.createLocation(meta).then((location: Location)=>{
+                    insertText((file.type.startsWith("image/")?"!":"") + "[" + file.name + "](" + location + ")")
+                    store.pushData(location, target.result as ArrayBuffer) // this can be said because we use readAsArrayBuffer
+                    $emit("add-attachment", location, file.name, file.type)
+                })
+            }
+        };
+        reader.readAsArrayBuffer(file);// NOTICE if this is changed the type anontation has to change too!!
+    }, false);
+
+}
+
+function insertAttachment(attachment: CardAttachment, _url: string){
+    insertText((attachment.mime.startsWith("image/")?"!":"") + "[" + attachment.name + "](" + attachment.location + ")")
+    $props.editorView.focus()
+}
+
 </script>
 <style>
 
