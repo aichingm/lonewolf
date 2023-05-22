@@ -1,32 +1,47 @@
 # Lonewolf
 
 ## Container
- 
-Build image:
+
+Build container image:
 
 ```
-cd container && podman build .. -f Dockerfile -t lonewolf:build
+make container
 ```
-
 
 ## App
 
-Start container
+### Web
+
+Enter shell
 
 ```
-podman run --rm -it -p 5173:5173 -v .:/app lonewolf:build bash
+make shell-web
 ```
 
 Run the app in dev mode
 
 ```
-npm run dev -- --host
+make dev-web
 ```
 
 Build the app artifacts
 
 ```
-npm run build
+make build-web
+```
+
+### Tauri
+
+Enter shell
+
+```
+make shell-tauri
+```
+
+Run the app in dev mode
+
+```
+make dev-tauri-X
 ```
 
 ## Libraries
