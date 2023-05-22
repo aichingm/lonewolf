@@ -20,6 +20,8 @@ dev-tauri-X:
 dev-web:
 	podman run --rm -it -p 5173:5173 -v .:/app -w /app/lonewolf-web lonewolf:build bash -c 'npm run dev -- --host'
 
+check: lint type-check
+
 lint:
 	podman run --rm -t -v .:/app -w /app/lonewolf-web lonewolf:build bash -c 'npm run lint'
 
