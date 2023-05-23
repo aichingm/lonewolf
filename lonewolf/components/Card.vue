@@ -60,7 +60,6 @@ import { CardSortTransaction, CardMoveTransaction } from "@/common/data/transact
 
 import ActionDropdown from "./ActionDropdown.vue";
 import ActionDropdownOption from "@/common/ActionDropdownOption";
-import { assignArray } from "@/utils/vue";
 import { taskStats } from "@/utils/markdown";
 
 const $props = defineProps<{
@@ -77,8 +76,7 @@ const card = computed(()=>{$props.card.version; return $props.board().findCard($
 const lists = computed(()=>$props.lists.map((t: SDList) : List|null => $props.board().findList(t.id)).filter((l=>l!=null)) as List[])
 const cards = computed(()=>$props.cards.map((t: SDCard) : Card|null => $props.board().findCard(t.id)).filter((c=>c!=null)) as Card[])
 
-const activeLabels = ref([...card.value.labels.filter(l=>l.visibility)])
-watch([$props.labels, $props.card], ()=> assignArray(activeLabels, card.value.labels.filter(l=>l.visibility)))
+const activeLabels = computed(()=>card.value.labels.filter(l=>l.visibility));
 
 const tasks = computed(()=>taskStats(card.value.description))
 
