@@ -131,16 +131,12 @@ function generateActions(lists: List[]): ActionDropdownOption[] {
 }
 
 function filterMoveList(lists: List[]) {
-    if (lists.length == 0) {
-        return null;
-    }
-
     const filteredLists = [];
 
     for (let i = 0; i < lists.length; i++) {
         if (lists[i].id == list.value.id) {
-            i++;
-            continue;
+            i++; // skip next iteration moving before next is the same as current position
+            continue; // skip current can not move before self
         }
         const o = new ActionDropdownOption(
             i,
@@ -153,10 +149,9 @@ function filterMoveList(lists: List[]) {
         );
         filteredLists.push(o);
     }
-
     if (lists[lists.length - 1].id != list.value.id) {
         const o = new ActionDropdownOption(
-            lists.length - 1,
+            lists.length,
             "After " + lists[lists.length - 1].name,
             "moveList",
             null,

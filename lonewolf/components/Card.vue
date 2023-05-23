@@ -138,15 +138,13 @@ const generateActions = function (lists: List[], cards: Card[]) {
 
 function filterMoveCards(cards: Card[]) {
     const filteredCards = [];
-    let mod = 0;
     for (let i = 0; i < cards.length; i++) {
         if (cards[i].id == card.value.id) {
-            mod++;
-            i++
-            continue;
+            i++; // skip next iteration moving before next is the same as current position
+            continue; // skip current can not move before self
         }
         const o = new ActionDropdownOption(
-            i + mod,
+            i,
             "Before " + cards[i].name,
             "move",
             cards[i],
@@ -156,13 +154,12 @@ function filterMoveCards(cards: Card[]) {
         );
         filteredCards.push(o);
     }
-
-    if (cards.length > 0 && cards[cards.length - 1].id != card.value.id) {
+    if (cards[cards.length -1].id != card.value.id) {
         const o = new ActionDropdownOption(
-            cards.length - 1,
-            "After " + cards[cards.length - 1].name,
+            cards.length,
+            "After " + cards[cards.length -1].name,
             "move",
-            cards[cards.length - 1],
+            cards[cards.length -1],
             null,
             false,
             null
