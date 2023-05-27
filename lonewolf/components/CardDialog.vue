@@ -81,7 +81,7 @@ import type { Ref } from "vue";
 
 import Editor from "@/components/editor/Editor.vue";
 import ToolbarConfig from "@/components/editor/ToolbarConfig";
-import { WebMarkdownHandler } from "@/platform/web/MarkdownHandler";
+import { WebMarkdownHandler } from "@platform/MarkdownHandler";
 
 import TextInput from "@/components/inputs/TextInput.vue";
 import IconedBox from "@/components/IconedBox.vue";

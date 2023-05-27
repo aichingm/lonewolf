@@ -59,7 +59,7 @@ import AutoTime from "@/components/AutoTime.vue";
 import Editor from "@/components/editor/Editor.vue";
 import ToolbarConfig from "@/components/editor/ToolbarConfig";
 
-import { WebMarkdownHandler } from "@/platform/web/MarkdownHandler";
+import { WebMarkdownHandler } from "@platform/MarkdownHandler";
 
 import { AddAttachmentTransaction } from "@/common/data/transactions/CardTransactions";
 import { CardCommentChangeTransaction } from "@/common/data/transactions/CardCommentTransactions";

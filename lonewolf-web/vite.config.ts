@@ -39,6 +39,7 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": fileURLToPath(new URL("./src", import.meta.url)),
+            "@platform": fileURLToPath(new URL("./src-platform", import.meta.url)),
         },
         preserveSymlinks: true,
     },

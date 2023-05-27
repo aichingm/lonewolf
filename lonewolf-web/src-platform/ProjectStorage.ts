@@ -1,7 +1,7 @@
 import type { IStorage, IStorageEntry } from '@/common/storage/Storage'
 import Board from '@/common/data/Board'
 
-export class BrowserNativeStorage implements IStorage {
+export class ProjectStorage implements IStorage {
 
     public save(board: Board): Promise<void> {
         return new Promise((resolve, _reject)=>{

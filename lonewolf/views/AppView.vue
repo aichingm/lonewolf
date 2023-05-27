@@ -109,8 +109,8 @@ import type { Transaction } from "@/common/data/Transaction";
 import { RefProtector } from "@/utils/vue";
 import { SDRoot, SDCardHolder, SDCard, SDListHolder, SDList } from "@/common/data/extern/SimpleData";
 import { NewBoardTransaction, BoardChangeTransaction } from "@/common/data/transactions/BoardTransactions";
-import { BrowserNativeStorage } from "@/common/storage/BrowserStorage";
 import { Factory as StoreFactory } from "@/common/attachments/Store";
+import { projectStorage } from "@/platform/Functions";
 
 import toEmoji from "emoji-name-map";
 
@@ -121,7 +121,9 @@ const borderColor = theme.value.borderColor;
 
 // Storage
 
-const boardStorage = new BrowserNativeStorage();
+const boardStorage = projectStorage();
+console.log(boardStorage)
+
 
 const attachmentStoreDescriptor = ()=>StoreFactory.createDescriptor("inline") // TODO inline should be configurable before a board is created
 const attachmentStoreFactory = ()=>StoreFactory.createStore(attachmentStoreDescriptor())

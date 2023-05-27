@@ -16,6 +16,7 @@ export default defineConfig(async () => ({
   resolve: {
         alias: {
             "@": fileURLToPath(new URL("./src", import.meta.url)),
+            "@platform": fileURLToPath(new URL("./platform-src", import.meta.url)),
         },
         preserveSymlinks: true,
   },
