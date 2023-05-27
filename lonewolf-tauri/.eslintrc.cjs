@@ -24,6 +24,7 @@ module.exports = {
             "warn",
             { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
         ],
+        "vue/no-dupe-keys": ["off"],
         "vue/script-indent": ["error", 4, { baseIndent: 0 }],
         "vue/html-indent": ["error", 4, {}],
         indent: ["error", 4],
