@@ -29,6 +29,7 @@
                             updateOnCtrlEnter
                             exitOnEsc
                             :attachmentStore="$props.board().attachmentStore()"
+                            :markdownHandler="new WebMarkdownHandler($props.board().attachmentStore())"
                             @addAttachment="(location: string, name: string, type: string)=>handleNewAttachment(entry, location, name, type)"
                     />
                 </div>
@@ -57,6 +58,8 @@ import AutoTime from "@/components/AutoTime.vue";
 
 import Editor from "@/components/editor/Editor.vue";
 import ToolbarConfig from "@/components/editor/ToolbarConfig";
+
+import { WebMarkdownHandler } from "@/platform/web/MarkdownHandler";
 
 import { AddAttachmentTransaction } from "@/common/data/transactions/CardTransactions";
 import { CardCommentChangeTransaction } from "@/common/data/transactions/CardCommentTransactions";

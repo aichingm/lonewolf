@@ -33,8 +33,8 @@
             <Markdown
                 v-if="!editMode" @click="(e)=>e.defaultPrevented||setEditMode(true)"
                 :value="editorContent"
-                :imageInterceptor="markdownHandler.image"
-                :linkClickInterceptor="markdownHandler.linkClicked"
+                :imageInterceptor="(e) => $props.markdownHandler.renderImage(e)"
+                :linkClickInterceptor="(e) => $props.markdownHandler.linkClicked(e)"
             />
             <n-text depth="3" v-if="editorContent=='' && !editMode" @click="setEditMode(true)">{{ $props.placeholder }}</n-text>
         </n-el>
@@ -59,13 +59,17 @@ import ToolbarVue from "./Toolbar.vue"
 import ToolbarConfig from "./ToolbarConfig"
 import { isChildOfId } from "@/utils/dom"
 import Markdown from "../Markdown.vue"
+import { VoidMarkdownHandler } from "./MarkdownHandler"
+import type MarkdownHandler from "./MarkdownHandler"
 
 import type { Store as AttachmentStore } from "@/common/attachments/Store";
 import type CardAttachment from "@/common/data/CardAttachment";
 
+
 const $props = withDefaults(defineProps<{
     value: string
     attachmentStore?: AttachmentStore
+    markdownHandler?: MarkdownHandler
     attachments?: CardAttachment[]
     showToolbar?: boolean
     toolbarConfig?: ToolbarConfig
@@ -75,6 +79,7 @@ const $props = withDefaults(defineProps<{
     exitOnEsc?: boolean
     clearAfterEdit?: boolean
 }>(),{
+    markdownHandler: ()=>new VoidMarkdownHandler(),
     showToolbar: true,
     toolbarConfig: ()=>ToolbarConfig.withAll(),
     placeholder: "",
@@ -127,35 +132,11 @@ const editorContent = ref($props.value)
 
 //debug  helper
 const log = ()=>false
-
-
-const markdownHandler = {
-    image(e: Element) {
-        if ($props.attachmentStore && e.hasAttribute("src")) {
-            $props.attachmentStore.url(e.getAttribute("src") as string).then((url)=>e.setAttribute("src", url)) // type annotation is ok because of hasAttribute("src")
-        }
-
-    },
-    linkClicked(e: Event) {
-        if ($props.attachmentStore && e.target != null && "hasAttribute" in e.target) {
-            const element = e.target as Element
-            if (element.hasAttribute("href") ) {
-                $props.attachmentStore.url(element.getAttribute("href") as string).then((url)=>{ // type annotation is ok because of hasAttribute("href")
-                    window.open(url, "_blank")
-                })
-            }
-        }
-        e.preventDefault()
-        return false
-    }
-}
+//const log = console.log
 
 function emitAddAttachment(location: string, name: string, type: string){
     $emit('add-attachment', location, name, type)
 }
-
-
-
 
 // setup codemirror
 

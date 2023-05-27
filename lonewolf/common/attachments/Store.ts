@@ -17,6 +17,7 @@ export class AttachmentMeta {
 export interface Store {
     descriptor: Descriptor;
 
+    shouldHandleLocation(location: Location): boolean;
     createLocation(meta: AttachmentMeta): Promise<Location>;
     pushData(location: Location, data: ArrayBuffer): Promise<void>;
     url(location: Location): Promise<string>;

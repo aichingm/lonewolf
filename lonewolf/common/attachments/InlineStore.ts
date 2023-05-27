@@ -51,6 +51,11 @@ export default class InlineStore implements Store {
         return this._descriptor
     }
 
+    public shouldHandleLocation(location: Location): boolean{
+        return location.startsWith(InlineStore.LOCATION_PREFIX)
+    }
+
+
     public createLocation(metaData: AttachmentMeta): Promise<Location>{
         return new Promise<Location>((resolve, _reject)=>{
             const id = InlineStore.LOCATION_PREFIX + uuid()

@@ -27,6 +27,7 @@
                                     updateOnBlur
                                     placeholder="Add Description..."
                                     :attachmentStore="$props.board().attachmentStore()"
+                                    :markdownHandler="new WebMarkdownHandler($props.board().attachmentStore())"
                                     :attachments="attachments"
                                     @addAttachment="handleNewAttachment"
 
@@ -80,6 +81,7 @@ import type { Ref } from "vue";
 
 import Editor from "@/components/editor/Editor.vue";
 import ToolbarConfig from "@/components/editor/ToolbarConfig";
+import { WebMarkdownHandler } from "@/platform/web/MarkdownHandler";
 
 import TextInput from "@/components/inputs/TextInput.vue";
 import IconedBox from "@/components/IconedBox.vue";
@@ -202,6 +204,8 @@ function addLabel(labelId: string) {
 function removeLabel(labelId: string) {
     $emit("transaction", new CardRemoveLabelTransaction($props.cardHolder.card.id, labelId))
 }
+
+
 
 </script>
 <style scoped>
