@@ -97,7 +97,7 @@
                     </template>
                 </n-button>
             </n-dropdown>
-            <n-button v-if="$props.attachmentStore != undefined" quaternary @click="attachment" >
+            <n-button v-if="$props.toolbarConfig.showAddFile" quaternary @click="addFile" >
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:document-add-20-regular" />
@@ -154,9 +154,11 @@ import type { SelectionRange, Line } from '@codemirror/state'
 
 import type ToolbarConfig from './ToolbarConfig'
 
-import { AttachmentMeta } from "@/common/attachments/Store";
-import type { Store as AttachmentStore, Location } from "@/common/attachments/Store";
+import type { Store as AttachmentStore } from "@/common/attachments/Store";
 import type CardAttachment from "@/common/data/CardAttachment";
+
+import { supportsChooseFile } from "@/platform/Functions";
+import { chooseFile } from "@platform/Files";
 
 
 
@@ -169,7 +171,7 @@ const $props = defineProps<{
 
 }>()
 
-const $emit = defineEmits(["previewToggleChanged", "save", "reset", "add-attachment"]);
+const $emit = defineEmits(["previewToggleChanged", "save", "reset"]);
 
 const attachmentOptions = ref([]) as Ref<DropdownRenderOption[]>
 const attachmentOptionsShow = ref(false)
@@ -467,37 +469,12 @@ function table() {
     $props.editorView.focus()
 }
 
-function attachment(){
-
-    const input = document.createElement('input');
-    input.type = "file"
-    input.click();
-
-    input.addEventListener('change', (e)=>{
-        const target = e.target as HTMLInputElement
-        if (target == null || target.files == null) {
-            return;
-        }
-        const file = target.files[0]
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const target = e.target
-            if(target != null && target.result != null && $props.attachmentStore){
-                const store = $props.attachmentStore
-                const meta = new AttachmentMeta()
-                meta.name = file.name
-                meta.mime = file.type
-                store.createLocation(meta).then((location: Location)=>{
-                    insertText((file.type.startsWith("image/")?"!":"") + "[" + file.name + "](" + location + ")")
-                    store.pushData(location, target.result as ArrayBuffer) // this can be said because we use readAsArrayBuffer
-                    $emit("add-attachment", location, file.name, file.type)
-                })
-            }
-        };
-        reader.readAsArrayBuffer(file);// NOTICE if this is changed the type anontation has to change too!!
-    }, false);
-
+async function addFile() {
+    if(supportsChooseFile()){
+        const [name, mime, path] = await chooseFile()
+        insertText((mime.startsWith("image/")?"!":"") + "[" + name + "](" + path + ")")
+        $props.editorView.focus()
+    }
 }
 
 function insertAttachment(attachment: CardAttachment, _url: string){

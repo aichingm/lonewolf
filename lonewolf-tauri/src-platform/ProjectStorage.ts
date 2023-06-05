@@ -1,48 +1,51 @@
 import type { IStorage, IStorageEntry } from '@/common/storage/Storage'
+import type FSStore from '@/common/attachments/FileSystemStore'
+import { choosePathAndRead } from './Files'
 import Board from '@/common/data/Board'
+import { save } from '@tauri-apps/api/dialog';
+import { writeTextFile } from '@tauri-apps/api/fs';
+import { Path } from '@/utils/path'
+
+
 
 export class ProjectStorage implements IStorage {
 
     public save(board: Board): Promise<void> {
         return new Promise((resolve, _reject)=>{
-            (async () => {
-                const { save } = await import('@tauri-apps/api/dialog');
-                const path = await save({
-                    filters: [{
-                        name: 'Imag11e',
-                        extensions: ['lwp']
-                    }]
-                });
-                if(path != null){
-                    const { writeTextFile } = await import('@tauri-apps/api/fs');
-                    await writeTextFile(path, JSON.stringify(board.toSerializable()));
-                    resolve()
+            save({ defaultPath: board.session.currentPath || (board.name + ".lwp"), filters: [{ name: 'Lonewolf Project', extensions: ['lwp'] }]}).then((path)=>{
+                if(path != null) {
+                    if (board.attachmentStore().descriptor.storeType == "filesystem") {
+                        const store = board.attachmentStore() as FSStore
+                        const newPath = Path.parse(path)
+                        if (newPath != null) {
+                            store.recalculatePaths(Path.parse(board.session.currentPath||""), newPath)
+                        } else {
+                            throw new Error("Failed to parse save path")
+                        }
+                    }
+                    board.session.currentPath = path
+                    writeTextFile(path, JSON.stringify(board.toSerializable())).then(resolve);
                 }
-            })()
+            });
         })
     }
 
-    public load(_data: string): Promise<Board> {
+    public load(): Promise<Board> {
         return new Promise((resolve, _reject)=>{
-
             const properties = {
                 defaultPath: '~',
                 directory: false,
                 filters: [{
-                    extensions: ['lwp'], name: "*"
+                    extensions: ['lwp'], name: "Lonewolf Project"
                 }]
             };
-
-            (async () => {
-                const { open } = await import("@tauri-apps/api/dialog")
-                const { readTextFile } = await import("@tauri-apps/api/fs")
-                const path = await open(properties)
-                if(path != null && path && !Array.isArray(path)){
-                    const jsonString = await readTextFile(path)
-                    const board = Board.fromSerializable(JSON.parse(jsonString))
-                    resolve(board)
-                }
-            })()
+            choosePathAndRead(properties).then((data)=>{
+                const [path, _mime, buffer] = data
+                const jsonString = new TextDecoder("utf-8").decode(buffer)
+                const board = Board.fromSerializable(JSON.parse(jsonString))
+                board.session.currentPath = path
+                resolve(board)
+            })
         })
     }
 

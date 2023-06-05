@@ -73,6 +73,6 @@ function newButtonClicked() {
 
 .cards {
     max-height: 430px;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 </style>

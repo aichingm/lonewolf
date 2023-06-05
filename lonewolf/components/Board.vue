@@ -11,8 +11,9 @@
             item-key="id"
             handle=".list-dragger"
             @change="dragEvent"
-            :force-fallback="isChrome()"
-        >
+            :force-fallback="(isChrome() /* this fixes that chrome includes the background of the element */ || isWebkit() /* this fixes webkit cliping the rotated element to the original shape*/)">
+
+            >
             <template #item="{ element }">
                 <ListVue
                     :board="$props.board"
@@ -40,7 +41,7 @@ import ListVue from "./List.vue";
 import NewList from "./NewList.vue";
 
 import { NewListTransaction, ListSortTransaction } from "@/common/data/transactions/ListTransactions";
-import { isChrome } from "@/utils/browser-comp";
+import { isChrome, isWebkit } from "@/utils/browser-comp";
 
 import type Board from "@/common/data/Board";
 import type { SDBoard } from "@/common/data/extern/SimpleData";

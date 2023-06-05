@@ -109,8 +109,8 @@ import type { Transaction } from "@/common/data/Transaction";
 import { RefProtector } from "@/utils/vue";
 import { SDRoot, SDCardHolder, SDCard, SDListHolder, SDList } from "@/common/data/extern/SimpleData";
 import { NewBoardTransaction, BoardChangeTransaction } from "@/common/data/transactions/BoardTransactions";
-import { Factory as StoreFactory } from "@/common/attachments/Store";
-import { projectStorage } from "@/platform/Functions";
+import { defaultAttachmentStorage } from "@/platform/Functions";
+import { projectStorage, platformCanSupportBoard, platformExtensions } from "@/platform/Functions";
 
 import toEmoji from "emoji-name-map";
 
@@ -122,11 +122,6 @@ const borderColor = theme.value.borderColor;
 // Storage
 
 const boardStorage = projectStorage();
-console.log(boardStorage)
-
-
-const attachmentStoreDescriptor = ()=>StoreFactory.createDescriptor("inline") // TODO inline should be configurable before a board is created
-const attachmentStoreFactory = ()=>StoreFactory.createStore(attachmentStoreDescriptor())
 
 // Transactions
 
@@ -150,6 +145,7 @@ const mostRecentExtension = new MostRecent()
 extensionManager.use(savedObserverExtension)
 extensionManager.use(mostRecentExtension)
 
+platformExtensions().forEach(e=>extensionManager.use(e))
 
 
 
@@ -211,11 +207,20 @@ function actionHandler(action: string) {
     }
 
     const openBoard = () => {
-        boardStorage.load("").then((b: Board)=>{
-            simpleDataRoot.reset()
-            simpleDataRoot.board = b.toSimpleData()
-            board.value = b
-            extensionManager.triggerOnLoad(board.value)
+        boardStorage.load().then((b: Board)=>{
+            if(!platformCanSupportBoard(b)){
+                dialog.warning({
+                    title: 'Unsupported project',
+                    content: 'The opened project was created on a different platform, working on it would lead to data loss! Please open a different project to work on.',
+                    positiveText: 'Ok',
+                })
+            } else {
+                simpleDataRoot.reset()
+                simpleDataRoot.board = b.toSimpleData()
+                board.value = b
+                extensionManager.triggerOnLoad(board.value)
+            }
+
         })
     }
     switch (action) {
@@ -238,7 +243,7 @@ function actionHandler(action: string) {
         //https://github.com/Stuk/jszip
         //local boardStorage
         boardStorage.save(board.value).then(()=>{
-            extensionManager.triggerOnLoad(board.value)
+            extensionManager.triggerOnSave(board.value)
         })
         break;
     case 'open':
@@ -265,7 +270,7 @@ function actionHandler(action: string) {
 
 
 function newBoard () {
-    const board = new Board(attachmentStoreFactory())
+    const board = new Board(defaultAttachmentStorage())
     board.name = "Untitled Board"
     new NewBoardTransaction().apply(board)
     return board

@@ -7,11 +7,11 @@ module.exports = {
         "plugin:vue/vue3-essential",
         "eslint:recommended",
         "@vue/eslint-config-typescript/recommended",
-    //"@vue/eslint-config-prettier",
     ],
     parserOptions: {
         ecmaVersion: "latest",
     },
+    ignorePatterns: ["src-tauri/*"],
     overrides: [
         {
             files: ["cypress/e2e/**.{cy,spec}.{js,ts,jsx,tsx}"],

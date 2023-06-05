@@ -2,31 +2,49 @@
     <n-dropdown
         :options="options"
         trigger="hover"
-        placement="bottom"
+        placement="bottom-start"
         @select="handleSelect"
-    >
-        <slot></slot>
+    ><!-- NOTICE this is set to bottom-start because buttom is blury on linux-tauri https://stackoverflow.com/questions/42669491/css-translate-with-percentage-causes-blurred-image -->
+        <n-button
+            text
+            tag="a"
+            :href="url"
+            target="_blank"
+            type="primary"
+            class="block"
+            style="height:28px;"
+        >
+            {{$props.attachment.name}}
+        </n-button>
     </n-dropdown>
 </template>
 
 <script setup lang="ts">
-import { downloadUri } from "@/utils/download";
-
 import ConfirmButton from "@/components/buttons/ConfirmButton.vue";
 import type CardAttachment from "@/common/data/CardAttachment";
+import type Board from "@/common/data/Board";
+import type { Attachment } from "@/common/attachments/Store";
 
-import { h } from 'vue'
+import { h, ref, computed } from 'vue'
 import { NAvatar, NText, NIcon } from 'naive-ui'
 import { Icon } from "@iconify/vue";
+
+import {presentAttachmentActionName, presentAttachment} from '@/platform/Functions'
 
 const $props = defineProps<{
     attachment: CardAttachment
     url: string
+    board: ()=>Board
 }>()
 
-const $emit = defineEmits(["delete"]);
+console.log($props.attachment)
 
-const options = [
+
+const $emit = defineEmits(["delete", "edit"]);
+
+const url = ref($props.url)
+
+const options = computed(()=>{url.value; return [
     {
         key: 'header',
         type: 'render',
@@ -41,15 +59,19 @@ const options = [
         key: 'copy-markdown'
     },
     {
-        label: 'Download',
+        label: presentAttachmentActionName(),
         key: 'download'
+    },
+    {
+        label: "Edit",
+        key: 'edit',
     },
     {
         key: 'delete',
         type: 'render',
         render: renderCustomDelete
     },
-]
+]})
 
 function renderCustomHeader () {
     return h(
@@ -73,7 +95,7 @@ function renderCustomHeader () {
 
 function attachmentAvatar(mime: string) {
     if(mime.startsWith("image/")){
-        return h(NAvatar, {style: 'margin-right: 12px;',src: $props.url})
+        return h(NAvatar, {style: 'margin-right: 12px;',src: url.value})
     }
     return h(NIcon, {color:'gray', size:'36', style:''},  {default:()=>h(Icon, {icon:'fluent:document-20-filled'})})
 }
@@ -106,10 +128,16 @@ function renderCustomDelete() {
 function handleSelect (key: string | number) {
     switch(key){
     case "download":
-        downloadUri($props.attachment.name, $props.url)
+        presentAttachment($props.attachment.name, url.value)
         break;
     case "copy-markdown":
         navigator.clipboard.writeText(attachmentToMarkdown());
+        break;
+    case "edit":
+        $props.board().attachmentStore().updateAttachment($props.attachment.location).then((attachment: Attachment)=> {
+            $emit("edit", $props.attachment.id, $props.attachment.location, attachment.name, attachment.mime);
+            $props.board().attachmentStore().url($props.attachment.location).then((newUrl)=>url.value = newUrl)
+        })
         break;
     }
 

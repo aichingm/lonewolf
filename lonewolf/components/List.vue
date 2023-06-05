@@ -20,7 +20,7 @@
                 ghostClass="ghost-card"
                 dragClass="drag-card"
                 @change="dragEvent($event)"
-                :force-fallback="isChrome()">
+                :force-fallback="(isChrome() /* this fixes that chrome includes the background of the element */ || isWebkit() /* this fixes webkit cliping the rotated element to the original shape*/)">
 
                 <!-- eslint-enable -->
                 <template #item="{ element }">
@@ -65,7 +65,7 @@ import { v1 as uuid1 } from "uuid";
 import CardVue from "./Card.vue";
 import ActionDropdown from "./ActionDropdown.vue";
 import ActionDropdownOption from "@/common/ActionDropdownOption";
-import { isChrome } from "@/utils/browser-comp";
+import { isChrome, isWebkit } from "@/utils/browser-comp";
 
 import type Board from "@/common/data/Board";
 import type List from "@/common/data/List";
@@ -272,7 +272,7 @@ const inputHasFocus = ref(false)
 
 .cards {
   padding: 0 7px 0 7px;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   max-height: calc(100% - 73px);
 }
@@ -301,6 +301,9 @@ const inputHasFocus = ref(false)
 }
 
 .drag-card {
+  /* do not use transform here since it is overwritten by dragging (dragging works by using a transform to move the element) */
   rotate: -3deg;
+
 }
+
 </style>

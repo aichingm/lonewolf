@@ -1,14 +1,16 @@
-import type { Store, StoreType, Descriptor, Location, AttachmentMeta } from "./Store"
+import type { Store, StoreType, Descriptor, Location } from "./Store"
+import { Attachment } from "./Store"
 
 import { v1 as uuid } from "uuid";
 import { toBase64 } from "@/utils/array-buffer";
+import { chooseFileAndRead } from '@platform/Files'
 
 
 export class InlineDescriptor implements Descriptor{
     public get storeType(): StoreType{return "inline"}
 
     public data = new Map<string, string>()
-    public attachments = new Map<string, AttachmentMeta>()
+    public attachments = new Map<string, Attachment>()
 
     constructor(serialized?: string | object | null) {
         if(serialized != undefined && typeof serialized == 'object' && "data" in serialized && "attachments" in serialized){
@@ -56,7 +58,7 @@ export default class InlineStore implements Store {
     }
 
 
-    public createLocation(metaData: AttachmentMeta): Promise<Location>{
+    public createLocation(metaData: Attachment): Promise<Location>{
         return new Promise<Location>((resolve, _reject)=>{
             const id = InlineStore.LOCATION_PREFIX + uuid()
             this._descriptor.attachments.set(id, metaData)
@@ -83,8 +85,8 @@ export default class InlineStore implements Store {
         })
     }
 
-    public metadata(location: Location): Promise<AttachmentMeta>{
-        return new Promise<AttachmentMeta>((resolve, reject)=>{
+    public metadata(location: Location): Promise<Attachment>{
+        return new Promise<Attachment>((resolve, reject)=>{
             const meta = this._descriptor.attachments.get(location)
             if(meta == undefined) {
                 return reject("404: Attachment not found")
@@ -93,4 +95,28 @@ export default class InlineStore implements Store {
         })
     }
 
+    chooseAttachment(): Promise<[Location, Attachment]> {
+        return new Promise<[Location, Attachment]>((resolve, _reject)=>{
+            chooseFileAndRead().then((data: [string, string, ArrayBuffer])=>{
+                const [name, type, content ] = data;
+                const meta = new Attachment(name, type)
+                this.createLocation(meta).then((location: Location)=>{
+                    this.pushData(location, content)
+                    resolve([location, meta])
+                })
+            })
+        })
+    }
+
+    updateAttachment(location: Location): Promise<Attachment> {
+        return new Promise<Attachment>((resolve, _reject)=>{
+            chooseFileAndRead().then((data: [string, string, ArrayBuffer])=>{
+                const [name, mime, content] = data;
+                const meta = new Attachment(name, mime)
+                this.pushData(location, content)
+                this._descriptor.attachments.set(location, meta)
+                resolve(meta)
+            })
+        })
+    }
 }

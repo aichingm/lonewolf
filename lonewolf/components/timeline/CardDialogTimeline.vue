@@ -29,7 +29,7 @@
                             updateOnCtrlEnter
                             exitOnEsc
                             :attachmentStore="$props.board().attachmentStore()"
-                            :markdownHandler="new WebMarkdownHandler($props.board().attachmentStore())"
+                            :markdownHandler="markdownHandler"
                             @addAttachment="(location: string, name: string, type: string)=>handleNewAttachment(entry, location, name, type)"
                     />
                 </div>
@@ -59,7 +59,7 @@ import AutoTime from "@/components/AutoTime.vue";
 import Editor from "@/components/editor/Editor.vue";
 import ToolbarConfig from "@/components/editor/ToolbarConfig";
 
-import { WebMarkdownHandler } from "@platform/MarkdownHandler";
+import { MarkdownHandler } from "@platform/MarkdownHandler";
 
 import { AddAttachmentTransaction } from "@/common/data/transactions/CardTransactions";
 import { CardCommentChangeTransaction } from "@/common/data/transactions/CardCommentTransactions";
@@ -85,6 +85,8 @@ const logbookEntries = computed(()=>{
         return $props.logbook.filter(e=>e!=undefined && typeOf(e) == TimelineKind.CommentAdd && filterDeletedComments(e)).reverse()
     }
 })
+
+const markdownHandler = new MarkdownHandler($props.board().attachmentStore())
 
 function filterDeletedComments(entry: LogEntry) {
     return typeOf(entry) != TimelineKind.CommentAdd || $props.card.comments.find(e=>e.id == entry.objectId && e.deleted == false) != undefined
@@ -139,6 +141,8 @@ function computeText(entry: LogEntry): string{
         return initiator(entry) + ' added ' + entry.args[0] + '  as attachment'
     case TimelineKind.AttachmentRemove:
         return initiator(entry) + ' deleted ' + entry.args[0] + '  as attachment'
+    case TimelineKind.AttachmentChange:
+        return initiator(entry) + ' changed the contents of ' + entry.args[0] + ' '
     case TimelineKind.CommentAdd:
         return initiator(entry) + ' added a comment'
     case TimelineKind.CommentRemove:

@@ -10,7 +10,6 @@
 
                                 @save="commit(); hide();"
                                 @reset="reset()"
-                                @addAttachment="emitAddAttachment"
                     />
                     <Codemirror
                         class="cm6"
@@ -34,6 +33,7 @@
                 v-if="!editMode" @click="(e)=>e.defaultPrevented||setEditMode(true)"
                 :value="editorContent"
                 :imageInterceptor="(e) => $props.markdownHandler.renderImage(e)"
+                :imageUpdater="(e) => $props.markdownHandler.updateImage(e)"
                 :linkClickInterceptor="(e) => $props.markdownHandler.linkClicked(e)"
             />
             <n-text depth="3" v-if="editorContent=='' && !editMode" @click="setEditMode(true)">{{ $props.placeholder }}</n-text>
@@ -89,7 +89,7 @@ const $props = withDefaults(defineProps<{
     clearAfterEdit: false,
 });
 
-const $emit = defineEmits(["update:value", "add-attachment"]);
+const $emit = defineEmits(["update:value"]);
 
 const theme = useThemeVars()
 const editMode = ref(false)
@@ -133,10 +133,6 @@ const editorContent = ref($props.value)
 //debug  helper
 const log = ()=>false
 //const log = console.log
-
-function emitAddAttachment(location: string, name: string, type: string){
-    $emit('add-attachment', location, name, type)
-}
 
 // setup codemirror
 

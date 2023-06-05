@@ -8,7 +8,7 @@ export class ProjectStorage implements IStorage {
             const serializableBoard = JSON.stringify(board.toSerializable())
             const blob = new Blob([serializableBoard],{type:"text/plain;charset=utf-8"});
             const a = document.createElement('a');
-            a.download = board.name + ".lwp";
+            a.download = board.session.currentPath || (board.name + ".lwp");
             a.href = window.URL.createObjectURL(blob);
             a.click();
             a.remove();
@@ -16,7 +16,7 @@ export class ProjectStorage implements IStorage {
         })
     }
 
-    public load(_data: string): Promise<Board> {
+    public load(): Promise<Board> {
         return new Promise((resolve, _reject)=>{
 
             const input = document.createElement('input');
@@ -34,6 +34,7 @@ export class ProjectStorage implements IStorage {
                     const target = e.target
                     if(target != null && target.result != null){
                         const board = Board.fromSerializable(JSON.parse(unbuff(target.result)))
+                        board.session.currentPath = file.name
                         resolve(board)
                     }
                 };

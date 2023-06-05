@@ -12,6 +12,7 @@ export enum Kind {
     CommentAdd,
     CommentRemove,
     CardMove,
+    AttachmentChange,
 
 }
 
@@ -23,7 +24,14 @@ export function typeOf(e: LogEntry): Kind {
     } else if(e.objectKind == LogKind.Label){
         return e.action == LogAction.Connect ? Kind.LabelAdd : Kind.LabelRemove
     } else if(e.objectKind == LogKind.Attachment){
-        return e.action == LogAction.Connect ? Kind.AttachmentAdd : Kind.AttachmentRemove
+        if(e.action == LogAction.Connect){
+            return Kind.AttachmentAdd
+        } else if(e.action == LogAction.Disconnect) {
+            return Kind.AttachmentRemove
+        } else if(e.action == LogAction.Change) {
+            return Kind.AttachmentChange
+        }
+        return Kind.None
     } else if(e.objectKind == LogKind.Comment){
         return e.action == LogAction.Connect ? Kind.CommentAdd : Kind.CommentRemove
     }

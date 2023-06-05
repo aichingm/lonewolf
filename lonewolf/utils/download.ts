@@ -5,7 +5,7 @@ export function download(name: string, data: string, mime: string, charset?: str
     const blob = new Blob([data],{type: mime + ";" + cs});
     const a = document.createElement('a');
     a.download = name;
-    a.href = window.URL.createObjectURL(blob);
+    a.href = URL.createObjectURL(blob);
     a.click();
     a.remove();
 }

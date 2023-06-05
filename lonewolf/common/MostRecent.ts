@@ -10,6 +10,7 @@ import Extension from "./Extension";
 export default class MostRecent extends Extension {
 
     private _localstorageKey = "mostRecentBoard"
+    private _localstorageSessionDataKey = "mostRecentBoardSession"
     private _failedRef = ref(false)
 
     public failedRef(): Ref<boolean> {
@@ -25,6 +26,7 @@ export default class MostRecent extends Extension {
         const dataStr = JSON.stringify(board.toSerializable())
         if (new Blob([dataStr]).size <= 4000000) {
             localStorage.setItem(this._localstorageKey, dataStr)
+            localStorage.setItem(this._localstorageSessionDataKey, JSON.stringify(board.session))
             this._failedRef.value = false
         } else {
             localStorage.removeItem(this._localstorageKey)
@@ -34,7 +36,9 @@ export default class MostRecent extends Extension {
 
     public load(): Board | null {
         if(this.exists()) {
-            return Board.fromSerializable(JSON.parse(localStorage.getItem(this._localstorageKey) as string))
+            const board = Board.fromSerializable(JSON.parse(localStorage.getItem(this._localstorageKey) as string))
+            board.session = JSON.parse(localStorage.getItem(this._localstorageSessionDataKey) as string)
+            return board
         }
         return null
     }

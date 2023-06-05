@@ -15,6 +15,10 @@ import type { Store as AttachmentStore } from "@/common/attachments/Store";
 import { Entry as LogEntry } from "@/common/logs/LogEntry";
 
 
+type Session = {
+  currentPath: string | null; // this field is used to store the loacation of the last save/load when using platform==tauri
+};
+
 export default class Board extends NamedIdentifiable {
 
     private _lists = new IndexedMap<List>();
@@ -25,6 +29,7 @@ export default class Board extends NamedIdentifiable {
     private _logbook = new Map<string, LogEntry>();
     private _settings = new Settings();
     private _attachmentStore: AttachmentStore;
+    private _session: Session = { currentPath: null } ;
 
     public createdAt = 0
 
@@ -85,6 +90,17 @@ export default class Board extends NamedIdentifiable {
 
     public attachmentStore(): AttachmentStore {
         return this._attachmentStore
+    }
+
+    public get session(): Session{
+        return this._session
+    }
+    public set session(session: Session | null) {
+        if (session == null){
+            this._session = {currentPath: null}
+        } else {
+            this._session = session
+        }
     }
 
     public countAttachmentUsage(location: string){

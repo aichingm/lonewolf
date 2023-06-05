@@ -9,6 +9,6 @@
       "@/*": ["./src/*"],
       "@platform/*": ["./src-platform/*"]
     },
-    "lib": ["ES2021.String"]
+    "lib": ["ES2021.String"],
   }
 }

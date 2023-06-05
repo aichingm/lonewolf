@@ -1,6 +1,7 @@
 import InlineStore, { InlineDescriptor } from "./InlineStore"
+import FSStore, { FSDescriptor } from "./FileSystemStore"
 
-export type StoreType = "inline"
+export type StoreType = "inline" | "filesystem"
 export type Location = string
 
 export interface Descriptor {
@@ -9,19 +10,36 @@ export interface Descriptor {
 
 }
 
-export class AttachmentMeta {
-    public name = ""
-    public mime = ""
+
+export class Attachment {
+    public name: string
+    public mime: string
+
+    constructor(name: string, mime: string){
+        this.name = name
+        this.mime = mime
+    }
+
+    public isImage(): boolean{
+        return this.mime.startsWith("image/")
+    }
+
 }
 
 export interface Store {
     descriptor: Descriptor;
 
+    // backend
     shouldHandleLocation(location: Location): boolean;
-    createLocation(meta: AttachmentMeta): Promise<Location>;
+    createLocation(meta: Attachment): Promise<Location>;
     pushData(location: Location, data: ArrayBuffer): Promise<void>;
     url(location: Location): Promise<string>;
-    metadata(location: Location): Promise<AttachmentMeta>;
+    metadata(location: Location): Promise<Attachment>;
+
+    //frontend
+
+    chooseAttachment(): Promise<[Location, Attachment]>;
+    updateAttachment(location: Location): Promise<Attachment>;
 
 }
 
@@ -31,6 +49,8 @@ export class Factory {
         switch(descriptor.storeType) {
         case "inline":
             return new InlineStore(descriptor as InlineDescriptor)
+        case "filesystem":
+            return new FSStore(descriptor as FSDescriptor)
         default:
             return new InlineStore(new InlineDescriptor())
         }
@@ -49,6 +69,8 @@ export class Factory {
         switch(descriptorType) {
         case "inline":
             return new InlineDescriptor(data)
+        case "filesystem":
+            return new FSDescriptor(data)
         default:
             return new InlineDescriptor()
         }

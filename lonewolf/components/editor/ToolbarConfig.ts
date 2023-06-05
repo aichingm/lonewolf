@@ -1,3 +1,4 @@
+import { supportsChooseFile } from "@/platform/Functions";
 
 
 export default class ToolbarConfig {
@@ -13,6 +14,7 @@ export default class ToolbarConfig {
     showCreateTaskList = false;
     showCreateBlockquote = false;
     showCreateTable = false;
+    showAddFile = false;
     showMarkdownReference = false
     showPreviewToggle = false;
     saveable = false;
@@ -33,6 +35,7 @@ export default class ToolbarConfig {
         t.showCreateTaskList = true;
         t.showCreateBlockquote = true;
         t.showCreateTable = true;
+        t.showAddFile = supportsChooseFile();
         t.showMarkdownReference = true
         t.showPreviewToggle = false;
         t.saveable = true;
@@ -57,6 +60,7 @@ export default class ToolbarConfig {
         t.showCreateTaskList = false;
         t.showCreateBlockquote = true;
         t.showCreateTable = false;
+        t.showAddFile = supportsChooseFile();
         t.showMarkdownReference = false
         t.showPreviewToggle = false;
         t.saveable = true;

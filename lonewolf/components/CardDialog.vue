@@ -23,18 +23,19 @@
                             <n-date-picker v-model:value="timestampModel" type="datetime" placeholder="Due Date" clearable size="small" />
                         </IconedBox>
                         <IconedBox icon="fluent:code-text-20-filled" :contentOffsetX="24">
+
                             <Editor v-model:value="descriptionModel"
                                     updateOnBlur
                                     placeholder="Add Description..."
                                     :attachmentStore="$props.board().attachmentStore()"
-                                    :markdownHandler="new WebMarkdownHandler($props.board().attachmentStore())"
+                                    :markdownHandler="markdownHandler"
                                     :attachments="attachments"
                                     @addAttachment="handleNewAttachment"
 
                             />
                         </IconedBox>
                         <IconedBox icon="fluent:document-20-filled" :contentOffsetX="24">
-                            <AttachmentManager :attachments="attachments" @delete="handleDeleteAttachment" :board="$props.board" @add="handleNewAttachment"/>
+                            <AttachmentManager :attachments="attachments" @delete="handleDeleteAttachment" :board="$props.board" @add="handleNewAttachment" @edit="handleEditAttachment"/>
                         </IconedBox>
                         <IconedBox icon="fluent:comment-20-filled" :contentOffsetX="24">
                             <div style="display: flex;flex-grow: 1;flex-direction: column;gap: 8px;">
@@ -81,7 +82,7 @@ import type { Ref } from "vue";
 
 import Editor from "@/components/editor/Editor.vue";
 import ToolbarConfig from "@/components/editor/ToolbarConfig";
-import { WebMarkdownHandler } from "@platform/MarkdownHandler";
+import { MarkdownHandler } from "@platform/MarkdownHandler";
 
 import TextInput from "@/components/inputs/TextInput.vue";
 import IconedBox from "@/components/IconedBox.vue";
@@ -92,7 +93,7 @@ import LabelSelector from "@/components/labels/LabelSelector.vue";
 import AttachmentManager from "@/components/attachments/AttachmentManager.vue";
 
 import { CardAddLabelTransaction, CardRemoveLabelTransaction, CardChangeTransaction, AddCommentTransaction, AddAttachmentTransaction } from "@/common/data/transactions/CardTransactions";
-import { CardAttachmentChangeTransaction } from "@/common/data/transactions/CardAttachmentTransactions";
+import { CardAttachmentChangeTransaction, CardAttachmentContentChangeTransaction } from "@/common/data/transactions/CardAttachmentTransactions";
 import type Card from "@/common/data/Card";
 import type Board from "@/common/data/Board";
 import type { SDCardHolder, SDLabel } from "@/common/data/extern/SimpleData";
@@ -148,6 +149,8 @@ watch(descriptionModel, () => {
 
 const logbook = computed(()=>card.value == null?[]:card.value.logbook.map((tId)=>$props.board().logbook.get(tId)).filter(e=>e!=undefined) as LogEntry[])
 
+const markdownHandler = new MarkdownHandler($props.board().attachmentStore())
+
 const timelineShowDetailsModel = ref(false)
 
 const emitNewCommentTransaction = (value: string) => {
@@ -165,6 +168,12 @@ function handleNewAttachment(location: string, name: string, type: string) {
 function handleDeleteAttachment(attachmentId: string) {
     if (card.value != null) {
         $emit('transaction', new CardAttachmentChangeTransaction(card.value.id, attachmentId, 'deleted', true))
+    }
+}
+
+function handleEditAttachment(id: string, location: string, name: string, mime: string) {
+    if (card.value != null) {
+        $emit('transaction', new CardAttachmentContentChangeTransaction(card.value.id, id, name, mime))
     }
 }
 
