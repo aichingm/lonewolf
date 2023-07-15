@@ -14,7 +14,7 @@ To run most of the make targets only a podman (default) compatible (eg. docker) 
 To build the development container run
 
 ```
-make container-dev
+make image-dev
 ```
 
 This image is needed by most make targets, so make sure it is build before running running any of them.
@@ -58,13 +58,7 @@ make lint-tauri type-check-tauri test-tauri-unit
 Building the web version
 
 ```
-make build-web
-```
-
-Building the tauri version
-
-```
-make build-tauri
+make build[-(web|tauri)]
 ```
 
 ## Other
@@ -73,9 +67,9 @@ There are a few other targets to help you developing
 
 ### Installing node modules
 ```
-make npm-install
+make npm-install[-(web|tauri)]
 ```
 ### Running a shell in the container
 ```
-make shell
+make shell[-(web|tauri)]
 ```
