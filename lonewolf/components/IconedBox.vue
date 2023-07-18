@@ -37,6 +37,7 @@ const style = computed(()=> ({
 .iconed-box {
     display: flex;
     flex-grow: 1;
+    margin-right: 2px; /* to make space to the border glow*/
 }
 
 .slot {

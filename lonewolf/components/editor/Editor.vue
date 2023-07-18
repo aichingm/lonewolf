@@ -271,6 +271,12 @@ const handleReady = (payload: { view: EditorView; state: EditorState; container:
 
 .editor-root {
     position: relative;
+    display: grid;
+}
+
+.editor-root > div{
+    display: flex;
+    overflow-x: hidden;
 }
 
 .cm6 {

@@ -65,6 +65,7 @@ defineExpose({ elem })
 
 .content {
   font-family: v-sans, v-mono, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    overflow-x: auto;
 }
 
 .markdown-body :deep(tt), .markdown-body :deep(code), .markdown-body :deep(samp) {

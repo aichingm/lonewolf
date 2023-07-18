@@ -10,7 +10,7 @@
             content-style="padding-left: 32px; padding-right: 32px;"
         >
             <InitialFocus />
-            <n-scrollbar class="scrollbar scroll-shadow-fixer-outer" >
+            <n-scrollbar class="scrollbar" >
                 <div class="scroll-shadow-fixer-inner">
                     <n-space vertical>
                         <IconedBox icon="fluent:rename-20-filled" :contentOffsetX="12" :iconOffsetY="8">
@@ -224,11 +224,12 @@ function removeLabel(labelId: string) {
 
 :deep() .card .n-card__content {
     padding-left: 32px;
-    padding-right: 32px;
+    padding-right: 30px; /* IconedBox has 2px margin-right*/
 }
 
 :deep() .scrollbar{
     height: calc(100vh - 222px) !important;
+    padding-right: 12px; /* move the scrollbar to the right so that it does not overlay the content */
 }
 
 .scroll-shadow-fixer-inner {
