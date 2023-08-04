@@ -1,0 +1,44 @@
+app-id: site.someones.Lonewolf
+runtime: org.gnome.Platform
+# Stuck with GNOME 42 until tauri supports newer webkitgtk
+runtime-version: '42'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.node16
+  - org.freedesktop.Sdk.Extension.rust-nightly
+command: /app/bin/lonewolf
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --share=network
+  - --device=dri
+  - --filesystem=/run/media
+  - --filesystem=home
+
+modules:
+  - name: lonewolf
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/node16/bin:/usr/lib/sdk/rust-nightly/bin
+      env:
+        npm_config_nodedir: /usr/lib/sdk/node16
+        npm_config_offline: 'true'
+        CARGO_HOME: /run/build/lonewolf/cargo
+    sources:
+      - type: dir
+        path: /app-dir
+      - /app-dir/build/flatpak/cargo-sources.json
+      - /app-dir/build/flatpak/npm-sources.json
+      - type: file
+        path: /app-dir/lonewolf-tauri/site.someones.Lonewolf.desktop
+      - type: file
+        path: /app-dir/lonewolf-tauri/src-tauri/icons/128x128.png
+    build-commands:
+      - (cd lonewolf-tauri; npm run tauri build -- -b deb)
+      - install -Dm755 -t /app/bin/ lonewolf-tauri/src-tauri/target/release/bundle/deb/*/data/usr/bin/*
+      - install -Dm644 -t /app/share/applications/ site.someones.Lonewolf.desktop
+      - mkdir -p /app/share/icons/hicolor/128x128/apps
+      - mv 128x128.png /app/share/icons/hicolor/128x128/apps/site.someones.Lonewolf.png
+
+

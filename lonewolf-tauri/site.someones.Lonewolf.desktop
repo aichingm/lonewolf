@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+
+Name=Lonewolf
+Comment=A personal kanban board application which lets you work on you own projects with a great desktop experience.
+Icon=site.someones.Lonewolf.png
+Exec=lonewolf
+Terminal=false
+Categories=Utility;ProjectManagement;
+Keywords=kanban;productivity;

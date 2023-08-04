@@ -1,2 +1,3 @@
-registry/*
-.package-cache
+
+.flatpak/*
+build/*
