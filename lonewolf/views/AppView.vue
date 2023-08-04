@@ -311,8 +311,6 @@ function newBoard () {
 .board{
     display: flex;
     margin-top: 10px;
-    margin-left: 10px;
-    margin-right: 10px;
     height: calc(100% - 10px);
 }
 

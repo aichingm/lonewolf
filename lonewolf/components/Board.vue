@@ -98,11 +98,14 @@ function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number
   rotate: -3deg;
 }
 
-#draggable{ /* if drafable is empty it still is focusable via tab, so hide it if it is empty*/
+#draggable{ /* if draggable is empty it still is focusable via tab, so hide it if it is empty*/
     min-width: 100%;
     display: flex;
     gap: 8px;
     flex-shrink: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+    box-sizing: border-box;
 }
 
 .justify-content-center {
@@ -118,7 +121,7 @@ function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number
 }
 
 
-#draggable:empty { /* if drafable is empty it still is focusable via tab, so hide it if it is empty*/
+#draggable:empty { /* if draggable is empty it still is focusable via tab, so hide it if it is empty*/
     display: none;
 }
 
