@@ -1,6 +1,4 @@
-
-.PHONY: default CONTAINER IMAGE IMAGE image-dev image-dev-force build build-tauri build-web cce cci check clean-tauri dev-tauri-X dev-web favicon lint lint-tauri lint-web npm-install npm-install-tauri npm-install-web shell shell-tauri shell-web test test-tauri-unit test-web-unit type-check type-check-tauri type-check-web
-
+.PHONY: build build-tauri build-web cce cci check clean clean-tauri clean-web default dev-tauri-X dev-web icons-tauri icons-web image-dev image-dev-force lint lint-tauri lint-web npm-install npm-install-tauri npm-install-web shell shell-tauri shell-web test test-tauri-unit test-web-unit type-check type-check-tauri type-check-web
 
 default: dev-web
 
@@ -16,11 +14,11 @@ image-dev-force: cce
 
 build: build-tauri build-web
 
-build-tauri: cci
+build-tauri: cci icons-tauri
 	rm -rf lonewolf-tauri/src-tauri/target/release/build/lonewolf*
 	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -l -c "npm run tauri build"
 
-build-web: cci favicon
+build-web: cci icons-web
 	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c "npm run build"
 
 cce:
@@ -31,19 +29,35 @@ cci: cce
 
 check: lint type-check
 
-clean-tauri:
-	rm -rf lonewolf-tauri/src-tauri/target/debug/build/lonewolf-*
+clean: clean-tauri clean-web
 
-dev-tauri-X: cci
+clean-tauri:
+	rm -rf src-tauri/icons/*
+	rm -rf lonewolf-tauri/dist
+	rm -rf lonewolf-tauri/src-tauri/target
+
+clean-web:
+	rm -rf lonewolf-web/public/favicon.ico
+	rm -rf lonewolf-web/dist
+
+dev-tauri-X: cci icons-tauri
 	xhost +
 	$(CONTAINER_ENGINE) run --rm -it -v .:/app --net=host -e DISPLAY -v /tmp/.X11-unix -w /app/lonewolf-tauri $(IMAGE_DEV) bash -l -c "npm run tauri dev"
 	xhost -
 
-dev-web: cci
+dev-web: cci icons-web
 	$(CONTAINER_ENGINE) run --rm -it -p 5173:5173 -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c 'npm run dev -- --host'
 
-favicon: cci
-	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c 'convert -background transparent src/assets/logo.svg -resize 64x64 -format ico public/favicon.ico'
+icons-tauri: lonewolf-tauri/src-tauri/icons/512x521-lonewolf.png
+
+icons-web: cci lonewolf-web/public/favicon.ico
+
+lonewolf-tauri/src-tauri/icons/512x521-lonewolf.png: lonewolf/assets/icon.svg
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -c 'convert -background transparent src/assets/icon.svg -resize 512x512 -format png src-tauri/icons/512x521-lonewolf.png'
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -c 'npm run tauri icon -- src-tauri/icons/512x521-lonewolf.png -o src-tauri/icons'
+
+lonewolf-web/public/favicon.ico: lonewolf/assets/icon.svg
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c 'convert -background transparent src/assets/icon.svg -resize 64x64 -format ico public/favicon.ico'
 
 lint: lint-web lint-tauri
 
