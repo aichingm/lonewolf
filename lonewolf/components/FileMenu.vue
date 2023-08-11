@@ -1,7 +1,10 @@
 <template>
     <n-drawer v-model:show="drawer.state.value" :width="280" placement="left">
-        <n-drawer-content title="" body-content-style="margin:0;padding:0;">
-            <n-menu :options="drawerMenuOptions" @update:value="drawerMenuClicked" :indent="32" :icon-size="0"/>
+        <n-drawer-content title="" body-content-style="margin:0;padding:0;" footer-style="display:inline-flex;justify-content:start;padding-left:0;padding-right:0;padding:0;flex-direction: column;">
+            <n-menu :options="options" @update:value="menuClicked" :indent="32" :icon-size="0"/>
+            <template #footer>
+                <n-menu :options="footerOptions" @update:value="menuClicked" :indent="32" :icon-size="0"/>
+            </template>
         </n-drawer-content>
     </n-drawer>
 </template>
@@ -19,7 +22,7 @@ const drawer = { state: ref($props.show.value), show: (value: boolean)=>drawer.s
 watch($props.show, ()=> drawer.state.value=$props.show.value)
 watch(drawer.state, ()=>$emit("update:show", drawer.state))
 
-const drawerMenuOptions = [
+const options = [
     {
         label: 'New',
         key: 'new',
@@ -42,7 +45,14 @@ const drawerMenuOptions = [
     },
 ]
 
-const drawerMenuClicked = function (key: string) {
+const footerOptions = [
+    {
+        label: 'About',
+        key: 'about',
+    },
+]
+
+const menuClicked = function (key: string) {
     drawer.show(false)
     $emit("action", key)
 }

@@ -28,3 +28,4 @@ coverage
 *.sw?
 
 public/favicon.ico
+public/*.png

@@ -85,6 +85,7 @@
                 :labels="simpleDataRoot.board.labels"
                 :settings="simpleDataRoot.board.settings"
                 @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)" />
+            <AboutDialog v-model:show="aboutDialogShow.ref"/>
         </div>
     </div>
 </template>
@@ -98,6 +99,7 @@ import TextInput from "@/components/inputs/TextInput.vue";
 import CardDialog from "@/components/CardDialog.vue";
 import ListDialog from "@/components/ListDialog.vue";
 import SettingsDialog from "@/components/SettingsDialog.vue";
+import AboutDialog from "@/components/about/AboutDialog.vue";
 import FileMenu from "@/components/FileMenu.vue";
 import Board from "@/common/data/Board";
 import type Card from "@/common/data/Card";
@@ -163,6 +165,7 @@ const listDialogList= reactive(new SDListHolder(new SDList("", "")))
 const listDialogShow =  new RefProtector(ref(false))
 
 const settingsDialogShow =  new RefProtector(ref(false))
+const aboutDialogShow =  new RefProtector(ref(false))
 
 const board = shallowRef(mostRecentExtension.exists() ? mostRecentExtension.load() as Board : newBoard()) as Ref<Board>; // as Board because typescript is stupid and can't see that .exist checks if it is null...
 
@@ -260,6 +263,9 @@ function actionHandler(action: string) {
         } else {
             openBoard()
         }
+        break;
+    case 'about':
+        aboutDialogShow.assign(true)
         break;
     default:
         console.error("Unhandled action[" + action + "]")
