@@ -17,9 +17,12 @@
                     <div class="lonewolf-layout">
                         <div class="lonewolf-logo"></div>
                         <div class="lonewolf-text-container">
-                            <n-h1>Lonewolf<span class="lonewolf-application-version">1.0.0</span></n-h1>
+                            <n-h1>Lonewolf<span class="lonewolf-application-version">{{ versionPlatform.version }}</span></n-h1>
                             <n-p>
                                 <n-ul>
+                                    <n-li>
+                                        Core Library {{ versionCore.version }}
+                                    </n-li>
                                     <n-li>
                                         <n-a href="https://github.com/aichingm/lonewolf" target="_blank">Github</n-a>
                                     </n-li>
@@ -63,6 +66,8 @@ import type { Ref } from "vue";
 import contributorsCore from "@/content/contributors";
 import contributorsPlatform from "@platform/content/contributors";
 import thirdPartyLicenses from "@platform/content/third-party-licenses";
+import versionCore from "@/content/version";
+import versionPlatform from "@platform/content/version";
 
 import Contributor from "./Contributor.vue";
 import ThirdPartyLicense from "./ThirdPartyLicense.vue";
