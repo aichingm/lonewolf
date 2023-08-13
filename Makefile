@@ -14,11 +14,11 @@ image-flatpak: cce
 
 build: build-web build-tauri-flatpak
 
-build-tauri-dev-bin: check-image-dev clean-tauri icons-web
+build-tauri-dev-bin: check-image-dev clean-tauri icons-tauri
 	mkdir -p build
 	rm -rf build/lonewolf-dev.bin
 	rm -rf lonewolf-tauri/src-tauri/target/release/build/lonewolf*
-	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -l -c "npm run tauri build"
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -l -c "npm run tauri build -- -b deb"
 	cp lonewolf-tauri/src-tauri/target/release/bundle/deb/lonewolf_*/data/usr/bin/lonewolf build/lonewolf-dev.bin
 
 build-tauri-flatpak-sources:
@@ -88,27 +88,6 @@ icons-tauri: lonewolf-tauri/src-tauri/icons/512x512-lonewolf.png lonewolf-tauri/
 
 icons-web: check-image-dev lonewolf-web/public/favicon.ico lonewolf-web/public/lonewolf.png lonewolf-web/public/icon.png
 
-lonewolf-tauri/src-tauri/icons/512x512-lonewolf.png: lonewolf/assets/icon.svg
-	mkdir -p lonewolf-tauri/src-tauri/icons
-	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -c 'convert -background transparent src/assets/icon.svg -resize 512x512 -format png src-tauri/icons/512x512-lonewolf.png'
-	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -c 'npm run tauri icon -- src-tauri/icons/512x512-lonewolf.png -o src-tauri/icons'
-
-lonewolf-web/public/favicon.ico: lonewolf/assets/icon.svg
-	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c 'convert -background transparent src/assets/icon.svg -resize 64x64 -format ico public/favicon.ico'
-
-lonewolf-web/public/lonewolf.png: lonewolf/assets/icon.svg
-	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c 'convert -background transparent src/assets/lonewolf.svg -resize 512x512 -format png public/lonewolf.png'
-
-lonewolf-web/public/icon.png: lonewolf/assets/icon.svg
-	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c 'convert -background transparent src/assets/icon.svg -resize 128x128 -format png public/icon.png'
-
-lonewolf-tauri/public/lonewolf.png: lonewolf/assets/icon.svg
-	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -c 'convert -background transparent src/assets/lonewolf.svg -resize 512x512 -format png public/lonewolf.png'
-
-lonewolf-tauri/public/icon.png: lonewolf/assets/icon.svg
-	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -c 'convert -background transparent src/assets/icon.svg -resize 128x128 -format png public/icon.png'
-
-
 lint: lint-web lint-tauri
 
 lint-tauri: check-image-dev
@@ -150,3 +129,27 @@ type-check-tauri: check-image-dev
 type-check-web: check-image-dev
 	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c 'npm run type-check'
 
+# FILES
+
+## WEB
+lonewolf-web/public/favicon.ico: lonewolf/assets/icon.svg
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c 'convert -background transparent src/assets/icon.svg -resize 64x64 -format ico public/favicon.ico'
+
+lonewolf-web/public/lonewolf.png: lonewolf/assets/icon.svg
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c 'convert -background transparent src/assets/lonewolf.svg -resize 512x512 -format png public/lonewolf.png'
+
+lonewolf-web/public/icon.png: lonewolf/assets/icon.svg
+
+## TAURI
+lonewolf-tauri/src-tauri/icons/512x512-lonewolf.png: lonewolf/assets/icon.svg
+	mkdir -p lonewolf-tauri/src-tauri/icons
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -c 'convert -background transparent src/assets/icon.svg -resize 512x512 -format png src-tauri/icons/512x512-lonewolf.png'
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -c 'npm run tauri icon -- src-tauri/icons/512x512-lonewolf.png -o src-tauri/icons'
+
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c 'convert -background transparent src/assets/icon.svg -resize 128x128 -format png public/icon.png'
+
+lonewolf-tauri/public/lonewolf.png: lonewolf/assets/icon.svg
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -c 'convert -background transparent src/assets/lonewolf.svg -resize 512x512 -format png public/lonewolf.png'
+
+lonewolf-tauri/public/icon.png: lonewolf/assets/icon.svg
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -c 'convert -background transparent src/assets/icon.svg -resize 128x128 -format png public/icon.png'
