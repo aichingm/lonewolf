@@ -32,6 +32,9 @@ make dev-web
 The tauri development version needs to be run on linux with a running Xorg server. Since this runs lonewolf in a container not everything works as it would when running locally (eg. opening attachments calls xdg-open in the background but this is not available within the container)
 
 **Also make sure that `xhost` is installed!**
+```
+make dev-tauri-X
+```
 
 ## Validation
 
@@ -55,10 +58,16 @@ make lint-tauri type-check-tauri test-tauri-unit
 
 ## Building
 
-Building the web version
+How to buld different versions of Lonewolf:
 
 ```
-make build[-(web|tauri)]
+make build[-(web|tauri|tauri-flatpak)]
+```
+
+To build the flatpak bundle the `lonewolf:flatpak` image is needed. This can be built with:
+
+```
+make image-flatpak
 ```
 
 ## Other
