@@ -1,10 +1,10 @@
 <template>
-    <n-space style="flex-grow: 1;height: 34px;" :wrap-item="false" >
-        <div v-if="!editMode" class="text" :style="'margin-top:1px;font-size:' + $props.fontSize + ';'" tabindex="0" @focus="showEdit()">
+    <n-space class="container" :wrap-item="false" >
+        <div v-if="!editMode" class="text" :style="{marginTop: '1px', fontSize: $props.fontSize}" tabindex="0" @focus="showEdit()">
             <div>{{ textValue }}</div>
         </div>
-        <n-input-group v-if="editMode" :style="'width:' + $props.width">
-            <n-input :autosize="$props.autosize" :style="'font-size:' + $props.fontSize + ';'" ref="inputRef" @blur="onBlur" type="text" v-model:value="textValue" :placeholder="$props.placeholder" @keyup="handleKeyUp" @keydown="handleKeyDown" />
+        <n-input-group v-if="editMode" :style="{width: $props.width}">
+            <n-input :autosize="$props.autosize" :style="{fontSize: $props.fontSize}" ref="inputRef" @blur="onBlur" type="text" v-model:value="textValue" :placeholder="$props.placeholder" @keyup="handleKeyUp" @keydown="handleKeyDown" />
             <n-button :id="resetButtonId" v-if="$props.resetable" type="default" @click="resetClicked">
                 <n-icon size="20">
                     <icon icon="fluent:arrow-reset-20-filled"/>
@@ -145,6 +145,11 @@ defineExpose({ inputRef })
 
 </script>
 <style scoped>
+.container {
+    flex-grow: 1;
+    height: 34px;
+}
+
 .text {
     margin-left: 12px;
     height: 100%;

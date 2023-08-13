@@ -7,11 +7,11 @@
         </n-space>
         <n-space justify="space-between">
             <div>List arrangement</div>
-            <n-slider style="width:300px;margin-right:20px;" v-model:value="listsJustification" :tooltip="false" :marks="marks" step="mark" />
+            <n-slider class="setting-line" v-model:value="listsJustification" :tooltip="false" :marks="marks" step="mark" />
         </n-space>
         <n-space justify="space-between">
             <div>List width</div>
-            <n-slider style="width:300px;margin-right:20px;" v-model:value="listsWidth" step="1" :min="160" :max="1600"/>
+            <n-slider class="setting-line" v-model:value="listsWidth" step="1" :min="160" :max="1600"/>
         </n-space>
     </n-space>
 </template>
@@ -66,6 +66,9 @@ function reverseTranslate(value: string): number{
 
 </script>
 <style scoped>
-
+.setting-line {
+    width:300px;
+    margin-right:20px;
+}
 
 </style>

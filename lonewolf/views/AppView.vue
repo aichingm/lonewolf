@@ -1,5 +1,5 @@
 <template>
-    <div style="height:100%;">
+    <div class="full-height">
         <FileMenu v-model:show="fileMenu.state" @action="(action: string)=>fileMenu.actionHandler(action)"/>
         <div class="app-header-nav" :style="'border-bottom-color:' + borderColor + ';'">
             <n-space class="app-header-nav-space" justify="left" allign="center">
@@ -13,7 +13,7 @@
                 <TextInput fontSize="20px" :value="title.ref" @update:value="title.update" placeholder="Title" autosize commitOnBlur commitOnEnter selectOnEdit/>
                 <n-tooltip v-if="!savedObserverExtension.isSavedRef().value" trigger="hover">
                     <template #trigger>
-                        <n-icon size="24" :color="theme.warningColor" style="display:block;">
+                        <n-icon size="24" :color="theme.warningColor" class="block">
                             <icon icon="fluent:warning-20-filled" />
                         </n-icon>
                     </template>
@@ -21,7 +21,7 @@
                 </n-tooltip>
                 <n-tooltip v-if="mostRecentExtension.failedRef().value" trigger="hover">
                     <template #trigger>
-                        <n-icon size="24" :color="theme.errorColor" style="display:block;">
+                        <n-icon size="24" :color="theme.errorColor" class="block">
                             <icon icon="fluent:warning-20-filled" />
                         </n-icon>
                     </template>
@@ -45,7 +45,7 @@
                     </template>
                     All done, take a break!
                 </n-tooltip>
-                <n-button quaternary circle style="margin-right: 8px" @click="settingsDialogShow.assign(true)">
+                <n-button quaternary circle class="settings-button" @click="settingsDialogShow.assign(true)">
                     <template #icon>
                         <n-icon size="18" color="gray">
                             <icon icon="fluent:more-vertical-20-filled" />
@@ -286,6 +286,18 @@ function newBoard () {
 
 </script>
 <style scoped>
+.full-height {
+    height: 100%;
+}
+
+.block {
+    display: block;
+}
+
+.settings-button {
+    margin-right: 8px;
+}
+
 .app-config-wrapper{
     height: calc(100% - 48px);
 }

@@ -38,7 +38,7 @@
                             <AttachmentManager :attachments="attachments" @delete="handleDeleteAttachment" :board="$props.board" @add="handleNewAttachment" @edit="handleEditAttachment"/>
                         </IconedBox>
                         <IconedBox icon="fluent:comment-20-filled" :contentOffsetX="24">
-                            <div style="display: flex;flex-grow: 1;flex-direction: column;gap: 8px;">
+                            <div class="editor-container">
                                 <Editor value=""
                                         @update:value="emitNewCommentTransaction"
                                         placeholder="Add Comment..."
@@ -54,7 +54,7 @@
                             </div>
                         </IconedBox>
                         <IconedBox icon="fluent:timeline-20-filled" :contentOffsetX="24">
-                            <n-space vertical style="flex-grow: 1;">
+                            <n-space vertical class="flex-grow">
                                 <n-space justify="right">
                                     <n-switch v-model:value="timelineShowDetailsModel">
                                         <template #checked>
@@ -243,9 +243,19 @@ function removeLabel(labelId: string) {
     padding: 8px;
 }
 
-
 .block {
     display: block;
+}
+
+.editor-container {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.flex-grow {
+    flex-grow: 1;
 }
 
 </style>

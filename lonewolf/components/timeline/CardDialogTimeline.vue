@@ -3,7 +3,7 @@
         <n-timeline-item v-for="entry in logbookEntries" :key="entry.id" :type="computeType(entry)">
             <!-- IF -->
             <div v-if="typeOf(entry) == TimelineKind.CommentAdd">
-                <n-space justify="space-between" style="height: 34px;">
+                <n-space class="line-height" justify="space-between" >
                     <n-space >
                         <n-text depth="3">{{ computeText(entry) }} <AutoTime :data="entry.timestamp" /></n-text>
                     </n-space>
@@ -197,5 +197,7 @@ function handleEditComment(entry: LogEntry, value: string) {
 
 </script>
 <style scoped>
-
+.line-height {
+    height: 34px;
+}
 </style>

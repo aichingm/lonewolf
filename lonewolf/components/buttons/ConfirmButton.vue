@@ -21,8 +21,7 @@
                 >
                     <slot name="confirm">Sure?</slot>
                     <n-progress
-                        class="ConfirmButton-93f669de-1722-4776-bc40-07b2c79e1936"
-                        style="width: 28px;height:28px;"
+                        class="confirm-timeout ConfirmButton-93f669de-1722-4776-bc40-07b2c79e1936"
                         type="circle"
                         :show-indicator="false"
                         status="error"
@@ -98,5 +97,10 @@ function handleClick(){
 
 :deep(.ConfirmButton-93f669de-1722-4776-bc40-07b2c79e1936.n-progress .n-progress-graph .n-progress-graph-circle .n-progress-graph-circle-fill) {
     transition: unset !important;
+}
+
+.confirm-timeout {
+    width: 28px;
+    height:28px;
 }
 </style>

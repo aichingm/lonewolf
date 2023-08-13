@@ -5,7 +5,7 @@
         ><template  #then="{then}">
             <AttachmentActions class="block" :board="$props.board" :attachment="attachment" :url="then!=null?then:''" @delete="(id)=>$emit('delete', id)" @edit="(id, location, name, mime)=>$emit('edit', id, location, name, mime)" />
         </template></Async>
-        <n-button dashed style="height: 28px;" @click="handleNewAttachmentClick">+</n-button>
+        <n-button dashed class="dropdown-trigger" @click="handleNewAttachmentClick">+</n-button>
     </n-space>
 </template>
 
@@ -33,4 +33,7 @@ function handleNewAttachmentClick(){
 
 </script>
 <style scoped>
+.dropdown-trigger {
+    height: 28px;
+}
 </style>
