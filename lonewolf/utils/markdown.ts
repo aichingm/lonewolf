@@ -2,6 +2,7 @@
 import { marked } from 'marked';
 
 export function taskStats(md: string): number[] {
+    console.log(taskStatTokens(marked.lexer(md)))
     return taskStatTokens(marked.lexer(md))
 }
 
@@ -13,7 +14,8 @@ function taskStatToken(token: marked.Token): number[] {
 
     if (token.type == "list_item") {
         const sub = taskStatTokens(token.tokens)
-        return [sub[0] + (token.checked?1:0), sub[1] + (token.task?1:0)]
+        console.log(token)
+        return [sub[0] + (token.task && token.checked?1:0), sub[1] + (token.task?1:0)]
     }
 
     if(token.type == "list"){
