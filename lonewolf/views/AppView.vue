@@ -88,6 +88,7 @@
             <AboutDialog v-model:show="aboutDialogShow.ref"/>
         </div>
     </div>
+    <PlatformComponent />
 </template>
 <script setup lang="ts">
 import { ref, reactive, watch, shallowRef } from "vue";
@@ -113,6 +114,7 @@ import { SDRoot, SDCardHolder, SDCard, SDListHolder, SDList } from "@/common/dat
 import { NewBoardTransaction, BoardChangeTransaction } from "@/common/data/transactions/BoardTransactions";
 import { defaultAttachmentStorage } from "@/platform/Functions";
 import { projectStorage, platformCanSupportBoard, platformExtensions } from "@/platform/Functions";
+import PlatformComponent from "@/platform/PlatformComponent.vue";
 
 import toEmoji from "emoji-name-map";
 
@@ -247,6 +249,11 @@ function actionHandler(action: string) {
         //local boardStorage
         boardStorage.save(board.value).then(()=>{
             extensionManager.triggerOnSave(board.value)
+        })
+        break;
+    case 'saveas':
+        boardStorage.saveAs(board.value).then(()=>{
+            extensionManager.triggerOnSaveAs(board.value)
         })
         break;
     case 'open':

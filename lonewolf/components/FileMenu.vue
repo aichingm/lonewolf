@@ -43,6 +43,10 @@ const options = [
         label: 'Save',
         key: 'save',
     },
+    {
+        label: 'Save As...',
+        key: 'saveas',
+    },
 ]
 
 const footerOptions = [

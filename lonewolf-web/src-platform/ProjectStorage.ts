@@ -1,5 +1,6 @@
 import type { IStorage, IStorageEntry } from '@/common/storage/Storage'
 import Board from '@/common/data/Board'
+import { DialogManager } from './Dialogs'
 
 export class ProjectStorage implements IStorage {
 
@@ -13,6 +14,22 @@ export class ProjectStorage implements IStorage {
             a.click();
             a.remove();
             resolve()
+        })
+    }
+
+    public saveAs(board: Board): Promise<void> {
+        return new Promise((resolve, reject)=>{
+            DialogManager.getInstance().saveAs("lwp").then((filename) => {
+                const serializableBoard = JSON.stringify(board.toSerializable())
+                const blob = new Blob([serializableBoard],{type:"text/plain;charset=utf-8"});
+                const a = document.createElement('a');
+                a.download = filename
+                a.href = window.URL.createObjectURL(blob);
+                a.click();
+                a.remove();
+                board.session.currentPath = filename
+                resolve()
+            }). catch(reject)
         })
     }
 

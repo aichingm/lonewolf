@@ -15,6 +15,10 @@ export default class Extension {
         return
     }
 
+    public onSaveAs(_b: Board){
+        return
+    }
+
 
     public onLoad(_b: Board){
         return
@@ -48,6 +52,10 @@ export class ExtensionManager{
 
     public triggerOnSave(b: Board) {
         this.extensions.forEach(e=>e.onSave(b))
+    }
+
+    public triggerOnSaveAs(b: Board) {
+        this.extensions.forEach(e=>e.onSaveAs(b))
     }
 
     public triggerOnLoad(b: Board) {

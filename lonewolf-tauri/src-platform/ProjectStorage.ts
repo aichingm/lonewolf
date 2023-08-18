@@ -11,6 +11,27 @@ import { Path } from '@/utils/path'
 export class ProjectStorage implements IStorage {
 
     public save(board: Board): Promise<void> {
+        if (board.session.currentPath != null) {
+            const savePath = board.session.currentPath as string
+            return new Promise((resolve, _reject)=>{
+                if (board.attachmentStore().descriptor.storeType == "filesystem") {
+                    const store = board.attachmentStore() as FSStore
+                    const newPath = Path.parse(savePath)
+                    if (newPath != null) {
+                        store.recalculatePaths(Path.parse(savePath), newPath)
+                    } else {
+                        throw new Error("Failed to parse save path")
+                    }
+                }
+                writeTextFile(savePath, JSON.stringify(board.toSerializable())).then(resolve);
+            })
+        } else {
+            // this can happen if a new board is about to be saved and has no board.session.currentPath yet
+            return this.saveAs(board)
+        }
+    }
+
+    public saveAs(board: Board): Promise<void> {
         return new Promise((resolve, _reject)=>{
             save({ defaultPath: board.session.currentPath || (board.name + ".lwp"), filters: [{ name: 'Lonewolf Project', extensions: ['lwp'] }]}).then((path)=>{
                 if(path != null) {

@@ -52,6 +52,10 @@ export default class SavedObserver extends Extension{
         this.clear()
     }
 
+    public onSaveAs(){
+        this.clear()
+    }
+
     public dirty(){
         this._dirty.value = false
         this.persistDirtyIfEnabled()
