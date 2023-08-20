@@ -26,7 +26,7 @@ export function projectStorage(): ProjectStorage {
 }
 
 export function platformCanSupportBoard(b: Board): boolean {
-    if (currrentPlatform() ==  Platforms.Browser && b.attachmentStore().descriptor.storeType != "inline") {
+    if (currrentPlatform() ==  Platforms.Browser && b.attachmentStore().descriptor.storeType != "inline" && import.meta.env.VITE_IGNORE_PLATFORM_CAN_SUPPORT != "1") {
         return false
     }
     return true

@@ -14,6 +14,9 @@ image-flatpak: cce
 
 build: build-web build-tauri-flatpak
 
+build/Lonewolf.png:
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c 'sh -c "export VITE_IGNORE_PLATFORM_CAN_SUPPORT=1; npm run dev -- --host" & SERVER=$$!; sleep 1; export NODE_PATH=$$(npm root --quiet -g); node scripts/print.js /app/Lonewolf.lwp /app/build/Lonewolf.png; kill -9 $$SERVER'
+
 build-tauri-dev-bin: check-image-dev clean-tauri icons-tauri
 	mkdir -p build
 	rm -rf build/lonewolf-dev.bin

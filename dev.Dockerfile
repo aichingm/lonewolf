@@ -18,7 +18,8 @@ RUN pacman -Sy archlinux-keyring --noconfirm && \
                              libvips \
                              imagemagick \
                              gtk3 \
-                             openssl 
+                             openssl \
+                             alsa-lib nss 
 
 RUN npm update -g npm
 
@@ -29,5 +30,7 @@ RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
 RUN bash -c 'export PATH=$PATH:/root/.cargo/bin; rustup self update'
 
 ENV CARGO_HOME=/app/lonewolf-tauri
+
+RUN npm install -g puppeteer
 
 WORKDIR /app

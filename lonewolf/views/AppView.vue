@@ -3,7 +3,7 @@
         <FileMenu v-model:show="fileMenu.state" @action="(action: string)=>fileMenu.actionHandler(action)"/>
         <div class="app-header-nav" :style="'border-bottom-color:' + borderColor + ';'">
             <n-space class="app-header-nav-space" justify="left" allign="center">
-                <n-button @click="fileMenu.show(true)" :ghost ="true" :block="true" :bordered="false">
+                <n-button id="file-menu-opener" @click="fileMenu.show(true)" :ghost ="true" :block="true" :bordered="false">
                     <template #icon>
                         <n-icon size="24" color="gray">
                             <icon icon="fluent:panel-left-expand-20-filled" />
