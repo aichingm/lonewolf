@@ -61,7 +61,9 @@ make lint-tauri type-check-tauri test-tauri-unit
 How to buld different versions of Lonewolf:
 
 ```
-make build[-(web|tauri|tauri-flatpak)]
+make build/web
+make build/lonewolf-dev.bin
+make build/lonewolf.flatpak
 ```
 
 To build the flatpak bundle the `lonewolf:flatpak` image is needed. This can be built with:
@@ -74,14 +76,26 @@ make image-flatpak
 
 There are a few other targets to help you developing
 
+### Project Management
+
+To generate a png of the current state of the lonewolf project run:
+
+```
+make build/Lonewolf.png
+```
+
 ### Installing node modules
+
 ```
 make npm-install[-(web|tauri)]
 ```
+
 ### Running a shell in the container
+
 ```
 make shell[-(web|tauri)]
 ```
+
 ## License
 
 Lonewolf - a personal kanban board application which lets you work on you own projects.
