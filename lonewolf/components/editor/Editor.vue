@@ -1,49 +1,46 @@
 <template>
-    <n-config-provider :theme="theme" class="editor-root">
-        <n-el tag="div">
-            <transition name="editor" :duration=".3">
-                <n-el tag="div" class="editor" v-if="editMode">
-                    <ToolbarVue :id="toolbarId" v-if="viewReady && $props.showToolbar && editMode" :editor-view="view as EditorView" @previewToggleChanged="setEditMode"
-                                :toolbarConfig="$props.toolbarConfig"
-                                :attachmentStore="$props.attachmentStore"
-                                :attachments="$props.attachments"
+    <n-el tag="div" class="editor-root">
+        <transition name="editor" :duration=".3">
+            <n-el tag="div" class="editor" v-if="editMode">
+                <ToolbarVue :id="toolbarId" v-if="viewReady && $props.showToolbar && editMode" :editor-view="view as EditorView" @previewToggleChanged="setEditMode"
+                            :toolbarConfig="$props.toolbarConfig"
+                            :attachmentStore="$props.attachmentStore"
+                            :attachments="$props.attachments"
 
-                                @save="commit(); hide();"
-                                @reset="reset()"
-                    />
-                    <Codemirror
-                        class="cm6"
-                        placeholder="..."
-                        :autofocus="true"
-                        :indent-with-tab="true"
-                        :tab-size="2"
-                        :extensions="extensions"
-                        v-model="editorContent"
-                        @ready="handleReady"
-                        @change="log"
-                        @focus="log"
-                        @blur="onBlur"
-                    />
-                    <div class="editor-decoration editor-decoration-border"></div>
-                    <div class="editor-decoration editor-decoration-shadow"></div>
-                </n-el>
-            </transition >
-            <!--<div class="preview" v-html="previewHtml" v-if="!editMode" @click="setEditMode(true)"></div>-->
-            <Markdown
-                v-if="!editMode" @click="(e)=>e.defaultPrevented||setEditMode(true)"
-                :value="editorContent"
-                :imageInterceptor="(e) => $props.markdownHandler.renderImage(e)"
-                :imageUpdater="(e) => $props.markdownHandler.updateImage(e)"
-                :linkClickInterceptor="(e) => $props.markdownHandler.linkClicked(e)"
-            />
-            <n-text depth="3" v-if="editorContent=='' && !editMode" @click="setEditMode(true)">{{ $props.placeholder }}</n-text>
-        </n-el>
-    </n-config-provider>
+                            @save="commit(); hide();"
+                            @reset="reset()"
+                />
+                <Codemirror
+                    class="cm6"
+                    placeholder="..."
+                    :autofocus="true"
+                    :indent-with-tab="true"
+                    :tab-size="2"
+                    :extensions="extensions"
+                    v-model="editorContent"
+                    @ready="handleReady"
+                    @change="log"
+                    @focus="log"
+                    @blur="onBlur"
+                />
+                <div class="editor-decoration editor-decoration-border"></div>
+                <div class="editor-decoration editor-decoration-shadow"></div>
+            </n-el>
+        </transition >
+        <!--<div class="preview" v-html="previewHtml" v-if="!editMode" @click="setEditMode(true)"></div>-->
+        <Markdown
+            v-if="!editMode && editorContent != ''" @click="(e)=>e.defaultPrevented||setEditMode(true)"
+            :value="editorContent"
+            :imageInterceptor="(e) => $props.markdownHandler.renderImage(e)"
+            :imageUpdater="(e) => $props.markdownHandler.updateImage(e)"
+            :linkClickInterceptor="(e) => $props.markdownHandler.linkClicked(e)"
+        />
+        <n-text v-if="!editMode && editorContent == ''" depth="3" @click="setEditMode(true)">{{ $props.placeholder }}</n-text>
+    </n-el>
 </template>
 
 <script setup lang="ts">
 import { ref, shallowRef } from 'vue'
-import { useThemeVars } from 'naive-ui'
 import { v1 as uuid } from "uuid";
 
 import { minimalSetup, EditorView } from "codemirror"
@@ -91,7 +88,6 @@ const $props = withDefaults(defineProps<{
 
 const $emit = defineEmits(["update:value"]);
 
-const theme = useThemeVars()
 const editMode = ref(false)
 const setEditMode = (value: boolean) => editMode.value = value
 
@@ -271,11 +267,14 @@ const handleReady = (payload: { view: EditorView; state: EditorState; container:
 
 .editor-root {
     position: relative;
-    display: grid;
+    display: flex;
+    flex-grow: 1;
 }
 
 .editor-root > div{
     display: flex;
+    flex-direction: column;
+    flex-grow: 1;
     overflow-x: hidden;
 }
 
@@ -293,12 +292,11 @@ const handleReady = (payload: { view: EditorView; state: EditorState; container:
 .preview > :first-child{
   margin-top: 0;
 }
+
 .preview > :last-child{
   margin-bottom: 0;
 }
 
-.editor {
-}
 .editor-decoration {
     position:absolute;
     top:0;
