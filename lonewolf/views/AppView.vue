@@ -286,7 +286,8 @@ function actionHandler(action: string) {
         })
         break;
     case 'saveas':
-        boardStorage().saveAs(project.board).then(()=>{
+        boardStorage().saveAs(project.board).then((uuid: string)=>{
+            boardTransactionHandler(new BoardChangeTransaction("id", uuid))
             extensionManager.triggerOnSaveAs(project)
         })
         break;

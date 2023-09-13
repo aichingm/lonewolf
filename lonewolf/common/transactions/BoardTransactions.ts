@@ -10,8 +10,9 @@ export abstract class BoardTransaction extends BaseTransaction {
     }
 
 
-    public mutate(bo: BoardObservable, _b: Board): boolean {
+    public mutate(bo: BoardObservable, b: Board): boolean {
         bo.version = this.id;
+        bo.id = b.id
         return true
     }
 
