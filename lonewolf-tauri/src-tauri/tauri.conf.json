@@ -25,7 +25,8 @@
       "fs": {
         "all": false,
         "readFile": true,
-        "writeFile": true
+        "writeFile": true,
+        "scope": ["*"]
       }
     },
     "bundle": {
