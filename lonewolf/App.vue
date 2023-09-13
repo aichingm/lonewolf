@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import AppView from "@/views/AppView.vue";
+import SettingsProvider from "@/components/appSettings/SettingsProvider.vue";
+
+import { darkTheme } from 'naive-ui'
 
 const themeOverrides = {
     common: {
@@ -8,20 +11,27 @@ const themeOverrides = {
     },
 };
 
-const theme = null;
 </script>
 
 <template>
-    <n-config-provider :theme="theme" :theme-overrides="themeOverrides" class="app-config-wrapper">
-        <n-global-style />
-        <n-dialog-provider>
-            <AppView />
-        </n-dialog-provider>
-    </n-config-provider>
+    <SettingsProvider>
+        <template #default="{appSettings}">
+            <n-config-provider 
+                :theme="appSettings.darkMode?darkTheme:null" 
+                :theme-overrides="themeOverrides" 
+                class="app-config-wrapper"
+            >
+                <n-global-style />
+                <n-dialog-provider>
+                    <AppView :appSettings="appSettings"/>
+                </n-dialog-provider>
+            </n-config-provider>
+        </template>
+    </SettingsProvider>
 </template>
 
 <style scoped>
-.app-config-wrapper{
+.app-config-wrapper {
     height: 100%;
 }
 </style>

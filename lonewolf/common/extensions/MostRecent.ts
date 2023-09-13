@@ -1,10 +1,10 @@
-
-import Board from './data/Board'
 import { ref } from "vue";
 import type { Ref } from "vue";
 
-import type { Transaction } from "./data/Transaction";
-import Extension from "./Extension";
+import Board from '../data/Board'
+import type { Transaction } from "../transactions/Transaction";
+import Extension from "../Extension";
+import type Project from "../Project";
 
 
 export default class MostRecent extends Extension {
@@ -34,27 +34,28 @@ export default class MostRecent extends Extension {
         }
     }
 
-    public load(): Board | null {
-        if(this.exists()) {
-            const board = Board.fromSerializable(JSON.parse(localStorage.getItem(this._localstorageKey) as string))
-            board.session = JSON.parse(localStorage.getItem(this._localstorageSessionDataKey) as string)
-            return board
-        }
-        return null
+    public load(): Promise<Board> {
+        return new Promise((res, rej)=>{
+            if(this.exists()) {
+                const board = Board.fromSerializable(JSON.parse(localStorage.getItem(this._localstorageKey) as string))
+                board.session = JSON.parse(localStorage.getItem(this._localstorageSessionDataKey) as string)
+                res(board)
+            }else {
+                rej()
+            }
+        })
     }
 
-    public onTransaction(board: Board, _t: Transaction){
-        this.put(board)
+    public onTransaction(project: Project, _t: Transaction){
+        this.put(project.board)
     }
 
-    public onNew(board: Board){
-        this.put(board)
+    public onNew(project: Project){
+        this.put(project.board)
     }
 
-    public onLoad(board: Board){
-        this.put(board)
+    public onLoad(project: Project){
+        this.put(project.board)
     }
-
-
 
 }

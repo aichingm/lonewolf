@@ -53,25 +53,28 @@
 
 import { ref, watch } from "vue";
 import type { Ref } from "vue";
-import type Board from "@/common/data/Board";
+import type Project from "@/common/Project";
 import type Label from "@/common/data/Label";
-import { NewLabelTransaction, DeleteLabelTransaction, LabelChangeTransaction } from "@/common/data/transactions/LabelTransactions";
-import { CardRemoveLabelTransaction } from "@/common/data/transactions/CardTransactions";
+
+import { useTransactions } from '@/components/transactions/api'
+import { NewLabelTransaction, DeleteLabelTransaction, LabelChangeTransaction } from "@/common/transactions/LabelTransactions";
+import { CardRemoveLabelTransaction } from "@/common/transactions/CardTransactions";
+
 import ColorPicker from "@/components/inputs/ColorPicker.vue";
 import TextInput from "@/components/inputs/TextInput.vue";
 import InitialFocus from "@/components/InitialFocus.vue";
 import { labelStyle, tagColor } from "@/utils/labels";
 import { nameToHex } from "@/utils/colors";
-import type { SDLabel } from "@/common/data/extern/SimpleData";
+import type { Board as BoardObservable } from "@/common/Observable";
 import { Icon } from "@iconify/vue";
 import { NIcon } from 'naive-ui'
 
 const $props = defineProps<{
-    board: () => Board;
-    labels: SDLabel[];
+    project: Project;
+    board: BoardObservable;
 }>();
 
-const $emit = defineEmits(["transaction"]);
+const transactions = useTransactions()
 
 const newLabelColor = ref("#000000")
 const newLabelName = ref("")
@@ -105,7 +108,7 @@ watch(newLabelColor, ()=> {
 
 function emitNewLabel() {
     if (newLabelName.value != "") {
-        $emit("transaction", new NewLabelTransaction(newLabelName.value, newLabelColor.value))
+        transactions.commit(new NewLabelTransaction(newLabelName.value, newLabelColor.value))
     }
 
     newLabelColorButtonStyle.value = getButtonStyle("#ffffff", "#18a058")
@@ -113,30 +116,30 @@ function emitNewLabel() {
 }
 
 function onConfirmLabelColorHandler(label: Label, color: string) {
-    $emit("transaction", new LabelChangeTransaction(label.id, 'color', color))
+    transactions.commit(new LabelChangeTransaction(label.id, 'color', color))
 }
 
 function onLabelNameChangeHandler(label: Label, name: string) {
-    $emit("transaction", new LabelChangeTransaction(label.id, 'name', name))
+    transactions.commit(new LabelChangeTransaction(label.id, 'name', name))
 }
 
-const labels = ref(Array.from($props.board().labels.values())) as Ref<Label[]>
+const labels = ref(Array.from($props.project.board.labels.values())) as Ref<Label[]>
 const shownSwitches = ref(labels.value.map((label) => ref(label.visibility)))
 
-watch($props.labels, ()=>{
-    labels.value = Array.from($props.board().labels.values())
+watch($props.board.labels, ()=>{
+    labels.value = Array.from($props.project.board.labels.values())
     shownSwitches.value = labels.value.map((label) => ref(label.visibility))
 })
 
 function handleDeleteClick(l: Label, _index: number){
-    const board = $props.board()
+    const board = $props.project.board
     const cards = Array.from(board.cards.values()).filter((c)=>c.labels.find((e)=>e.id == l.id) != undefined);
-    cards.forEach((c)=>$emit("transaction", new CardRemoveLabelTransaction(c.id, l.id)))
-    $emit("transaction", new DeleteLabelTransaction(l.id))
+    cards.forEach((c)=>transactions.commit(new CardRemoveLabelTransaction(c.id, l.id)))
+    transactions.commit(new DeleteLabelTransaction(l.id))
 }
 
 function handleVisibilityChange(value: boolean, l: Label, _index: number) {
-    $emit("transaction", new LabelChangeTransaction(l.id, 'visibility', value))
+    transactions.commit(new LabelChangeTransaction(l.id, 'visibility', value))
 }
 
 </script>

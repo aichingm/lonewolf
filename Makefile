@@ -16,7 +16,7 @@ cce:
 check: lint type-check
 
 check-image-dev: cce
-	@if [ $$(podman images -q $(IMAGE_DEV)i | wc -l) == "0" ]; then echo "Container image not found. Try running 'make image-dev'.";exit 1; fi
+	@if [ $$(podman images -q $(IMAGE_DEV) | wc -l) == "0" ]; then echo "Container image not found. Try running 'make image-dev'.";exit 1; fi
 
 check-image-flatpak: cce
 	@if [ $$(podman images -q $(IMAGE_FLATPAK) | wc -l) == "0" ]; then echo "Container image not found. Try running 'make image-flatpak'.";exit 1; fi
@@ -52,6 +52,12 @@ dev-tauri-X: icons-tauri
 	@make -s check-image-dev
 	xhost +
 	$(CONTAINER_ENGINE) run --rm -it -v .:/app --net=host -e DISPLAY -v /tmp/.X11-unix -w /app/lonewolf-tauri $(IMAGE_DEV) bash -l -c "npm run tauri dev"
+	xhost -
+
+dev-tauri-X-shell: icons-tauri
+	@make -s check-image-dev
+	xhost +
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app --net=host -e DISPLAY -v /tmp/.X11-unix -w /app/lonewolf-tauri $(IMAGE_DEV) bash -l
 	xhost -
 
 dev-web: check-image-dev icons-web
@@ -149,7 +155,7 @@ build/flatpak/cargo-sources.json: lonewolf-tauri/src-tauri/Cargo.lock
 
 build/flatpak/npm-sources.json: lonewolf-tauri/package-lock.json
 	@make -s check-image-dev
-	mkdir build/flatpak
+	mkdir -p build/flatpak
 	rm -rf build/flatpak/npm-sources.json
 	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app $(IMAGE_FLATPAK) bash -l -c "flatpak-npm-generator.py lonewolf-tauri/package-lock.json -o build/flatpak/npm-sources.json"
 

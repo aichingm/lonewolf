@@ -12,23 +12,24 @@ import { computed } from "vue";
 import type { Ref } from "vue";
 
 
-import type Board from "@/common/data/Board";
 import type List from "@/common/data/List";
-import type { SDList } from "@/common/data/extern/SimpleData";
+import type { List as ListObservable} from "@/common/Observable";
+import type Project from "@/common/Project";
 
-import { ListArchiveTransaction } from "@/common/data/transactions/ListTransactions";
+import { useTransactions } from '../transactions/api'
+import { ListArchiveTransaction } from "@/common/transactions/ListTransactions";
 
 import ActionDropdown from "@/components/ActionDropdown.vue";
 import ActionDropdownOption from "@/common/ActionDropdownOption";
 
 const $props = defineProps<{
-    list: SDList;
-    board: () => Board;
+    project: Project;
+    list: ListObservable;
 }>();
 
-const $emit = defineEmits(["transaction"]);
+const transactions = useTransactions()
 
-const list = computed(()=>{$props.list.version; return $props.board().findListInclArchives($props.list.id);}) as Ref<List> // if list is null, something else is f'ed up
+const list = computed(()=>{$props.list.version; return $props.project.board.findListInclArchives($props.list.id);}) as Ref<List> // if list is null, something else is f'ed up
 
 const actions = computed(()=>{$props.list.version; return generateActions()})
 
@@ -52,7 +53,7 @@ function actionMenuSelected(
 ) {
 
     if (optionObject.command == "restore") {
-        $emit("transaction", new ListArchiveTransaction(list.value.id, list.value.position, ListArchiveTransaction.Unarchive));
+        transactions.commit(new ListArchiveTransaction(list.value.id, list.value.position, ListArchiveTransaction.Unarchive));
     }
 
 }

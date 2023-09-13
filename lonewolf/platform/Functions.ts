@@ -8,7 +8,8 @@ import type { Store as AttachmentStorage } from '@/common/attachments/Store'
 import type Board from '@/common/data/Board'
 import { supportsChooseFile as platform_supportsChooseFile } from '@platform/Support'
 
-
+import AppSettingsStorage from "@platform/AppSettings";
+import PreferencesStorage from "@platform/Preferences";
 
 
 export enum Platforms{
@@ -23,6 +24,14 @@ export function currrentPlatform(): string{
 
 export function projectStorage(): ProjectStorage {
     return new ProjectStorage()
+}
+
+export function applicationSettingsStorage() {
+    return new AppSettingsStorage()
+}
+
+export function preferencesStorage() {
+    return new PreferencesStorage()
 }
 
 export function platformCanSupportBoard(b: Board): boolean {

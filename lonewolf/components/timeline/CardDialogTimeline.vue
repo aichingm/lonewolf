@@ -28,7 +28,7 @@
                             :updateOnBlur="true"
                             updateOnCtrlEnter
                             exitOnEsc
-                            :attachmentStore="$props.board().attachmentStore()"
+                            :attachmentStore="$props.project.board.attachmentStore()"
                             :markdownHandler="markdownHandler"
                             @addAttachment="(location: string, name: string, type: string)=>handleNewAttachment(entry, location, name, type)"
                     />
@@ -61,22 +61,23 @@ import ToolbarConfig from "@/components/editor/ToolbarConfig";
 
 import { MarkdownHandler } from "@platform/MarkdownHandler";
 
-import { AddAttachmentTransaction } from "@/common/data/transactions/CardTransactions";
-import { CardCommentChangeTransaction } from "@/common/data/transactions/CardCommentTransactions";
+import { useTransactions } from '@/components/transactions/api'
+import { AddAttachmentTransaction } from "@/common/transactions/CardTransactions";
+import { CardCommentChangeTransaction } from "@/common/transactions/CardCommentTransactions";
 
+import type Project from "@/common/Project";
 import type Card from "@/common/data/Card";
-import type Board from "@/common/data/Board";
 import type CardComment from "@/common/data/CardComment";
 
 
 const $props = defineProps<{
     card: Card;
-    board: () => Board;
+    project: Project;
     logbook: LogEntry[];
     showDetails: boolean;
 }>();
 
-const $emit = defineEmits(["transaction"]);
+const transactions = useTransactions()
 
 const logbookEntries = computed(()=>{
     if($props.showDetails){
@@ -86,7 +87,7 @@ const logbookEntries = computed(()=>{
     }
 })
 
-const markdownHandler = new MarkdownHandler($props.board().attachmentStore())
+const markdownHandler = new MarkdownHandler($props.project.board.attachmentStore())
 
 function filterDeletedComments(entry: LogEntry) {
     return typeOf(entry) != TimelineKind.CommentAdd || $props.card.comments.find(e=>e.id == entry.objectId && e.deleted == false) != undefined
@@ -134,9 +135,9 @@ function computeText(entry: LogEntry): string{
     const t = typeOf(entry)
     switch (t) {
     case TimelineKind.LabelAdd:
-        return initiator(entry) + ' added the ' + $props.board().findLabel(entry.objectId)?.name + ' label'
+        return initiator(entry) + ' added the ' + $props.project.board.findLabel(entry.objectId)?.name + ' label'
     case TimelineKind.LabelRemove:
-        return initiator(entry) + ' removed the ' + $props.board().findLabel(entry.objectId)?.name + ' label'
+        return initiator(entry) + ' removed the ' + $props.project.board.findLabel(entry.objectId)?.name + ' label'
     case TimelineKind.AttachmentAdd:
         return initiator(entry) + ' added ' + entry.args[0] + '  as attachment'
     case TimelineKind.AttachmentRemove:
@@ -152,7 +153,7 @@ function computeText(entry: LogEntry): string{
     case TimelineKind.PropertyChange:
         return initiator(entry) + ' changed the ' + fieldToText(entry) + ' of this card'
     case TimelineKind.CardMove:
-        return initiator(entry) + ' moved the card to ' + $props.board().findListInclArchives(entry.args[2])?.name
+        return initiator(entry) + ' moved the card to ' + $props.project.board.findListInclArchives(entry.args[2])?.name
     default:
         throw new Error("Can not compute text for LogEntry[" + entry.id + "]")
     }
@@ -184,15 +185,15 @@ function commentOf(entry: LogEntry): CardComment{
 }
 
 function handleNewAttachment(entry: LogEntry, location: string, name: string, type: string) {
-    $emit('transaction', new AddAttachmentTransaction(entry.subjectId, location, name, type))
+    transactions.commit(new AddAttachmentTransaction(entry.subjectId, location, name, type))
 }
 
 function handleDeleteComment(entry: LogEntry) {
-    $emit('transaction', new CardCommentChangeTransaction(entry.subjectId, entry.objectId, 'deleted', true))
+    transactions.commit(new CardCommentChangeTransaction(entry.subjectId, entry.objectId, 'deleted', true))
 }
 
 function handleEditComment(entry: LogEntry, value: string) {
-    $emit('transaction', new CardCommentChangeTransaction(entry.subjectId, entry.objectId, 'content', value))
+    transactions.commit(new CardCommentChangeTransaction(entry.subjectId, entry.objectId, 'content', value))
 }
 
 </script>

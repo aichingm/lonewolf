@@ -1,18 +1,15 @@
-import { MutateTransaction } from "../Transaction";
-import type { Transaction } from "../Transaction";
-import type Board from "../Board";
-import Label from "../Label";
-import type { SDBoard } from "../extern/SimpleData";
-import { SDLabel } from "../extern/SimpleData";
+import { BoardTransaction as BaseTransaction } from "./Transaction";
+import type Board from "../data/Board";
+import Label from "../data/Label";
+import type { Board as BoardObservable } from "../Observable";
+import { Label as LabelObservable } from "../Observable";
 
 import { v1 as uuid } from "uuid";
 
 
 
-type LabelField = keyof Label
-type LabelFieldValue = Label[LabelField];
 
-export class LabelTransaction extends MutateTransaction {
+export abstract class LabelTransaction extends BaseTransaction {
     protected _labelId: string;
 
     constructor (labelId: string) {
@@ -28,22 +25,22 @@ export class LabelTransaction extends MutateTransaction {
         return label
     }
 
-    public mutate(sdb: SDBoard, _board: Board): boolean {
-        const  sdl = sdb.labels.find((l)=>l.id == this._labelId)
-        if (sdl == null) {
+    public mutate(bo: BoardObservable, _board: Board): boolean {
+        const  lo = bo.labels.find((l)=>l.id == this._labelId)
+        if (lo == null) {
             throw new Error("Label[" + this._labelId + "] not found (SD)")
         }
-        sdl.version = this.id
+        lo.version = this.id
         return true
     }
 
 }
 
-export class LabelChangeTransaction extends LabelTransaction implements Transaction {
-    protected _field: LabelField;
-    protected _value: LabelFieldValue;
+export class LabelChangeTransaction<Field extends keyof Label> extends LabelTransaction {
+    protected _field: Field;
+    protected _value: Label[Field];
 
-    constructor (labelId: string, field: LabelField, value: LabelFieldValue) {
+    constructor (labelId: string, field: Field, value: Label[Field]) {
         super(labelId)
         this._field = field
         this._value = value
@@ -52,13 +49,13 @@ export class LabelChangeTransaction extends LabelTransaction implements Transact
     public apply(board: Board): boolean{
         console.log("LabelChangeTransaction", this._labelId, this._field, this._value)
         const label = this.label(board)
-        Object.defineProperty(label, this._field, {value: this._value, writable: true });
+        label[this._field] = this._value
         return true
     }
 
 }
 
-export class NewLabelTransaction extends LabelTransaction implements Transaction {
+export class NewLabelTransaction extends LabelTransaction {
     private _name: string;
     private _color: string;
 
@@ -76,8 +73,8 @@ export class NewLabelTransaction extends LabelTransaction implements Transaction
         return true
     }
 
-    public mutate(board: SDBoard, _board: Board): boolean {
-        board.labels.push(new SDLabel(this._labelId, this.id))
+    public mutate(bo: BoardObservable, _board: Board): boolean {
+        bo.labels.push(new LabelObservable(this._labelId, this.id))
         return true
     }
 
@@ -91,12 +88,12 @@ export class DeleteLabelTransaction extends LabelTransaction {
         return true
     }
 
-    public mutate(t: SDBoard, _board: Board): boolean {
-        const  sdlIndex = t.labels.findIndex((l)=>l.id == this._labelId)
+    public mutate(bo: BoardObservable, _board: Board): boolean {
+        const  sdlIndex = bo.labels.findIndex((l)=>l.id == this._labelId)
         if (sdlIndex < 0) {
             throw new Error("Label[" + this._labelId + "] not found (SD)")
         }
-        t.labels.splice(sdlIndex, 1);
+        bo.labels.splice(sdlIndex, 1);
         return true
     }
 

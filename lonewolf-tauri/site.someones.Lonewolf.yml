@@ -35,7 +35,7 @@ modules:
       - type: file
         path: /app-dir/lonewolf-tauri/src-tauri/icons/128x128.png
     build-commands:
-      - (cd lonewolf-tauri; npm run tauri build -- -b deb)
+      - (cd lonewolf-tauri; npm install --offline; npm run tauri build -- -b deb)
       - install -Dm755 -t /app/bin/ lonewolf-tauri/src-tauri/target/release/bundle/deb/*/data/usr/bin/*
       - install -Dm644 -t /app/share/applications/ site.someones.Lonewolf.desktop
       - mkdir -p /app/share/icons/hicolor/128x128/apps

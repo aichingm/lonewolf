@@ -1,108 +1,135 @@
 <template>
+
     <n-modal
         v-model:show="showModel"
     >
         <n-card
             class="card"
-            title="Modal"
             :bordered="false"
             size="huge"
             role="dialog"
             aria-modal="true"
-            content-style="padding-left: 32px; padding-right: 32px;display:flex;"
-            header-style="padding-left: 32px; padding-right: 32px;"
-
         >
-            <template #header>
+            <!--<template #header>
                 Settings
-            </template>
+            </template>-->
             <n-layout has-sider
                       class="reset-left-card-margin"
             >
-                <n-layout-sider class="menu"
-                                :native-scrollbar="false"
-                                bordered
-                                collapse-mode="width"
-                                :collapsed-width="64"
-                                :width="240"
-                                :collapsed="collapsedModel"
-                                show-trigger
-                                @collapse="collapsedModel = true"
-                                @expand="collapsedModel = false"
+                <n-layout-sider
+                    :native-scrollbar="false"
+                    bordered
+                    collapse-mode="width"
+                    :collapsed-width="64"
+                    :width="240"
+                    :collapsed="collapsedModel"
+                    show-trigger
+                    @collapse="collapsedModel = true"
+                    @expand="collapsedModel = false"
                 >
                     <n-menu
                         :collapsed="collapsedModel"
                         :collapsed-width="64"
                         :collapsed-icon-size="22"
                         :options="menuOptions"
+                        :default-expand-all="true"
                         v-model:value="menuModel"
                     />
                 </n-layout-sider>
-                <n-layout class="content"
+                <div class="content"
                 >
-                    <LabelsManager v-if="menuModel == 'labels'" :board="$props.board" :labels="$props.labels" @transaction="(t)=>$emit('transaction', t)"/>
-                    <BoardManager v-if="menuModel == 'board'" :board="$props.board" @transaction="(t)=>$emit('transaction', t)"/>
-                    <ArchiveManager v-if="menuModel == 'archive'"
-                                    :board="$props.board"
-                                    :labels="$props.labels"
-                                    :lists="$props.lists"
-                                    :cardArchive="$props.cardArchive"
-                                    :listArchive="$props.listArchive"
-                                    @transaction="(t)=>$emit('transaction', t)" />
-                </n-layout>
+                    <n-h3><n-text depth="3">{{ breadcrumbs }}</n-text></n-h3>
+                    <n-scrollbar class="scroll-content">
+                        <LabelsManager v-if="menuModel == 'project/labels'" :project="$props.project" :board="$props.board" />
+                        <BoardManager v-if="menuModel == 'project/board'" :project="$props.project" :board="$props.board" />
+                        <ArchiveManager v-if="menuModel == 'project/archive'" :project="$props.project" :board="$props.board" />
+                        <PreferencesAppearance v-if="menuModel == 'preferences/appearance'" :preferences="$props.preferences" />
+                        <SettingsManager v-if="menuModel == 'application/appearance'" :appSettings="$props.appSettings" />
+                    </n-scrollbar>
+                </div>
             </n-layout>
         </n-card>
     </n-modal>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, h } from "vue";
+import { ref, watch, h, computed } from "vue";
 import type { Ref } from "vue";
-import type Board from "@/common/data/Board";
 import LabelsManager from "@/components/settings/LabelsManager.vue";
 import BoardManager from "@/components/settings/BoardManager.vue";
+import PreferencesAppearance from "@/components/settings/PreferencesAppearance.vue";
 import ArchiveManager from "@/components/settings/ArchiveManager.vue";
-import type { SDLabel, SimpleData, SDList } from "@/common/data/extern/SimpleData";
-
+import SettingsManager from "@/components/settings/SettingsManager.vue";
+import type { Board as BoardObservable} from "@/common/Observable";
+import type Project from "@/common/Project";
+import type Preferences from "@/common/settings/Preferences"
+import type AppSettings from "@/common/settings/AppSettings"
 
 import { Icon } from "@iconify/vue";
 import { NIcon } from 'naive-ui'
-import type { MenuOption } from 'naive-ui'
 
 const $props = defineProps<{
-    board: () => Board;
+    project: Project;
+    board: BoardObservable;
+    preferences: Preferences;
     show: Ref<boolean>;
-    labels: SDLabel[];
-    lists: SDList[];
-    cardArchive: SDList;
-    listArchive: SDList[];
-    settings: SimpleData;
-
+    appSettings: AppSettings
 }>();
 
 function renderIcon (iconName: string) {
     return () => h(NIcon, null, { default: () => h(Icon,  {icon: iconName}) })
 }
 
-const menuOptions: MenuOption[] = [
+const menuOptions = [
     {
-        label: 'Board',
-        key: 'board',
-        icon: renderIcon("fluent:grid-kanban-20-filled")
+        label: 'Project',
+        key: 'Project',
+        icon: renderIcon("fluent:grid-kanban-20-filled"),
+        children: [
+            {
+                label: 'Board',
+                key: 'project/board',
+                icon: renderIcon("fluent:grid-kanban-20-filled")
+            },
+            {
+                label: 'Labels',
+                key: 'project/labels',
+                icon: renderIcon("fluent:arrow-reset-20-filled")
+            },
+            {
+                label: 'Archive',
+                key: 'project/archive',
+                icon: renderIcon("fluent:archive-20-filled")
+            },
+        ],
     },
     {
-        label: 'Labels',
-        key: 'labels',
-        icon: renderIcon("fluent:arrow-reset-20-filled")
+        label: 'Preferences',
+        key: 'preferences',
+        icon: renderIcon("fluent:options-20-filled"),
+        children: [
+            {
+                label: 'Appearance',
+                key: 'preferences/appearance',
+                icon: renderIcon("fluent:view-desktop-20-regular")
+            },
+        ]
     },
     {
-        label: 'Archive',
-        key: 'archive',
-        icon: renderIcon("fluent:archive-20-filled")
+        label: 'Application',
+        key: 'application',
+        icon: renderIcon("fluent:window-settings-20-filled"),
+        children: [
+            {
+                label: 'Appearance',
+                key: 'application/appearance',
+                icon: renderIcon("fluent:view-desktop-20-regular")
+            },
+        ]
     },
 ]
 
-const $emit = defineEmits(["transaction", "update:show"]);
+const $emit = defineEmits(["update:show"]);
 
 const showModel = ref(false)
 watch($props.show, () => showModel.value = $props.show.value)
@@ -112,20 +139,16 @@ watch(showModel, ()=>{
 
 const collapsedModel = ref(false)
 
-const menuModel = ref(menuOptions[0].key)
+const menuModel = ref(menuOptions[0].children[0].key)
+
+const breadcrumbs = computed(()=>menuModel.value.split('/').map((w)=>w.charAt(0).toUpperCase() + w.slice(1)).join(" / "))
 
 </script>
 
 <style scoped>
+
 .card {
     width: 900px;
-    height: calc(100vh - 222px);
-    min-height: 240px;
-}
-
-.menu {
-    height: calc(100vh - 322px);
-    min-height: 140px;
 }
 
 .reset-left-card-margin {
@@ -133,13 +156,15 @@ const menuModel = ref(menuOptions[0].key)
 }
 
 .content {
-    height: calc(100vh - 322px);
-    min-height: 140px;
-    overflow: hidden;
+    height: max(calc(100dvh - 100px), 390px);
     padding-left: 24px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
-.settings-content-pane {
+:deep() .scroll-content .n-scrollbar-content {
+    padding-right: 2px;
 }
 
 </style>

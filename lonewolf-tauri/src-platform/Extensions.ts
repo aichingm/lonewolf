@@ -1,5 +1,5 @@
 import Extension from '@/common/Extension'
-import type Board from '@/common/data/Board'
+import type Project from '@/common/Project'
 import { invoke } from "@tauri-apps/api/tauri";
 
 export function extensions(): Extension[] {
@@ -9,15 +9,15 @@ export function extensions(): Extension[] {
 
 class ProjectLoadCwdSyncer extends Extension {
 
-    public onLoad(b: Board){
-        if (b.session.currentPath != null) {
-            invoke("sync_cwd_to", { path: b.session.currentPath }).then(()=>{return;});
+    public onLoad(p: Project){
+        if (p.board.session.currentPath != null) {
+            invoke("sync_cwd_to", { path: p.board.session.currentPath }).then(()=>{return;});
         }
     }
 
-    public onSave(b: Board){
-        if (b.session.currentPath != null) {
-            invoke("sync_cwd_to", { path: b.session.currentPath }).then(()=>{return;});
+    public onSave(p: Project){
+        if (p.board.session.currentPath != null) {
+            invoke("sync_cwd_to", { path: p.board.session.currentPath }).then(()=>{return;});
         }
     }
 

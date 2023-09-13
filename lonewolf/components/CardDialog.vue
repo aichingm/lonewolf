@@ -17,7 +17,7 @@
                             <TextInput fontSize="20px" v-model:value="titleModel" @update:value="emitTitle" placeholder="Title" commitOnBlur commitOnEnter selectOnEdit/>
                         </IconedBox>
                         <IconedBox icon="fluent:tag-20-filled" :contentOffsetX="24">
-                            <LabelSelector :labels="$props.labels" :activeLabels="activeLabels" :board="$props.board" @add="addLabel" @remove="removeLabel"/>
+                            <LabelSelector :project="$props.project" :activeLabels="activeLabels" :board="$props.board" @add="addLabel" @remove="removeLabel"/>
                         </IconedBox>
                         <IconedBox icon="fluent:timer-20-filled" :contentOffsetX="24">
                             <n-date-picker v-model:value="timestampModel" type="datetime" placeholder="Due Date" clearable size="small" />
@@ -27,7 +27,7 @@
                             <Editor v-model:value="descriptionModel"
                                     updateOnBlur
                                     placeholder="Add Description..."
-                                    :attachmentStore="$props.board().attachmentStore()"
+                                    :attachmentStore="$props.project.board.attachmentStore()"
                                     :markdownHandler="markdownHandler"
                                     :attachments="attachments"
                                     @addAttachment="handleNewAttachment"
@@ -35,7 +35,7 @@
                             />
                         </IconedBox>
                         <IconedBox icon="fluent:document-20-filled" :contentOffsetX="24">
-                            <AttachmentManager :attachments="attachments" @delete="handleDeleteAttachment" :board="$props.board" @add="handleNewAttachment" @edit="handleEditAttachment"/>
+                            <AttachmentManager :attachments="attachments" @delete="handleDeleteAttachment" :project="$props.project" :board="$props.board" @add="handleNewAttachment" @edit="handleEditAttachment"/>
                         </IconedBox>
                         <IconedBox icon="fluent:comment-20-filled" :contentOffsetX="24">
                             <div class="editor-container">
@@ -47,7 +47,7 @@
                                         updateOnCtrlEnter
                                         exitOnEsc
                                         clearAfterEdit
-                                        :attachmentStore="$props.board().attachmentStore()"
+                                        :attachmentStore="$props.project.board.attachmentStore()"
                                         @addAttachment="handleNewAttachment"
 
                                 />
@@ -65,7 +65,7 @@
                                         </template>
                                     </n-switch>
                                 </n-space>
-                                <CardDialogTimeline v-if="card != null" :show-details="timelineShowDetailsModel" :logbook="logbook" @transaction="(t)=>$emit('transaction', t)" :board="$props.board" :card="card" />
+                                <CardDialogTimeline v-if="card != null" :show-details="timelineShowDetailsModel" :logbook="logbook" :project="$props.project" :card="card" />
                             </n-space>
                         </IconedBox>
                         <div>&nbsp;<!-- this is needed to allow the editor to blur, remove when adding a new iconed box below the editor--></div>
@@ -92,45 +92,48 @@ import CardDialogTimeline from "@/components/timeline/CardDialogTimeline.vue";
 import LabelSelector from "@/components/labels/LabelSelector.vue";
 import AttachmentManager from "@/components/attachments/AttachmentManager.vue";
 
-import { CardAddLabelTransaction, CardRemoveLabelTransaction, CardChangeTransaction, AddCommentTransaction, AddAttachmentTransaction } from "@/common/data/transactions/CardTransactions";
-import { CardAttachmentChangeTransaction, CardAttachmentContentChangeTransaction } from "@/common/data/transactions/CardAttachmentTransactions";
+import { useTransactions } from './transactions/api'
+import { CardAddLabelTransaction, CardRemoveLabelTransaction, CardChangeTransaction, AddCommentTransaction, AddAttachmentTransaction } from "@/common/transactions/CardTransactions";
+import { CardAttachmentChangeTransaction, CardAttachmentContentChangeTransaction } from "@/common/transactions/CardAttachmentTransactions";
+
 import type Card from "@/common/data/Card";
-import type Board from "@/common/data/Board";
-import type { SDCardHolder, SDLabel } from "@/common/data/extern/SimpleData";
+import type Label from "@/common/data/Label";
+import type Project from "@/common/Project";
+
+import type { Board as BoardObservable, Card as CardObservable } from "@/common/Observable";
 import type { Entry as LogEntry } from "@/common/logs/LogEntry";
-
-
-
 
 import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'
 dayjs.extend(timezone)
 
 const $props = defineProps<{
-    cardHolder: SDCardHolder;
-    board: () => Board;
+    project: Project;
+    cardObservable: CardObservable;
+    board: BoardObservable;
     show: Ref<boolean>;
-    labels: SDLabel[];
 }>();
 
-const $emit = defineEmits(["transaction", "update:show"]);
+const $emit = defineEmits(["update:show"]);
 
-const emitTitle = (title: string) => $emit("transaction", new CardChangeTransaction($props.cardHolder.card.id, 'name', title))
+const transactions = useTransactions()
 
-const card = computed(()=>{$props.cardHolder.card.version; return $props.board().findCard($props.cardHolder.card.id)})
+const emitTitle = (title: string) => transactions.commit(new CardChangeTransaction($props.cardObservable.id, 'name', title))
 
-watch($props.cardHolder, ()=>{if(card.value!= null) setRefs(card.value)})
+const card = computed(()=>{$props.cardObservable.version; return $props.project.board.findCard($props.cardObservable.id)})
+
+watch(card, ()=>{if(card.value!= null) setRefs(card.value)})
 
 const activeLabels = computed(() => {
     if (card.value != null) {
-        return card.value.labels.filter(l=>l.visibility);
+        return card.value.labels.filter((l: Label)=>l.visibility);
     }
     return [];
 })
 
 const attachments = computed(() => {
     if (card.value != null) {
-        return [...card.value.attachments.filter(a=>a.deleted != true)];
+        return [...card.value.attachments.filter((a)=>a.deleted != true)];
     }
     return [];
 })
@@ -142,38 +145,39 @@ const descriptionModel = ref(card.value!=null?card.value.description:"")
 
 watch(descriptionModel, () => {
     if (descriptionModel.value != descriptionOriginal) {
-        $emit("transaction", new CardChangeTransaction($props.cardHolder.card.id, 'description', descriptionModel.value))
+        transactions.commit(new CardChangeTransaction($props.cardObservable.id, 'description', descriptionModel.value))
     }
 })
 
 
-const logbook = computed(()=>card.value == null?[]:card.value.logbook.map((tId)=>$props.board().logbook.get(tId)).filter(e=>e!=undefined) as LogEntry[])
+const logbook = computed(
+    () => card.value == null ? [] : card.value.logbook.map(tId=>$props.project.board.logbook.get(tId)).filter((e)=>e!=undefined) as LogEntry[])
 
-const markdownHandler = new MarkdownHandler($props.board().attachmentStore())
+const markdownHandler = new MarkdownHandler($props.project.board.attachmentStore())
 
 const timelineShowDetailsModel = ref(false)
 
 const emitNewCommentTransaction = (value: string) => {
     if (value != "") {
-        $emit("transaction", new AddCommentTransaction($props.cardHolder.card.id, value))
+        transactions.commit(new AddCommentTransaction($props.cardObservable.id, value))
     }
 }
 
 function handleNewAttachment(location: string, name: string, type: string) {
     if (card.value != null) {
-        $emit('transaction', new AddAttachmentTransaction(card.value.id, location, name, type))
+        transactions.commit(new AddAttachmentTransaction(card.value.id, location, name, type))
     }
 }
 
 function handleDeleteAttachment(attachmentId: string) {
     if (card.value != null) {
-        $emit('transaction', new CardAttachmentChangeTransaction(card.value.id, attachmentId, 'deleted', true))
+        transactions.commit(new CardAttachmentChangeTransaction(card.value.id, attachmentId, 'deleted', true))
     }
 }
 
 function handleEditAttachment(id: string, location: string, name: string, mime: string) {
     if (card.value != null) {
-        $emit('transaction', new CardAttachmentContentChangeTransaction(card.value.id, id, name, mime))
+        transactions.commit(new CardAttachmentContentChangeTransaction(card.value.id, id, name, mime))
     }
 }
 
@@ -189,7 +193,7 @@ const timestampModel = ref(card.value != null ? timestampOrNull(card.value.dueDa
 
 watch(timestampModel, ()=> {
     if (timestampModel.value != timestampOriginal) {
-        $emit("transaction", new CardChangeTransaction($props.cardHolder.card.id, 'dueDate', timestampModel.value))
+        transactions.commit(new CardChangeTransaction($props.cardObservable.id, 'dueDate', timestampModel.value))
     }
 })
 
@@ -207,11 +211,11 @@ watch(showModel, ()=>$emit("update:show", showModel))
 
 
 function addLabel(labelId: string) {
-    $emit("transaction", new CardAddLabelTransaction($props.cardHolder.card.id, labelId))
+    transactions.commit(new CardAddLabelTransaction($props.cardObservable.id, labelId))
 }
 
 function removeLabel(labelId: string) {
-    $emit("transaction", new CardRemoveLabelTransaction($props.cardHolder.card.id, labelId))
+    transactions.commit(new CardRemoveLabelTransaction($props.cardObservable.id, labelId))
 }
 
 

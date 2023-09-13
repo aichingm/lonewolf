@@ -1,10 +1,9 @@
-
 import { ref } from "vue";
 import type { Ref } from "vue";
 
-import type Board from "./data/Board";
-import type { Transaction } from "./data/Transaction";
-import Extension from "./Extension";
+import type { Transaction } from "../transactions/Transaction";
+import Extension from "../Extension";
+import type Project from "../Project";
 
 
 export default class SavedObserver extends Extension{
@@ -36,15 +35,15 @@ export default class SavedObserver extends Extension{
         }
     }
 
-    public onTransaction(_b: Board, _t: Transaction){
+    public onTransaction(_p: Project, _t: Transaction){
         this.dirty()
     }
 
-    public onNew(_b: Board){
+    public onNew(_p: Project){
         this.clear()
     }
 
-    public onLoad(_b: Board){
+    public onLoad(_p: Project){
         this.clear()
     }
 

@@ -51,12 +51,14 @@ import type { Ref } from "vue";
 import CardLabelBadge from "@/components/CardLabelBadge.vue";
 import AutoTime from "@/components/AutoTime.vue";
 
-import type Board from "@/common/data/Board";
 import type Card from "@/common/data/Card";
-import type { SDCard, SDList, SDLabel } from "@/common/data/extern/SimpleData";
+import type { Card as CardObservable, Board as BoardObservable, List as ListObservable } from "@/common/Observable";
+import type Project from "@/common/Project";
 
 import type List from "@/common/data/List";
-import { CardMoveTransaction } from "@/common/data/transactions/CardTransactions";
+
+import { useTransactions } from '../transactions/api'
+import { CardMoveTransaction } from "@/common/transactions/CardTransactions";
 
 import ActionDropdown from "@/components/ActionDropdown.vue";
 import ActionDropdownOption from "@/common/ActionDropdownOption";
@@ -64,19 +66,20 @@ import { assignArray } from "@/utils/vue";
 import { taskStats } from "@/utils/markdown";
 
 const $props = defineProps<{
-    card: SDCard;
-    lists: SDList[];
-    labels: SDLabel[];
-    board: () => Board;
+    project: Project
+    board: BoardObservable
+    card: CardObservable;
 }>();
 
-const $emit = defineEmits(["transaction", "card-edit"]);
+const $emit = defineEmits(["card-edit"]);
 
-const card = computed(()=>{$props.card.version; return $props.board().findCard($props.card.id);}) as Ref<Card> // if card is null, something else is f'ed up
-const lists = computed(()=>$props.lists.map((t: SDList) : List|null => $props.board().findList(t.id)).filter((l=>l!=null)) as List[])
+const transactions = useTransactions()
+
+const card = computed(()=>{$props.card.version; return $props.project.board.findCard($props.card.id);}) as Ref<Card> // if card is null, something else is f'ed up
+const lists = computed(()=>$props.board.lists.map((t: ListObservable) : List|null => $props.project.board.findList(t.id)).filter((l=>l!=null)) as List[])
 
 const activeLabels = ref([...card.value.labels.filter(l=>l.visibility)])
-watch([$props.labels, $props.card], ()=> assignArray(activeLabels, card.value.labels.filter(l=>l.visibility)))
+watch([$props.board.labels, $props.card], ()=> assignArray(activeLabels, card.value.labels.filter(l=>l.visibility)))
 
 const tasks = computed(()=>taskStats(card.value.description))
 
@@ -129,7 +132,7 @@ function actionMenuSelected(
 ) {
 
     if (optionObject.command == "moveTo" && optionObject.data != null) {
-        $emit("transaction", new CardMoveTransaction(card.value.id, card.value.list.id, card.value.position, optionObject.data.id, 0))
+        transactions.commit(new CardMoveTransaction(card.value.id, card.value.list.id, card.value.position, optionObject.data.id, 0))
     }
 
 }

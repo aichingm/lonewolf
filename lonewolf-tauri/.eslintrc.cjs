@@ -11,7 +11,7 @@ module.exports = {
     parserOptions: {
         ecmaVersion: "latest",
     },
-    ignorePatterns: ["src-tauri/*"],
+    ignorePatterns: ["src-tauri/*", "git/*"],
     overrides: [
         {
             files: ["cypress/e2e/**.{cy,spec}.{js,ts,jsx,tsx}"],

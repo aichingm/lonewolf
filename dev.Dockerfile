@@ -19,7 +19,9 @@ RUN pacman -Sy archlinux-keyring --noconfirm && \
                              imagemagick \
                              gtk3 \
                              openssl \
-                             alsa-lib nss 
+                             alsa-lib \
+                             nss \
+                             git
 
 RUN npm update -g npm
 

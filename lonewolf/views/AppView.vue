@@ -25,7 +25,7 @@
                             <icon icon="fluent:warning-20-filled" />
                         </n-icon>
                     </template>
-                    The board is to large, in broswer storage disabled!
+                    The board is to large, in browser storage disabled!
                 </n-tooltip>
             </n-space>
             <n-space class="app-header-nav-space" justify="center">
@@ -55,68 +55,84 @@
             </n-space>
         </div>
         <div class="app-config-wrapper">
-            <div class="wrapper" >
-                <BoardVue
-                    :simpleBoard="simpleDataRoot.board"
-                    :board="boardFn"
-                    class="board"
-                    @card-edit="showCardDialog"
-                    @list-edit="showListDialog"
-                    @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)"
+            <TransactionEmitter :type="'BoardTransaction'" @transaction="(t)=>boardTransactionHandler(t)">
+                <div class="wrapper" >
+                    <BoardComponent
+                        :project="projectRef"
+                        :board="boardObservableRef"
+                        :appSettings="$props.appSettings"
+                        class="board"
+                        @card-edit="showCardDialog"
+                        @list-edit="showListDialog"
+                        :preferences="preferencesRef"
+                    />
+                </div>
+                <CardDialog  v-if="cardDialogCard.id != ''"
+                             v-model:show="cardDialogShow.ref"
+                             :project="projectRef"
+                             :board="boardObservableRef"
+                             :cardObservable="cardDialogCard"
                 />
-            </div>
-            <CardDialog  v-if="cardDialogCard.card.id != ''"
-                         :cardHolder="cardDialogCard"
-                         :board="boardFn"
-                         :labels="simpleDataRoot.board.labels"
-                         v-model:show="cardDialogShow.ref"
-                         @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)" />
-            <ListDialog v-if="listDialogList.list.id != ''"
-                        :listHolder="listDialogList"
-                        :board="boardFn"
-                        v-model:show="listDialogShow.ref"
-                        @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)" />
-            <SettingsDialog
-                :board="boardFn"
-                v-model:show="settingsDialogShow.ref"
-                :cardArchive="simpleDataRoot.board.cardArchive"
-                :listArchive="simpleDataRoot.board.listArchive"
-                :lists="simpleDataRoot.board.lists"
-                :labels="simpleDataRoot.board.labels"
-                :settings="simpleDataRoot.board.settings"
-                @transaction="(t: Transaction)=>createTransactionHandler(boardFn())(t)" />
+                <ListDialog v-if="listDialogList.id != ''"
+                            v-model:show="listDialogShow.ref"
+                            :project="projectRef"
+                            :board="boardObservableRef"
+                            :listObservable="listDialogList"
+                />
+                <TransactionEmitter type="PreferencesTransaction" @transaction="(t)=>preferencesTransactionHandler(t)">
+                    <SettingsDialog
+                        v-model:show="settingsDialogShow.ref"
+                        :project="projectRef"
+                        :board="boardObservableRef"
+                        :preferences="preferencesRef"
+                        :appSettings="$props.appSettings"
+                    />
+                </TransactionEmitter>
+            </TransactionEmitter>
             <AboutDialog v-model:show="aboutDialogShow.ref"/>
         </div>
     </div>
     <PlatformComponent />
 </template>
 <script setup lang="ts">
-import { ref, reactive, watch, shallowRef } from "vue";
-import type { Ref } from "vue";
+import { ref, watch, shallowRef } from "vue";
 import { useThemeVars, useDialog } from 'naive-ui'
 
-import BoardVue from "@/components/Board.vue";
+import BoardComponent from "@/components/Board.vue";
 import TextInput from "@/components/inputs/TextInput.vue";
 import CardDialog from "@/components/CardDialog.vue";
 import ListDialog from "@/components/ListDialog.vue";
 import SettingsDialog from "@/components/SettingsDialog.vue";
 import AboutDialog from "@/components/about/AboutDialog.vue";
 import FileMenu from "@/components/FileMenu.vue";
+import TransactionEmitter from "@/components/transactions/Emitter.vue";
+
 import Board from "@/common/data/Board";
+import Project from "@/common/Project";
+
 import type Card from "@/common/data/Card";
 import type List from "@/common/data/List";
-import MostRecent from "@/common/MostRecent";
-import SavedObserver from "@/common/SavedObserver";
+
+import SavedObserver from "@/common/extensions/SavedObserver";
+import MostRecent from "@/common/extensions/MostRecent";
+import PreferencesExt from "@/common/extensions/Preferences";
+
 import { ExtensionManager } from "@/common/Extension";
-import type { Transaction } from "@/common/data/Transaction";
+import type { BoardTransaction, PreferencesTransaction } from "@/common/transactions/Transaction";
 import { RefProtector } from "@/utils/vue";
-import { SDRoot, SDCardHolder, SDCard, SDListHolder, SDList } from "@/common/data/extern/SimpleData";
-import { NewBoardTransaction, BoardChangeTransaction } from "@/common/data/transactions/BoardTransactions";
+import { Card as CardObservable, List as ListObservable } from "@/common/Observable";
+import { NewBoardTransaction, BoardChangeTransaction } from "@/common/transactions/BoardTransactions";
 import { defaultAttachmentStorage } from "@/platform/Functions";
-import { projectStorage, platformCanSupportBoard, platformExtensions } from "@/platform/Functions";
+import { projectStorage as boardStorage, platformCanSupportBoard, platformExtensions } from "@/platform/Functions";
 import PlatformComponent from "@/platform/PlatformComponent.vue";
 
+import type ApplicationSettings from '@/common/settings/AppSettings'
+
 import toEmoji from "emoji-name-map";
+
+const $props = defineProps<{
+    appSettings: ApplicationSettings
+}>()
 
 const dialog = useDialog()
 
@@ -125,19 +141,22 @@ const borderColor = theme.value.borderColor;
 
 // Storage
 
-const boardStorage = projectStorage();
 
 // Transactions
 
-function createTransactionHandler(board: Board) {
-    return function transactionHandler(transaction: Transaction) {
-        if (transaction.apply(board)) {
-            transaction.mutate(simpleDataRoot.board, board)
-            extensionManager.triggerOnTransaction(board, transaction)
-        }
+const boardTransactionHandler = (transaction: BoardTransaction) => {
+    if (transaction.apply(project.board)) {
+        transaction.mutate(boardObservableRef.value, project.board)
+        extensionManager.triggerOnTransaction(project, transaction)
     }
 }
 
+const preferencesTransactionHandler = (transaction: PreferencesTransaction) => {
+    if(transaction.apply(preferencesExt.ref.value)){
+        transaction.mutate(preferencesRef.value)
+        extensionManager.triggerOnPreferencesTransaction(project, transaction)
+    }
+}
 
 // Extensions
 
@@ -145,13 +164,30 @@ const extensionManager = new ExtensionManager()
 const savedObserverExtension = SavedObserver.getInstance()
 savedObserverExtension.persist()
 const mostRecentExtension = new MostRecent()
+const preferencesExt = new PreferencesExt()
 
 extensionManager.use(savedObserverExtension)
 extensionManager.use(mostRecentExtension)
+extensionManager.use(preferencesExt)
 
 platformExtensions().forEach(e=>extensionManager.use(e))
 
 
+// Data
+
+const project = new Project(newBoard())
+const projectRef = shallowRef(project)
+const preferencesRef = preferencesExt.ref
+const boardObservableRef = ref(project.board.observable())
+
+
+// extensionManager.triggerOnLoad(project) DO NOT trigger load here or else most recent will save the new board and then load the new board
+
+mostRecentExtension.load().then((board)=> {
+    project.board = board
+    boardObservableRef.value = board.observable()
+    extensionManager.triggerOnLoad(project)
+}).catch(()=>{return})
 
 // View Data
 
@@ -160,70 +196,68 @@ const fileMenu = {state: ref(false), show: (value: boolean)=>fileMenu.state.valu
 const cardsStat = ref([0,0])
 
 
-const cardDialogCard = reactive(new SDCardHolder(new SDCard("", "")))
+const cardDialogCard = ref(new CardObservable("", ""))
 const cardDialogShow =  new RefProtector(ref(false))
 
-const listDialogList= reactive(new SDListHolder(new SDList("", "")))
+const listDialogList= ref(new ListObservable("", ""))
 const listDialogShow =  new RefProtector(ref(false))
 
 const settingsDialogShow =  new RefProtector(ref(false))
+
 const aboutDialogShow =  new RefProtector(ref(false))
 
-const board = shallowRef(mostRecentExtension.exists() ? mostRecentExtension.load() as Board : newBoard()) as Ref<Board>; // as Board because typescript is stupid and can't see that .exist checks if it is null...
+
 
 const title = new RefProtector(ref(""), (newTitle: string)=> {
     title.assign(newTitle);
     const t = new BoardChangeTransaction('name', title.ref.value)
-    createTransactionHandler(board.value)(t)
+    boardTransactionHandler(t)
 })
 
-title.assign(board.value.name)
-cardsStat.value = board.value.cardOpenClosedStatistic()
+title.assign(project.board.name)
+cardsStat.value = project.board.cardOpenClosedStatistic()
 
-watch(board, ()=>{
-    title.assign(board.value.name)
-    cardsStat.value = board.value.cardOpenClosedStatistic()
+
+const watchCurrentBoard = ()=>watch(boardObservableRef.value, ()=>cardsStat.value = project.board.cardOpenClosedStatistic())
+watchCurrentBoard()
+
+// This gets triggered if the while board changes (new, open, ...)
+watch(boardObservableRef, ()=>{
+    title.assign(project.board.name)
+    cardsStat.value = project.board.cardOpenClosedStatistic()
+    watchCurrentBoard() // reinit for changes in board and not only for the ref
 })
 
-const boardFn = (): Board => board.value;
-
-const simpleDataRoot = reactive(new SDRoot("root-node", "no-transaction-id", board.value.toSimpleData()))
-
-// we need simpleDataRoot here in case a new board gets loaded
-watch([simpleDataRoot, simpleDataRoot.board.lists], ()=>{cardsStat.value = board.value.cardOpenClosedStatistic()})
-
-const showCardDialog = (_card: Card, simpleCard: SDCard) => {
+const showCardDialog = (_card: Card, card: CardObservable) => {
     cardDialogShow.assign(true);
-    cardDialogCard.card = simpleCard;
+    cardDialogCard.value = card
 }
 
-const showListDialog = (_list: List, simpleList: SDList) => {
+const showListDialog = (_list: List, list: ListObservable) => {
     listDialogShow.assign(true);
-    listDialogList.list = simpleList;
+    listDialogList.value = list;
 }
 
 function actionHandler(action: string) {
 
     const openNewBoard = () => {
-        simpleDataRoot.reset()
-        board.value = newBoard()
-        simpleDataRoot.board = board.value.toSimpleData()
-        extensionManager.triggerOnNew(board.value)
+        project.board = newBoard()
+        boardObservableRef.value = project.board.observable()
+        extensionManager.triggerOnNew(project)
     }
 
     const openBoard = () => {
-        boardStorage.load().then((b: Board)=>{
-            if(!platformCanSupportBoard(b)){
+        boardStorage().load().then((board: Board)=>{
+            if(!platformCanSupportBoard(board)){
                 dialog.warning({
                     title: 'Unsupported project',
                     content: 'The opened project was created on a different platform, working on it would lead to data loss! Please open a different project to work on.',
                     positiveText: 'Ok',
                 })
             } else {
-                simpleDataRoot.reset()
-                simpleDataRoot.board = b.toSimpleData()
-                board.value = b
-                extensionManager.triggerOnLoad(board.value)
+                boardObservableRef.value = board.observable()
+                project.board = board
+                extensionManager.triggerOnLoad(project)
             }
 
         })
@@ -247,18 +281,18 @@ function actionHandler(action: string) {
         //https://github.com/ankitrohatgi/tarballjs
         //https://github.com/Stuk/jszip
         //local boardStorage
-        boardStorage.save(board.value).then(()=>{
-            extensionManager.triggerOnSave(board.value)
+        boardStorage().save(project.board).then(()=>{
+            extensionManager.triggerOnSave(project)
         })
         break;
     case 'saveas':
-        boardStorage.saveAs(board.value).then(()=>{
-            extensionManager.triggerOnSaveAs(board.value)
+        boardStorage().saveAs(project.board).then(()=>{
+            extensionManager.triggerOnSaveAs(project)
         })
         break;
     case 'open':
-        if (boardStorage.isListable()) {
-            const _entries = boardStorage.list()
+        if (boardStorage().isListable()) {
+            const _entries = boardStorage().list()
         } else if (!savedObserverExtension.isSaved()) {
             dialog.warning({
                 title: 'Unsaved changes',
@@ -281,15 +315,12 @@ function actionHandler(action: string) {
 
 }
 
-
 function newBoard () {
     const board = new Board(defaultAttachmentStorage())
     board.name = "Untitled Board"
     new NewBoardTransaction().apply(board)
     return board
 }
-
-
 
 </script>
 <style scoped>

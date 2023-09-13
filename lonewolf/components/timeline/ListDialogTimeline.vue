@@ -21,13 +21,11 @@ import { Entry as LogEntry, Action as LogAction } from "@/common/logs/LogEntry";
 import { typeOf, Kind as TimelineKind } from "./list-timeline";
 import AutoTime from "@/components/AutoTime.vue";
 
-import type Board from "@/common/data/Board";
 import type List from "@/common/data/List";
 
 
 const $props = defineProps<{
     list: List;
-    board: () => Board;
     logbook: LogEntry[];
 }>();
 const logbookEntries = computed(()=> $props.logbook.filter(e=>e != undefined && typeOf(e) != TimelineKind.None).reverse())

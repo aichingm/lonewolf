@@ -1,23 +1,20 @@
-import { MutateTransaction } from "../Transaction";
-import type { Transaction } from "../Transaction";
-import type Board from "../Board";
-import type List from "../List";
-import Card from "../Card";
-import type Label from "../Label";
-import CardComment from "../CardComment";
-import CardAttachment from "../CardAttachment";
-import type { SDBoard } from "../extern/SimpleData";
-import { SDCard } from "../extern/SimpleData";
+import { BoardTransaction as BaseTransaction } from "./Transaction";
+import type Board from "../data/Board";
+import type List from "../data/List";
+import Card from "../data/Card";
+import type Label from "../data/Label";
+import CardComment from "../data/CardComment";
+import CardAttachment from "../data/CardAttachment";
+import type { Board as BoardObservable } from "../Observable";
+import { Card as CardObservable } from "../Observable";
 
-import { Entry as LogEntry, Kind as LogKind, Action as LogAction } from "../../logs/LogEntry";
+import { Entry as LogEntry, Kind as LogKind, Action as LogAction } from "../logs/LogEntry";
 
 import { v1 as uuid } from "uuid";
 
 
-type CardField = keyof Card
-type CardFieldValue = Card[CardField];
 
-export class CardTransaction extends MutateTransaction {
+export abstract class CardTransaction extends BaseTransaction {
     protected _cardId: string;
 
     constructor (cardId: string) {
@@ -50,6 +47,7 @@ export class CardTransaction extends MutateTransaction {
     }
 
     protected list(board: Board, listId: string): List {
+        console.log(board)
         const list = board.findListInclArchives(listId)
         if (list == null) {
             throw new Error("List[" + listId + "] not found")
@@ -57,9 +55,9 @@ export class CardTransaction extends MutateTransaction {
         return list
     }
 
-    public mutate(t: SDBoard, board: Board): boolean {
+    public mutate(bo: BoardObservable, board: Board): boolean {
         const card = this.card(board)
-        const listTree = t.lists[card.list.position]
+        const listTree = bo.lists[card.list.position]
         listTree.version = this.id
         const cardTree = listTree.cards[card.position]
         cardTree.version = this.id
@@ -81,11 +79,11 @@ export class CardTransaction extends MutateTransaction {
 
 }
 
-export class CardChangeTransaction extends CardTransaction implements Transaction {
-    protected _field: CardField;
-    protected _value: CardFieldValue;
+export class CardChangeTransaction<Field extends keyof Card> extends CardTransaction{
+    protected _field: Field;
+    protected _value: Card[Field];
 
-    constructor (cardId: string, field: CardField, value: CardFieldValue) {
+    constructor (cardId: string, field: Field, value: Card[Field]) {
         super(cardId)
         this._field = field
         this._value = value
@@ -94,7 +92,7 @@ export class CardChangeTransaction extends CardTransaction implements Transactio
     public apply(board: Board): boolean{
         console.log("CardChangeTransaction", this._cardId, this._field, this._value)
         const card = this.card(board)
-        Object.defineProperty(card, this._field, {value: this._value, writable: true });
+        card[this._field] = this._value
 
         this.applyLogEntry(board, this.defaultLogEntry()
             .setAction(LogAction.Change)
@@ -107,7 +105,7 @@ export class CardChangeTransaction extends CardTransaction implements Transactio
 
 }
 
-export class NewCardTransaction extends CardTransaction implements Transaction {
+export class NewCardTransaction extends CardTransaction {
     private _title: string;
     private _listId: string;
 
@@ -132,17 +130,17 @@ export class NewCardTransaction extends CardTransaction implements Transaction {
         return true
     }
 
-    public mutate(t: SDBoard, board: Board): boolean {
+    public mutate(bo: BoardObservable, board: Board): boolean {
         const list = this.list(board, this._listId)
 
-        t.lists[list.position].cards.push(new SDCard(this._cardId, this.id))
-        t.lists[list.position].version = this.id
+        bo.lists[list.position].cards.push(new CardObservable(this._cardId, this.id))
+        bo.lists[list.position].version = this.id
         return true
     }
 
 }
 
-export class AddCommentTransaction extends CardTransaction implements Transaction {
+export class AddCommentTransaction extends CardTransaction {
     private _content: string;
     private _comment: CardComment;
 
@@ -167,7 +165,7 @@ export class AddCommentTransaction extends CardTransaction implements Transactio
 
 }
 
-export class AddAttachmentTransaction extends CardTransaction implements Transaction {
+export class AddAttachmentTransaction extends CardTransaction {
     private _location: string;
     private _name: string;
     private _mime: string;
@@ -193,7 +191,7 @@ export class AddAttachmentTransaction extends CardTransaction implements Transac
 
 }
 
-export class CardAddLabelTransaction extends CardTransaction implements Transaction {
+export class CardAddLabelTransaction extends CardTransaction {
     private _labelId: string;
 
     constructor (cardId: string, labelId: string) {
@@ -215,7 +213,7 @@ export class CardAddLabelTransaction extends CardTransaction implements Transact
 
 }
 
-export class CardRemoveLabelTransaction extends CardTransaction implements Transaction {
+export class CardRemoveLabelTransaction extends CardTransaction {
     private _labelId: string;
 
     constructor (cardId: string, labelId: string) {
@@ -236,7 +234,7 @@ export class CardRemoveLabelTransaction extends CardTransaction implements Trans
 
 }
 
-export class CardSortTransaction extends CardTransaction implements Transaction {
+export class CardSortTransaction extends CardTransaction {
     private _oldPosition: number;
     private _newPosition: number;
 
@@ -253,10 +251,10 @@ export class CardSortTransaction extends CardTransaction implements Transaction 
         return true
     }
 
-    public mutate(t: SDBoard, board: Board):boolean {
+    public mutate(bo: BoardObservable, board: Board):boolean {
         const card = this.card(board)
 
-        const listTree = t.lists[card.list.position]
+        const listTree = bo.lists[card.list.position]
         const cardTree = listTree.cards[this._oldPosition]
         if ( ! this.isMutationPrevented()) {
             listTree.cards.splice(this._oldPosition, 1);
@@ -268,7 +266,7 @@ export class CardSortTransaction extends CardTransaction implements Transaction 
 
 }
 
-export class CardMoveTransaction extends CardTransaction implements Transaction {
+export class CardMoveTransaction extends CardTransaction {
     private _oldPosition: number;
     private _newPosition: number;
     private _oldListId: string;
@@ -302,13 +300,13 @@ export class CardMoveTransaction extends CardTransaction implements Transaction 
         return true
     }
 
-    public mutate(t: SDBoard, board: Board): boolean {
+    public mutate(bo: BoardObservable, board: Board): boolean {
 
         const oldList = this.list(board, this._oldListId)
         const newList = this.list(board, this._newListId)
 
-        const oldListTree = board.cardArchive.id == oldList.id ? t.cardArchive : t.lists[oldList.position]
-        const newListTree = board.cardArchive.id == newList.id ? t.cardArchive : t.lists[newList.position]
+        const oldListTree = board.cardArchive.id == oldList.id ? bo.cardArchive : bo.lists[oldList.position]
+        const newListTree = board.cardArchive.id == newList.id ? bo.cardArchive : bo.lists[newList.position]
 
         const cardTree = this.isMutationPrevented() ? newListTree.cards[this._newPosition] : oldListTree.cards[this._oldPosition];
 

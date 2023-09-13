@@ -1,30 +1,34 @@
 
-import type Board from './data/Board'
-import type { Transaction } from './data/Transaction'
+import type Project from './Project'
+import type { Transaction, PreferencesTransaction } from './transactions/Transaction'
 
 
 export default class Extension {
 
     private _active = true
 
-    public onTransaction(_b: Board, _t: Transaction){
+    public onTransaction(_p: Project, _t: Transaction){
         return
     }
 
-    public onSave(_b: Board){
+    public onPreferencesTransaction(_p: Project, _t: PreferencesTransaction){
         return
     }
 
-    public onSaveAs(_b: Board){
+    public onSave(_p: Project){
+        return
+    }
+
+    public onSaveAs(_p: Project){
         return
     }
 
 
-    public onLoad(_b: Board){
+    public onLoad(_p: Project){
         return
     }
 
-    public onNew(_b: Board){
+    public onNew(_p: Project){
         return
     }
 
@@ -46,24 +50,28 @@ export class ExtensionManager{
 
     private _extensions = new Array<Extension>()
 
-    public triggerOnTransaction(b: Board, t: Transaction) {
-        this.extensions.forEach(e=>e.onTransaction(b, t))
+    public triggerOnTransaction(p: Project, t: Transaction) {
+        this.extensions.forEach(e=>e.onTransaction(p, t))
     }
 
-    public triggerOnSave(b: Board) {
-        this.extensions.forEach(e=>e.onSave(b))
+    public triggerOnPreferencesTransaction(p: Project, t: PreferencesTransaction) {
+        this.extensions.forEach(e=>e.onPreferencesTransaction(p, t))
     }
 
-    public triggerOnSaveAs(b: Board) {
-        this.extensions.forEach(e=>e.onSaveAs(b))
+    public triggerOnSave(p: Project) {
+        this.extensions.forEach(e=>e.onSave(p))
     }
 
-    public triggerOnLoad(b: Board) {
-        this.extensions.forEach(e=>e.onLoad(b))
+    public triggerOnSaveAs(p: Project) {
+        this.extensions.forEach(e=>e.onSaveAs(p))
     }
 
-    public triggerOnNew(b: Board) {
-        this.extensions.forEach(e=>e.onLoad(b))
+    public triggerOnLoad(p: Project) {
+        this.extensions.forEach(e=>e.onLoad(p))
+    }
+
+    public triggerOnNew(p: Project) {
+        this.extensions.forEach(e=>e.onLoad(p))
     }
 
     public get extensions(): Extension[]{

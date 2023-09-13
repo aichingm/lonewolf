@@ -1,19 +1,13 @@
-import { IdentifiableTransaction } from "../Transaction";
-import type { Transaction } from "../Transaction";
-import type Board from "../Board";
-import type Card from "../Card";
-import type CardAttachment from "../CardAttachment";
-import type { SDBoard } from "../extern/SimpleData";
+import { BoardTransaction as BaseTransaction } from "./Transaction";
+import type Board from "../data/Board";
+import type Card from "../data/Card";
+import type CardAttachment from "../data/CardAttachment";
+import type { Board as BoardObservable } from "../Observable";
 
-import { Entry as LogEntry, Kind as LogKind, Action as LogAction } from "../../logs/LogEntry";
-
-type CardAttachmentField = keyof CardAttachment
-type CardAttachmentValue = CardAttachment[CardAttachmentField];
+import { Entry as LogEntry, Kind as LogKind, Action as LogAction } from "../logs/LogEntry";
 
 
-
-
-export class CardAttachmentTransaction extends IdentifiableTransaction {
+export abstract class CardAttachmentTransaction extends BaseTransaction {
     protected _cardId: string;
     protected _attachmentId: string;
 
@@ -51,15 +45,14 @@ export class CardAttachmentTransaction extends IdentifiableTransaction {
         this.card(board).logbook.push(logEntry.id)
     }
 
-
 }
 
 
-export class CardAttachmentChangeTransaction extends CardAttachmentTransaction implements Transaction{
-    protected _field: CardAttachmentField;
-    protected _value: CardAttachmentValue;
+export class CardAttachmentChangeTransaction<Field extends keyof CardAttachment> extends CardAttachmentTransaction {
+    protected _field: Field;
+    protected _value: CardAttachment[Field];
 
-    constructor (cardId: string, attachmentId: string, field: CardAttachmentField, value: CardAttachmentValue) {
+    constructor (cardId: string, attachmentId: string, field: Field, value: CardAttachment[Field]) {
         super(cardId, attachmentId)
         this._field = field
         this._value = value
@@ -69,7 +62,7 @@ export class CardAttachmentChangeTransaction extends CardAttachmentTransaction i
         console.log("CardAttachmentChangeTransaction", this._cardId, this._attachmentId, this._field, this._value)
         const card = this.card(board)
         const attachment = this.attachment(card, this._attachmentId)
-        Object.defineProperty(attachment, this._field, {value: this._value, writable: true });
+        attachment[this._field] = this._value
 
         this.applyLogEntry(board, this.defaultLogEntry()
             .setSubjectKind(LogKind.Card)
@@ -82,9 +75,9 @@ export class CardAttachmentChangeTransaction extends CardAttachmentTransaction i
         return true
     }
 
-    public mutate(t: SDBoard, board: Board): boolean {
+    public mutate(bo: BoardObservable, board: Board): boolean {
         const card = this.card(board)
-        const listTree = t.lists[card.list.position]
+        const listTree = bo.lists[card.list.position]
         listTree.version = this.id
         const cardTree = listTree.cards[card.position]
         cardTree.version = this.id
@@ -93,7 +86,7 @@ export class CardAttachmentChangeTransaction extends CardAttachmentTransaction i
 
 }
 
-export class CardAttachmentContentChangeTransaction extends CardAttachmentTransaction implements Transaction{
+export class CardAttachmentContentChangeTransaction extends CardAttachmentTransaction {
     protected _name: string;
     protected _mime: string;
 
@@ -120,9 +113,9 @@ export class CardAttachmentContentChangeTransaction extends CardAttachmentTransa
         return true
     }
 
-    public mutate(t: SDBoard, board: Board): boolean {
+    public mutate(bo: BoardObservable, board: Board): boolean {
         const card = this.card(board)
-        const listTree = t.lists[card.list.position]
+        const listTree = bo.lists[card.list.position]
         listTree.version = this.id
         const cardTree = listTree.cards[card.position]
         cardTree.version = this.id

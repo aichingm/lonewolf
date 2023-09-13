@@ -9,7 +9,7 @@ import type { SerializableLabel } from "@/common/data/Label";
 import Card from "@/common/data/Card";
 import Label from "@/common/data/Label";
 import type { SerializableCard } from "@/common/data/Card";
-import { SDBoard } from "./extern/SimpleData";
+import { Board as BoardObservable } from "../Observable";
 import { Factory as StoreFactory } from "@/common/attachments/Store";
 import type { Store as AttachmentStore } from "@/common/attachments/Store";
 import { Entry as LogEntry } from "@/common/logs/LogEntry";
@@ -124,12 +124,12 @@ export default class Board extends NamedIdentifiable {
         ]
     }
 
-    public toSimpleData(): SDBoard {
-        const b = new SDBoard(this.id, "no-new-transaction");
-        b.lists = Array.from(this.lists.items.map( (l: List) => {return l.toSimpleData();}));
-        b.labels = Array.from(this.labels.values()).map( (l: Label) => {return l.toSimpleData();});
-        b.cardArchive = this.cardArchive.toSimpleData()
-        b.listArchive = this.listArchive.items.map(l=>l.toSimpleData())
+    public observable(): BoardObservable {
+        const b = new BoardObservable(this.id, "<empty>");
+        b.lists = Array.from(this.lists.items.map( (l: List) => {return l.observable();}));
+        b.labels = Array.from(this.labels.values()).map( (l: Label) => {return l.observable();});
+        b.cardArchive = this.cardArchive.observable()
+        b.listArchive = this.listArchive.items.map(l=>l.observable())
         return b
     }
 

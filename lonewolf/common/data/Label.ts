@@ -1,6 +1,6 @@
 
 import NamedIdentifiable from "@/common/NamedIdentifiable";
-import { SDLabel } from "./extern/SimpleData";
+import { Label as LabelObservable } from "../Observable";
 import type Board from "./Board";
 
 
@@ -36,8 +36,8 @@ export default class Label extends NamedIdentifiable {
         return l;
     }
 
-    public toSimpleData(): SDLabel {
-        return new SDLabel(this.id, "no-new-transaction");
+    public observable(): LabelObservable {
+        return new LabelObservable(this.id, "<empty>");
     }
 
 }

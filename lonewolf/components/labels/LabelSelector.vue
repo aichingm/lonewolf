@@ -15,14 +15,17 @@ import type { Ref } from "vue";
 import { themeOverwrite, tagColor } from "@/utils/labels";
 import FilterableSelectBox from "./FilterableSelectBox.vue";
 import type Label from "@/common/data/Label";
-import type { SDLabel } from "@/common/data/extern/SimpleData";
-import type Board from "@/common/data/Board";
+import type { Board as BoardObservable } from "@/common/Observable";
+import type Project from "@/common/Project";
+
+
 import type { NPopover } from "naive-ui";
 
+
 const $props = defineProps<{
-    labels: SDLabel[];
+    project: Project;
+    board: BoardObservable;
     activeLabels: Label[];
-    board: () => Board;
 }>();
 
 const $emit = defineEmits(["add", "remove"]);
@@ -30,8 +33,8 @@ const $emit = defineEmits(["add", "remove"]);
 const showAddBoxModel = ref(false)
 
 const newLabels = computed(
-    ()=>$props.labels.map(
-        (l: SDLabel) : Label|null => $props.board().findLabel(l.id)
+    ()=>Array.from($props.project.board.labels.values()).map(
+        (l): Label|null => $props.project.board.findLabel(l.id)
     ).filter(
         (l) => (l != null && l.visibility && $props.activeLabels.findIndex((al) => al.id == l.id) == -1)
     ) as Label[]) // get all labels except those which are in the activeLables array

@@ -1,19 +1,15 @@
-import { MutateTransaction } from "../Transaction";
-import type { Transaction } from "../Transaction";
-import type Board from "../Board";
-import List from "../List";
-import type { SDBoard } from "../extern/SimpleData";
-import { SDList } from "../extern/SimpleData";
+import { BoardTransaction as BaseTransaction } from "./Transaction";
+import type Board from "../data/Board";
+import List from "../data/List";
+import type { Board as BoardObservable } from "../Observable";
+import { List as ListObservable } from "../Observable";
 
-import { Entry as LogEntry, Kind as LogKind, Action as LogAction } from "../../logs/LogEntry";
+import { Entry as LogEntry, Kind as LogKind, Action as LogAction } from "../logs/LogEntry";
 
 import { v1 as uuid } from "uuid";
 
 
-type ListField = keyof List
-type ListFieldValue = List[ListField];
-
-export class ListTransaction extends MutateTransaction {
+export abstract class ListTransaction extends BaseTransaction {
     protected _listId: string;
 
     constructor (listId: string) {
@@ -29,11 +25,13 @@ export class ListTransaction extends MutateTransaction {
         return list
     }
 
-    public mutate(sdb: SDBoard, board: Board): boolean {
+
+
+    public mutate(bo: BoardObservable, board: Board): boolean {
         const list = this.list(board)
-        const listTree = sdb.lists[list.position]
+        const listTree = bo.lists[list.position]
         listTree.version = this.id
-        sdb.version = this.id
+        bo.version = this.id
         return true
     }
 
@@ -52,11 +50,11 @@ export class ListTransaction extends MutateTransaction {
 
 }
 
-export class ListChangeTransaction extends ListTransaction implements Transaction {
-    protected _field: ListField;
-    protected _value: ListFieldValue;
+export class ListChangeTransaction<Field extends keyof List> extends ListTransaction {
+    protected _field: Field;
+    protected _value: List[Field];
 
-    constructor (listId: string, field: ListField, value: ListFieldValue) {
+    constructor (listId: string, field: Field, value: List[Field]) {
         super(listId)
         this._field = field
         this._value = value
@@ -65,7 +63,7 @@ export class ListChangeTransaction extends ListTransaction implements Transactio
     public apply(board: Board): boolean{
         console.log("ListChangeTransaction", this._listId, this._field, this._value)
         const list = this.list(board)
-        Object.defineProperty(list, this._field, {value: this._value, writable: true });
+        list[this._field] = this._value
 
         this.applyLogEntry(board, this.defaultLogEntry()
             .setAction(LogAction.Change)
@@ -78,7 +76,7 @@ export class ListChangeTransaction extends ListTransaction implements Transactio
 
 }
 
-export class NewListTransaction extends ListTransaction implements Transaction {
+export class NewListTransaction extends ListTransaction {
     private _title = "";
 
     constructor (title: string) {
@@ -100,9 +98,9 @@ export class NewListTransaction extends ListTransaction implements Transaction {
         return true
     }
 
-    public mutate(t: SDBoard, _b: Board): boolean {
-        t.version = this.id
-        t.lists.push(new SDList(this._listId, this.id))
+    public mutate(bo: BoardObservable, _b: Board): boolean {
+        bo.version = this.id
+        bo.lists.push(new ListObservable(this._listId, this.id))
         return true
     }
 
@@ -124,14 +122,14 @@ export class ListSortTransaction extends ListTransaction {
         return true
     }
 
-    public mutate(t: SDBoard, _b: Board): boolean {
+    public mutate(bo: BoardObservable, _b: Board): boolean {
         if ( ! this.isMutationPrevented()) {
-            const listSDBoard = t.lists[this._oldPosition]
-            t.lists.splice(this._oldPosition, 1);
-            t.lists.splice(this._newPosition, 0, listSDBoard);
+            const listBo = bo.lists[this._oldPosition]
+            bo.lists.splice(this._oldPosition, 1);
+            bo.lists.splice(this._newPosition, 0, listBo);
         }
 
-        t.version = this.id
+        bo.version = this.id
         return true
     }
 
@@ -174,19 +172,19 @@ export class ListArchiveTransaction extends ListTransaction {
         return true
     }
 
-    public mutate(t: SDBoard, _b: Board): boolean {
+    public mutate(bo: BoardObservable, _b: Board): boolean {
         if (this._direction == ArchiveDirection.Archive) {
-            const listSDBoard = t.lists[this._position]
-            t.listArchive.push(listSDBoard);
-            t.lists.splice(this._position, 1);
-            listSDBoard.version = this.id
+            const listBo = bo.lists[this._position]
+            bo.listArchive.push(listBo);
+            bo.lists.splice(this._position, 1);
+            listBo.version = this.id
         } else {
-            const listSDBoard = t.listArchive[this._position]
-            t.listArchive.splice(this._position, 1);
-            t.lists.push(listSDBoard);
-            listSDBoard.version = this.id
+            const listBo = bo.listArchive[this._position]
+            bo.listArchive.splice(this._position, 1);
+            bo.lists.push(listBo);
+            listBo.version = this.id
         }
-        t.version = this.id
+        bo.version = this.id
         return true
     }
 

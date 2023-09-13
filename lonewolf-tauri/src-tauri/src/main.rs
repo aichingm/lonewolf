@@ -83,6 +83,7 @@ fn sync_cwd_to(path: &str) {
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![mime, open_file, sync_cwd_to])
         .register_uri_scheme_protocol("fs", move |_app, request| {
 

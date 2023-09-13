@@ -16,18 +16,16 @@
             >
             <template #item="{ element }">
                 <ListVue
+                    :project="$props.project"
                     :board="$props.board"
-                    :simpleBoard="$props.simpleBoard"
-                    :simpleList="element"
-                    :lists="lists"
-                    :labels="$props.simpleBoard.labels"
-                    @card-edit="(card, simpleCard)=>$emit('card-edit', card, simpleCard)"
-                    @list-edit="(list, simpleList)=>$emit('list-edit', list, simpleList)"
-                    @transaction="(t)=>$emit('transaction', t)"
+                    :preferences="$props.preferences"
+                    :list="element"
+                    @card-edit="(card, cardObserver)=>$emit('card-edit', card, cardObserver)"
+                    @list-edit="(list, listObserver)=>$emit('list-edit', list, listObserver)"
                 />
             </template>
             <template #footer>
-                <NewList v-if="showNewList" @newList="newList" :size="listWidth"/>
+                <NewList v-if="showNewList" @newList="newList" :style="listWidth"/>
             </template>
         </draggable>
     </div>
@@ -36,41 +34,46 @@
 import { computed } from "vue";
 import draggable from "vuedraggable";
 
-
 import ListVue from "./List.vue";
 import NewList from "./NewList.vue";
 
-import { NewListTransaction, ListSortTransaction } from "@/common/data/transactions/ListTransactions";
+import { useTransactions } from '@/components/transactions/api'
+import { NewListTransaction, ListSortTransaction } from "@/common/transactions/ListTransactions";
+
 import { isChrome, isWebkit } from "@/utils/browser-comp";
 
-import type Board from "@/common/data/Board";
-import type { SDBoard } from "@/common/data/extern/SimpleData";
+import type Project from "@/common/Project";
+import type { Board as BoardObservalbe } from "@/common/Observable";
 import type List from "@/common/data/List";
+import type Preferences from "@/common/settings/Preferences"
 
 const $props = defineProps<{
-    board: () => Board;
-    simpleBoard: SDBoard;
+    project: Project;
+    board: BoardObservalbe;
+    preferences: Preferences;
 }>();
 
-const $emit = defineEmits(["transaction", "card-edit", "list-edit"]);
+const $emit = defineEmits(["card-edit", "list-edit"]);
 
-const lists = computed(()=>{$props.simpleBoard; $props.simpleBoard.version; return $props.simpleBoard.lists})
+const transactions = useTransactions()
 
-const listWidth = computed(()=>{$props.simpleBoard.settings.version; return $props.board().settings.boardListsWidth})
+const lists = computed(()=>{$props.board; $props.board.version; return $props.board.lists})
 
-const showNewList = computed(()=>{$props.simpleBoard.settings.version; return $props.board().settings.boardShowNewList})
+const showNewList = computed(()=>{$props.board.settings.version; return $props.project.board.settings.boardShowNewList})
 
-const listsJustification = computed(()=>{$props.simpleBoard.settings.version; return $props.board().settings.boardListsJustification})
+const listsJustification = computed(()=>$props.preferences.boardListsJustification)
+
+const listWidth = computed(()=>$props.preferences.boardListsJustification == "equal"?'flex-grow: 1;':('width:' + $props.preferences.boardListsWidth + 'px;'))
 
 function newList(title: string) {
-    $emit("transaction", new NewListTransaction(title))
+    transactions.commit(new NewListTransaction(title))
 }
 
 function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number}}){
     if (e.moved) {
-        const list = $props.board().findList(e.moved.element.id)
+        const list = $props.project.board.findList(e.moved.element.id)
         if (list != null) { // TODO why can this be null, add comment
-            $emit("transaction", new ListSortTransaction(list.id, e.moved.oldIndex, e.moved.newIndex).preventMutation())
+            transactions.commit(new ListSortTransaction(list.id, e.moved.oldIndex, e.moved.newIndex).preventMutation())
         }
     }
     return false
@@ -118,6 +121,9 @@ function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number
 
 .justify-content-left {
     justify-content: left;
+}
+
+.justify-content-equal {
 }
 
 

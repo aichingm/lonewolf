@@ -1,6 +1,6 @@
 <template>
-    <div class="list-lane" :style="'width: ' + listWidth + 'px'">
-        <div class="list-header list-part list-dragger" @click="$emit('list-edit', list, $props.simpleList)">
+    <div class="list-lane" :style="listWidth">
+        <div class="list-header list-part list-dragger" @click="$emit('list-edit', list, $props.list)">
             <div class="list-name">{{ list.name }}</div>
             <n-space :size="34" item-style="display: flex;">
                 <n-badge class="badge-reset" :value="cards.length" show-zero :offset="[20, 11]" color="#d0d0d0">
@@ -13,7 +13,7 @@
         <div :class="'cards list-part ' + (inputHasFocus?'':'list-dragger')">
             <!-- eslint-disable vue/no-mutating-props -->
             <draggable
-                :list="$props.simpleList.cards"
+                :list="$props.list.cards"
                 group="cards"
                 animation="200"
                 item-key="id"
@@ -25,13 +25,10 @@
                 <!-- eslint-enable -->
                 <template #item="{ element }">
                     <CardVue
+                        :project="$props.project"
                         :card="element"
                         :board="$props.board"
-                        :lists="$props.lists"
-                        :cards="cards"
-                        :labels="$props.labels"
                         @card-edit="(card, simpleCard)=>$emit('card-edit', card, simpleCard)"
-                        @transaction="(t)=>$emit('transaction', t)"
                     />
                 </template>
             </draggable>
@@ -67,35 +64,38 @@ import ActionDropdown from "./ActionDropdown.vue";
 import ActionDropdownOption from "@/common/ActionDropdownOption";
 import { isChrome, isWebkit } from "@/utils/browser-comp";
 
-import type Board from "@/common/data/Board";
+import type Project from "@/common/Project";
 import type List from "@/common/data/List";
-import type { SDList, SDLabel, SDBoard } from "@/common/data/extern/SimpleData";
-
 import type Card from "@/common/data/Card";
+import type Preferences from "@/common/settings/Preferences";
 
+import type { List as ListObservable, Board as BoardObservable} from "@/common/Observable";
 
-import { ListSortTransaction, ListArchiveTransaction } from "@/common/data/transactions/ListTransactions";
-import { NewCardTransaction, CardSortTransaction, CardMoveTransaction } from "@/common/data/transactions/CardTransactions";
+import { useTransactions } from '@/components/transactions/api'
+import { ListSortTransaction, ListArchiveTransaction } from "@/common/transactions/ListTransactions";
+import { NewCardTransaction, CardSortTransaction, CardMoveTransaction } from "@/common/transactions/CardTransactions";
+
 
 const $props = defineProps<{
-    board: () => Board;
-    simpleBoard: SDBoard;
-    simpleList: SDList;
-    lists: SDList[];
-    labels: SDLabel[];
+    project: Project;
+    board: BoardObservable;
+    preferences: Preferences;
+    list: ListObservable;
 }>();
 
-const $emit = defineEmits(["transaction", "card-edit", "list-edit"]);
+const $emit = defineEmits(["card-edit", "list-edit"]);
 
-const list = computed(()=>{$props.simpleList.version; return $props.board().findList($props.simpleList.id)}) as Ref<List> // if list is null, something else is f'ed up
-const cards = computed(()=>{$props.simpleList.version; return $props.simpleList.cards})
+const transactions = useTransactions()
 
-const lists = computed(()=>{$props.simpleList.version; return $props.lists.map((t: SDList) : List|null => $props.board().findList(t.id)).filter(l=>l!=null) as List[]})
+const list = computed(()=>{$props.list.version; return $props.project.board.findList($props.list.id)}) as Ref<List> // if list is null, something else is f'ed up
 
-const actions = computed(()=>{$props.simpleList.version; return generateActions(lists.value)})
+const cards = computed(()=>{$props.list.version; return $props.list.cards})
 
-const listWidth = computed(()=>{$props.simpleBoard.settings.version; return $props.board().settings.boardListsWidth})
+const lists = computed(()=>{$props.list.version; return $props.board.lists.map((t: ListObservable) : List|null => $props.project.board.findList(t.id)).filter(l=>l!=null) as List[]})
 
+const actions = computed(()=>{$props.list.version; return generateActions(lists.value)})
+
+const listWidth = computed(()=>$props.preferences.boardListsJustification == "equal"?'flex-grow: 1;':('width:' + $props.preferences.boardListsWidth + 'px;'))
 
 function generateActions(lists: List[]): ActionDropdownOption[] {
     const children = filterMoveList(lists);
@@ -170,16 +170,16 @@ function actionMenuSelected(
 ) {
     if (optionObject.command == "moveList") {
         if (typeof key === 'number') {
-            $emit("transaction", new ListSortTransaction(list.value.id, list.value.position, key))
+            transactions.commit(new ListSortTransaction(list.value.id, list.value.position, key))
         }
     }
 
     if (optionObject.command == "edit") {
-        $emit("list-edit", list.value, $props.simpleList);
+        $emit("list-edit", list.value, $props.list);
     }
 
     if (optionObject.command == "archive") {
-        $emit("transaction", new ListArchiveTransaction(list.value.id, list.value.position, ListArchiveTransaction.Archive));
+        transactions.commit(new ListArchiveTransaction(list.value.id, list.value.position, ListArchiveTransaction.Archive));
     }
 }
 
@@ -190,7 +190,7 @@ const cardTitleInputId = uuid1();
 
 function newCardButtonClicked() {
     if (cardTitle.value != "") {
-        $emit("transaction", new NewCardTransaction(list.value.id, cardTitle.value))
+        transactions.commit(new NewCardTransaction(list.value.id, cardTitle.value))
         cardTitle.value = "";
         nextTick(() => document.getElementById(cardTitleInputId)?.focus());
         nextTick(() =>
@@ -205,11 +205,11 @@ function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number
     if (e.moved) {
         const card = list.value.cards.find(e.moved.element.id)
         if (card != null) {
-            $emit("transaction", new CardSortTransaction(card.id, e.moved.oldIndex, e.moved.newIndex).preventMutation())
+            transactions.commit(new CardSortTransaction(card.id, e.moved.oldIndex, e.moved.newIndex).preventMutation())
         }
     }
     if (e.added) { // skip removed, we do both in one transaction
-        const card = $props.board().findCard(e.added.element.id)
+        const card = $props.project.board.findCard(e.added.element.id)
         if (card == null) {
             throw new Error("Card[" + e.added.element.id + "] not found")
         }
@@ -217,7 +217,7 @@ function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number
         const oldList = card.list
         const newList = list.value
         const oldPos = card.position
-        $emit("transaction", new CardMoveTransaction(card.id, oldList.id, oldPos, newList.id, e.added.newIndex).preventMutation())
+        transactions.commit(new CardMoveTransaction(card.id, oldList.id, oldPos, newList.id, e.added.newIndex).preventMutation())
     }
 }
 

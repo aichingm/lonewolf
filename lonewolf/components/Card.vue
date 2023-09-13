@@ -51,30 +51,32 @@ import type { Ref } from "vue";
 import CardLabelBadge from "./CardLabelBadge.vue";
 import AutoTime from "./AutoTime.vue";
 
-import type Board from "@/common/data/Board";
 import type Card from "@/common/data/Card";
-import type { SDCard, SDList, SDLabel } from "@/common/data/extern/SimpleData";
+import type { Card as CardObservable, List as ListObservable, Board as BoardObservable } from "@/common/Observable";
+import type Project from "@/common/Project";
 
 import type List from "@/common/data/List";
-import { CardSortTransaction, CardMoveTransaction } from "@/common/data/transactions/CardTransactions";
+
+import { useTransactions } from '@/components/transactions/api'
+import { CardSortTransaction, CardMoveTransaction } from "@/common/transactions/CardTransactions";
 
 import ActionDropdown from "./ActionDropdown.vue";
 import ActionDropdownOption from "@/common/ActionDropdownOption";
 import { taskStats } from "@/utils/markdown";
 
 const $props = defineProps<{
-    card: SDCard;
-    cards: SDCard[];
-    lists: SDList[];
-    labels: SDLabel[];
-    board: () => Board;
+    project: Project;
+    board: BoardObservable;
+    card: CardObservable;
 }>();
 
-const $emit = defineEmits(["transaction", "card-edit"]);
+const $emit = defineEmits(["card-edit"]);
 
-const card = computed(()=>{$props.card.version; return $props.board().findCard($props.card.id);}) as Ref<Card> // if card is null, something else is f'ed up
-const lists = computed(()=>$props.lists.map((t: SDList) : List|null => $props.board().findList(t.id)).filter((l=>l!=null)) as List[])
-const cards = computed(()=>$props.cards.map((t: SDCard) : Card|null => $props.board().findCard(t.id)).filter((c=>c!=null)) as Card[])
+const transactions = useTransactions()
+
+const card = computed(()=>{$props.card.version; return $props.project.board.findCard($props.card.id);}) as Ref<Card> // if card is null, something else is f'ed up
+const lists = computed(()=>$props.board.lists.map((t: ListObservable) : List|null => $props.project.board.findList(t.id)).filter((l=>l!=null)) as List[])
+const cards = computed(()=>$props.board.lists[card.value.list.position].cards.map((t: CardObservable) : Card|null => $props.project.board.findCard(t.id)).filter((c=>c!=null)) as Card[])
 
 const activeLabels = computed(()=>card.value.labels.filter(l=>l.visibility));
 
@@ -137,6 +139,7 @@ const generateActions = function (lists: List[], cards: Card[]) {
 };
 
 function filterMoveCards(cards: Card[]) {
+
     const filteredCards = [];
     for (let i = 0; i < cards.length; i++) {
         if (cards[i].id == card.value.id) {
@@ -154,7 +157,7 @@ function filterMoveCards(cards: Card[]) {
         );
         filteredCards.push(o);
     }
-    if (cards[cards.length -1].id != card.value.id) {
+    if (cards.length > 0 && cards[cards.length -1].id != card.value.id) {
         const o = new ActionDropdownOption(
             cards.length,
             "After " + cards[cards.length -1].name,
@@ -195,16 +198,17 @@ function actionMenuSelected(
 
     if (optionObject.command == "move" && optionObject.data != null) {
         if (typeof key === 'number') {
-            $emit("transaction", new CardSortTransaction(card.value.id, card.value.position, key))
+            // FIXME does not sort correctly when moving card down off by one
+            transactions.commit(new CardSortTransaction(card.value.id, card.value.position, key)) 
         }
     }
 
     if (optionObject.command == "moveTo" && optionObject.data != null) {
-        $emit("transaction", new CardMoveTransaction(card.value.id, card.value.list.id, card.value.position, optionObject.data.id, 0))
+        transactions.commit(new CardMoveTransaction(card.value.id, card.value.list.id, card.value.position, optionObject.data.id, 0))
     }
 
     if (optionObject.command == "archive" && optionObject.data != null) {
-        $emit("transaction", new CardMoveTransaction(card.value.id, card.value.list.id, card.value.position, $props.board().cardArchive.id, 0))
+        transactions.commit(new CardMoveTransaction(card.value.id, card.value.list.id, card.value.position, $props.project.board.cardArchive.id, 0))
     }
 }
 

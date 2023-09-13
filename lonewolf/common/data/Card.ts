@@ -4,7 +4,7 @@ import type Label from "@/common/data/Label";
 import CardComment from "@/common/data/CardComment";
 import type CardAttachment from "@/common/data/CardAttachment";
 import type { SerializableCardComment } from "@/common/data/CardComment";
-import { SDCard } from "./extern/SimpleData";
+import { Card as CardObservable } from "../Observable";
 import type Board from "@/common/data/Board";
 import Indexable from "@/common/Indexable"
 
@@ -77,7 +77,6 @@ export default class Card extends Indexable{
             throw new Error("List[" + s.listId + "] not found")
         }
 
-
         const card = new Card(list, s.id, s.name)
         card.position = s.position
         card.list.cards.put(card)
@@ -100,8 +99,8 @@ export default class Card extends Indexable{
         return card;
     }
 
-    public toSimpleData(): SDCard {
-        return new SDCard(this.id, "no-new-transaction");
+    public observable(): CardObservable {
+        return new CardObservable(this.id, "<empty>");
     }
 }
 

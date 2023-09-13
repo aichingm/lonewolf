@@ -23,7 +23,7 @@
                             </n-space>
                         </IconedBox>
                         <IconedBox icon="fluent:timeline-20-filled" :contentOffsetX="24">
-                            <ListDialogTimeline v-if="list != null" :logbook="logbook" @transaction="(t)=>$emit('transaction', t)" :board="$props.board" :list="list" />
+                            <ListDialogTimeline v-if="list != null" :logbook="logbook" :board="$props.board" :list="list" />
                         </IconedBox>
                     </n-space>
                 </div>
@@ -38,31 +38,34 @@ import type { Ref } from "vue";
 import InitialFocus from "@/components/InitialFocus.vue";
 import TextInput from "@/components/inputs/TextInput.vue";
 import IconedBox from "@/components/IconedBox.vue";
-import { ListChangeTransaction } from "@/common/data/transactions/ListTransactions";
+
+import { useTransactions } from '@/components/transactions/api'
+import { ListChangeTransaction } from "@/common/transactions/ListTransactions";
+
 import type List from "@/common/data/List";
-import type Board from "@/common/data/Board";
-import type { SDListHolder } from "@/common/data/extern/SimpleData";
+import type Project from "@/common/Project";
+import type { List as ListObservable, Board as BoardObservable } from "@/common/Observable";
 import ListDialogTimeline from "@/components/timeline/ListDialogTimeline.vue";
 import type { Entry as LogEntry } from "@/common/logs/LogEntry";
 
-
-
-
 const $props = defineProps<{
-    listHolder: SDListHolder;
-    board: () => Board;
+    project: Project;
+    listObservable: ListObservable;
+    board: BoardObservable;
     show: Ref<boolean>;
 }>();
 
-const $emit = defineEmits(["transaction", "update:show"]);
+const $emit = defineEmits(["update:show"]);
 
-const emitTitle = (title: string) => $emit("transaction", new ListChangeTransaction($props.listHolder.list.id, 'name', title))
+const transactions = useTransactions()
 
-const list = computed(()=>{$props.listHolder.list.version; return $props.board().findList($props.listHolder.list.id)})
+const emitTitle = (title: string) => transactions.commit(new ListChangeTransaction($props.listObservable.id, 'name', title))
 
-watch($props.listHolder, ()=>{if(list.value != null) setRefs(list.value)})
+const list = computed(()=>{$props.listObservable.version; return $props.project.board.findList($props.listObservable.id)})
 
-const logbook = computed(()=>list.value == null?[]:list.value.logbook.map((tId)=>$props.board().logbook.get(tId)).filter(e=>e!=undefined) as LogEntry[])
+watch(list, ()=>{if(list.value != null) setRefs(list.value)})
+
+const logbook = computed(()=>list.value == null?[]:list.value.logbook.map((tId)=>$props.project.board.logbook.get(tId)).filter(e=>e!=undefined) as LogEntry[])
 
 const showModel = ref(true)
 watch($props.show, ()=>{showModel.value = $props.show.value;})
@@ -78,11 +81,8 @@ const setRefs = (list: List) => {
 
 function handleCardsAreClosedChanged (value: boolean) {
     cardsClosed.value = value
-    $emit("transaction", new ListChangeTransaction($props.listHolder.list.id, 'cardsAreClosed', cardsClosed.value))
+    transactions.commit(new ListChangeTransaction($props.listObservable.id, 'cardsAreClosed', cardsClosed.value))
 }
-
-
-
 
 </script>
 

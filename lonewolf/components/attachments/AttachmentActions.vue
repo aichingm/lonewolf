@@ -21,8 +21,8 @@
 <script setup lang="ts">
 import ConfirmButton from "@/components/buttons/ConfirmButton.vue";
 import type CardAttachment from "@/common/data/CardAttachment";
-import type Board from "@/common/data/Board";
 import type { Attachment } from "@/common/attachments/Store";
+import type Project from "@/common/Project"; 
 
 import { h, ref, computed } from 'vue'
 import { NAvatar, NText, NIcon } from 'naive-ui'
@@ -31,13 +31,10 @@ import { Icon } from "@iconify/vue";
 import {presentAttachmentActionName, presentAttachment} from '@/platform/Functions'
 
 const $props = defineProps<{
+    project: Project;
     attachment: CardAttachment
     url: string
-    board: ()=>Board
 }>()
-
-console.log($props.attachment)
-
 
 const $emit = defineEmits(["delete", "edit"]);
 
@@ -133,9 +130,9 @@ function handleSelect (key: string | number) {
         navigator.clipboard.writeText(attachmentToMarkdown());
         break;
     case "edit":
-        $props.board().attachmentStore().updateAttachment($props.attachment.location).then((attachment: Attachment)=> {
+        $props.project.board.attachmentStore().updateAttachment($props.attachment.location).then((attachment: Attachment)=> {
             $emit("edit", $props.attachment.id, $props.attachment.location, attachment.name, attachment.mime);
-            $props.board().attachmentStore().url($props.attachment.location).then((newUrl)=>url.value = newUrl)
+            $props.project.board.attachmentStore().url($props.attachment.location).then((newUrl)=>url.value = newUrl)
         })
         break;
     }

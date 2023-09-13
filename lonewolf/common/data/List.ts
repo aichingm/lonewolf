@@ -2,7 +2,7 @@ import Indexable from "@/common/Indexable";
 import IndexedMap from "@/common/IndexedMap";
 import type Board from "./Board";
 import type Card from "./Card";
-import { SDList } from "./extern/SimpleData";
+import { List as ListObservable } from "../Observable";
 
 export default class List extends Indexable {
     private _cards = new IndexedMap<Card>();
@@ -64,9 +64,9 @@ export default class List extends Indexable {
         return l;
     }
 
-    public toSimpleData(): SDList {
-        const l = new SDList(this.id, "no-new-transaction");
-        l.cards = Array.from(this.cards.items.map( (c: Card) => {return c.toSimpleData();}));
+    public observable(): ListObservable {
+        const l = new ListObservable(this.id, "<empty>");
+        l.cards = Array.from(this.cards.items.map( (c: Card) => {return c.observable();}));
         return l
     }
 

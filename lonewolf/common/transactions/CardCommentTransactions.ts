@@ -1,23 +1,19 @@
-import { IdentifiableTransaction } from "../Transaction";
-import type { Transaction } from "../Transaction";
-import type Board from "../Board";
-import type Card from "../Card";
-import type CardComment from "../CardComment";
-import type { SDBoard } from "../extern/SimpleData";
+import { BoardTransaction as BaseTransaction } from "./Transaction";
+import type Board from "../data/Board";
+import type Card from "../data/Card";
+import type CardComment from "../data/CardComment";
+import type { Board as BoardObservable } from "../Observable";
 
-import { Entry as LogEntry, Kind as LogKind, Action as LogAction } from "../../logs/LogEntry";
-
-type CardCommentField = keyof CardComment
-type CardCommentValue = CardComment[CardCommentField];
+import { Entry as LogEntry, Kind as LogKind, Action as LogAction } from "../logs/LogEntry";
 
 
-export class CardCommentChangeTransaction extends IdentifiableTransaction implements Transaction{
+export class CardCommentChangeTransaction<Field extends keyof CardComment> extends BaseTransaction {
     protected _cardId: string;
     protected _commentId: string;
-    protected _field: CardCommentField;
-    protected _value: CardCommentValue;
+    protected _field: Field;
+    protected _value: CardComment[Field];
 
-    constructor (cardId: string, commentId: string, field: CardCommentField, value: CardCommentValue) {
+    constructor (cardId: string, commentId: string, field: Field, value: CardComment[Field]) {
         super()
         this._cardId = cardId
         this._commentId = commentId
@@ -45,7 +41,7 @@ export class CardCommentChangeTransaction extends IdentifiableTransaction implem
         console.log("CardCommentChangeTransaction", this._cardId, this._commentId, this._field, this._value)
         const card = this.card(board)
         const comment = this.comment(card, this._commentId)
-        Object.defineProperty(comment, this._field, {value: this._value, writable: true });
+        comment[this._field] = this._value
 
         this.applyLogEntry(board, this.defaultLogEntry()
             .setSubjectKind(LogKind.Card)
@@ -57,9 +53,9 @@ export class CardCommentChangeTransaction extends IdentifiableTransaction implem
         return true
     }
 
-    public mutate(t: SDBoard, board: Board): boolean {
+    public mutate(bo: BoardObservable, board: Board): boolean {
         const card = this.card(board)
-        const listTree = t.lists[card.list.position]
+        const listTree = bo.lists[card.list.position]
         listTree.version = this.id
         const cardTree = listTree.cards[card.position]
         cardTree.version = this.id
@@ -78,5 +74,4 @@ export class CardCommentChangeTransaction extends IdentifiableTransaction implem
     }
 
 }
-
 
