@@ -7,6 +7,9 @@ import { DialogManager } from './Dialogs'
 
 const dialog = useDialog()
 DialogManager.initialize(dialog)
+
+// const $emit = defineEmits([ 'loadBoard' ]);
+
 </script>
 <style scoped>
 </style>

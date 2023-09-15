@@ -92,7 +92,7 @@
             <AboutDialog v-model:show="aboutDialogShow.ref"/>
         </div>
     </div>
-    <PlatformComponent />
+    <PlatformComponent @loadBoard="b => openBoard(b)"/>
 </template>
 <script setup lang="ts">
 import { ref, watch, shallowRef } from "vue";
@@ -221,7 +221,7 @@ cardsStat.value = project.board.cardOpenClosedStatistic()
 const watchCurrentBoard = ()=>watch(boardObservableRef.value, ()=>cardsStat.value = project.board.cardOpenClosedStatistic())
 watchCurrentBoard()
 
-// This gets triggered if the while board changes (new, open, ...)
+// This gets triggered if the board changes (new, open, ...)
 watch(boardObservableRef, ()=>{
     title.assign(project.board.name)
     cardsStat.value = project.board.cardOpenClosedStatistic()
@@ -238,33 +238,35 @@ const showListDialog = (_list: List, list: ListObservable) => {
     listDialogList.value = list;
 }
 
+function openBoard (board: Board) {
+    if(!platformCanSupportBoard(board)){
+        dialog.warning({
+            title: 'Unsupported project',
+            content: 'The opened project was created on a different platform, working on it would lead to data loss! Please open a different project to work on.',
+            positiveText: 'Ok',
+        })
+    } else {
+        boardObservableRef.value = board.observable()
+        project.board = board
+        extensionManager.triggerOnLoad(project)
+    }
+}
+
+function openNewBoard () {
+    openBoard(newBoard())
+}
+
+function newBoard () {
+    const board = new Board(defaultAttachmentStorage())
+    board.name = "Untitled Board"
+    new NewBoardTransaction().apply(board)
+    return board
+}
+
 function actionHandler(action: string) {
 
-    const openNewBoard = () => {
-        project.board = newBoard()
-        boardObservableRef.value = project.board.observable()
-        extensionManager.triggerOnNew(project)
-    }
-
-    const openBoard = () => {
-        boardStorage().load().then((board: Board)=>{
-            if(!platformCanSupportBoard(board)){
-                dialog.warning({
-                    title: 'Unsupported project',
-                    content: 'The opened project was created on a different platform, working on it would lead to data loss! Please open a different project to work on.',
-                    positiveText: 'Ok',
-                })
-            } else {
-                boardObservableRef.value = board.observable()
-                project.board = board
-                extensionManager.triggerOnLoad(project)
-            }
-
-        })
-    }
     switch (action) {
     case 'new':
-
         if (!savedObserverExtension.isSaved()) {
             dialog.warning({
                 title: 'Unsaved changes',
@@ -278,9 +280,6 @@ function actionHandler(action: string) {
         }
         break;
     case 'save':
-        //https://github.com/ankitrohatgi/tarballjs
-        //https://github.com/Stuk/jszip
-        //local boardStorage
         boardStorage().save(project.board).then(()=>{
             extensionManager.triggerOnSave(project)
         })
@@ -300,10 +299,10 @@ function actionHandler(action: string) {
                 content: 'The currently open board is not saved, are you sure you want to open a different one? Unsaved changes will be lost!',
                 positiveText: 'Discard changes',
                 negativeText: 'Cancel',
-                onPositiveClick: openBoard
+                onPositiveClick: ()=>boardStorage().load().then((board: Board)=>{openBoard(board)})
             })
         } else {
-            openBoard()
+            boardStorage().load().then((board: Board)=>{openBoard(board)})
         }
         break;
     case 'about':
@@ -314,13 +313,6 @@ function actionHandler(action: string) {
         break;
     }
 
-}
-
-function newBoard () {
-    const board = new Board(defaultAttachmentStorage())
-    board.name = "Untitled Board"
-    new NewBoardTransaction().apply(board)
-    return board
 }
 
 </script>

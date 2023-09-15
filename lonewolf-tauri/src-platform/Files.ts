@@ -3,6 +3,15 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { readBinaryFile } from "@tauri-apps/api/fs"
 import type { OpenDialogOptions } from '@tauri-apps/api/dialog'
 
+
+export function read(path: string): Promise<ArrayBuffer>{
+    return new Promise<ArrayBuffer>((res, rej)=>{
+        readBinaryFile(path).then((content)=>{
+            res(content.buffer)
+        }).catch(rej)
+    })
+}
+
 export function chooseFileAndRead(properties?: OpenDialogOptions): Promise<[string, string, ArrayBuffer]>{
     return new Promise<[string, string, ArrayBuffer]>((resolve, _reject)=>{
         chooseFile(properties).then((data)=>{

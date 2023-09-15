@@ -80,11 +80,24 @@ fn sync_cwd_to(path: &str) {
         None => None
     };
 }
+#[tauri::command]
+fn get_cwd() -> Result<String, String> {
+    let rpath = env::current_dir();
+
+    if rpath.is_ok() {
+        let path = rpath.unwrap();
+        let pstr = path.to_str();
+        if pstr.is_some() {
+            return Ok(pstr.unwrap().to_string());
+        }
+    }
+    return Err("ERROR".to_string());
+}
 
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![mime, open_file, sync_cwd_to])
+        .invoke_handler(tauri::generate_handler![mime, open_file, sync_cwd_to, get_cwd])
         .register_uri_scheme_protocol("fs", move |_app, request| {
 
             let absolute_origin = "fs://absolute.local";
