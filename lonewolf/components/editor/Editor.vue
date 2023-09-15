@@ -1,5 +1,11 @@
 <template>
-    <n-el tag="div" class="editor-root">
+    <n-el 
+        tag="div" 
+        :id="domId" 
+        class="editor-root"
+        tabindex="0"
+        @focus="acceptFocus"
+    >
         <transition name="editor" :duration=".3">
             <n-el tag="div" class="editor" v-if="editMode">
                 <ToolbarVue :id="toolbarId" v-if="viewReady && $props.showToolbar && editMode" :editor-view="view as EditorView" @previewToggleChanged="setEditMode"
@@ -19,15 +25,12 @@
                     :extensions="extensions"
                     v-model="editorContent"
                     @ready="handleReady"
-                    @change="log"
-                    @focus="log"
                     @blur="onBlur"
                 />
                 <div class="editor-decoration editor-decoration-border"></div>
                 <div class="editor-decoration editor-decoration-shadow"></div>
             </n-el>
         </transition >
-        <!--<div class="preview" v-html="previewHtml" v-if="!editMode" @click="setEditMode(true)"></div>-->
         <Markdown
             v-if="!editMode && editorContent != ''" @click="(e)=>e.defaultPrevented||setEditMode(true)"
             :value="editorContent"
@@ -54,7 +57,7 @@ import { autocompletion } from "@codemirror/autocomplete"
 
 import ToolbarVue from "./Toolbar.vue"
 import ToolbarConfig from "./ToolbarConfig"
-import { isChildOfId } from "@/utils/dom"
+import { isChildOfId, findNextTabable } from "@/utils/dom"
 import Markdown from "../Markdown.vue"
 import { VoidMarkdownHandler } from "./MarkdownHandler"
 import type MarkdownHandler from "./MarkdownHandler"
@@ -86,6 +89,8 @@ const $props = withDefaults(defineProps<{
     clearAfterEdit: false,
 });
 
+const domId = uuid()
+
 const $emit = defineEmits(["update:value"]);
 
 const editMode = ref(false)
@@ -108,6 +113,7 @@ const hide = () => {
     if ($props.clearAfterEdit) {
         editorContent.value = ""
     }
+    nextFocus()
 }
 
 const onBlur = () => {
@@ -123,14 +129,27 @@ const onBlur = () => {
     hide()
 }
 
+const acceptFocus = () => {
+    setEditMode(true)
+}
+
+const nextFocus = () => {
+    const domElement = document.getElementById(domId)
+    
+    if (domElement == null) {
+        return // maybe component not mounted???
+    }
+    
+    const nextFocusable = findNextTabable(domElement)
+
+    if(nextFocusable != null) {
+        nextFocusable.focus()
+    }
+}
+
 const originalEditorContent = ref($props.value).value
 const editorContent = ref($props.value)
 
-//debug  helper
-const log = ()=>false
-//const log = console.log
-
-// setup codemirror
 
 // Autocompeletion idea
 //
@@ -298,11 +317,11 @@ const handleReady = (payload: { view: EditorView; state: EditorState; container:
 }
 
 .editor-decoration {
-    position:absolute;
-    top:0;
-    left:0;
-    right:0;
-    bottom:0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     pointer-events: none;
 }
 
@@ -336,6 +355,7 @@ const handleReady = (payload: { view: EditorView; state: EditorState; container:
 :deep() .cm-editor.cm-focused {
   outline: 0;
 }
+
 </style>
 
 
