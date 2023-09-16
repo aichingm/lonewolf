@@ -21,6 +21,8 @@
 
 <script setup lang="ts">
 import { ref, nextTick } from "vue";
+import { useThemeVars } from 'naive-ui'
+import { themeCast } from '@/themes/theme'
 import { v1 as uuid1 } from "uuid";
 
 const listName = ref("");
@@ -34,13 +36,15 @@ const $props = withDefaults(defineProps<{
     size: 270,
 });
 
+const $emit = defineEmits(["newList"]);
+
 const inputThemeOverrides = {
     border: '0px solid',
     boxShadowFocus: '0px solid',
 }
 
+const theme = themeCast(useThemeVars())
 
-const $emit = defineEmits(["newList"]);
 
 function newButtonClicked() {
     if (listName.value != "") {
@@ -59,15 +63,18 @@ function newButtonClicked() {
 <style scoped>
 .list {
     min-width: 160px;
-    background-color: #e9e9ed;
-    padding: 10px;
+    background-color: v-bind('theme.listColor');
     display: inline-block;
+    padding-left: 10px;
+    padding-right: 10px;
     border-radius: 4px;
     display: inline-block;
-    height: 70px;
+    height: 92px;
 }
 
 .list-name {
+    padding-top: 7px;
+    padding-bottom: 7px;
     font-size: 1.5em;
 }
 

@@ -2,11 +2,8 @@
     <div class="list-lane" :style="listWidth">
         <div class="list-header list-part list-dragger" @click="$emit('list-edit', list, $props.list)">
             <div class="list-name">{{ list.name }}</div>
-            <n-space :size="34" item-style="display: flex;">
-                <n-badge class="badge-reset" :value="cards.length" show-zero :offset="[20, 11]" color="#d0d0d0">
-                    <div>
-                    </div>
-                </n-badge>
+            <n-space :size="7" align="center" gap="0">
+                <n-badge :value="cards.length" show-zero  :color="theme.listBadgeColor"></n-badge>
                 <ActionDropdown :options="actions" @selected="actionMenuSelected" />
             </n-space>
         </div>
@@ -56,6 +53,8 @@
 import { computed, nextTick, ref } from "vue";
 import type { Ref } from "vue";
 
+import { useThemeVars } from 'naive-ui'
+
 import draggable from "vuedraggable";
 import { v1 as uuid1 } from "uuid";
 
@@ -75,6 +74,7 @@ import { useTransactions } from '@/components/transactions/api'
 import { ListSortTransaction, ListArchiveTransaction } from "@/common/transactions/ListTransactions";
 import { NewCardTransaction, CardSortTransaction, CardMoveTransaction } from "@/common/transactions/CardTransactions";
 
+import { themeCast } from '@/themes/theme'
 
 const $props = defineProps<{
     project: Project;
@@ -85,7 +85,9 @@ const $props = defineProps<{
 
 const $emit = defineEmits(["card-edit", "list-edit"]);
 
-const transactions = useTransactions()
+const theme = themeCast(useThemeVars())
+
+const transactions = useTransactions() 
 
 const list = computed(()=>{$props.list.version; return $props.project.board.findList($props.list.id)}) as Ref<List> // if list is null, something else is f'ed up
 
@@ -245,12 +247,12 @@ const inputHasFocus = ref(false)
 }
 
 .list-part {
-  background-color: #e9e9ed;
+  background-color: v-bind('theme.listColor');
   display: block;
 }
 
 .list-header {
-  padding: 7px 7px 0 7px;
+  padding: 7px 7px 7px 7px;
   border-radius: 4px 4px 0 0;
   display: flex;
   justify-content: space-between;

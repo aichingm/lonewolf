@@ -23,7 +23,6 @@
                             <n-date-picker v-model:value="timestampModel" type="datetime" placeholder="Due Date" clearable size="small" />
                         </IconedBox>
                         <IconedBox icon="fluent:code-text-20-filled" :contentOffsetX="24">
-
                             <Editor v-model:value="descriptionModel"
                                     updateOnBlur
                                     placeholder="Add Description..."
@@ -31,7 +30,7 @@
                                     :markdownHandler="markdownHandler"
                                     :attachments="attachments"
                                     @addAttachment="handleNewAttachment"
-
+                                    :editorStyle="editorTheme"
                             />
                         </IconedBox>
                         <IconedBox icon="fluent:document-20-filled" :contentOffsetX="24">
@@ -49,7 +48,7 @@
                                         clearAfterEdit
                                         :attachmentStore="$props.project.board.attachmentStore()"
                                         @addAttachment="handleNewAttachment"
-
+                                        :editorStyle="editorTheme"
                                 />
                             </div>
                         </IconedBox>
@@ -57,15 +56,16 @@
                             <n-space vertical class="flex-grow">
                                 <n-space justify="right">
                                     <n-switch v-model:value="timelineShowDetailsModel">
-                                        <template #checked>
-                                            Show details
-                                        </template>
-                                        <template #unchecked>
-                                            Hide details
-                                        </template>
                                     </n-switch>
                                 </n-space>
-                                <CardDialogTimeline v-if="card != null" :show-details="timelineShowDetailsModel" :logbook="logbook" :project="$props.project" :card="card" />
+                                <CardDialogTimeline 
+                                    v-if="card != null"
+                                    :show-details="timelineShowDetailsModel"
+                                    :logbook="logbook"
+                                    :project="$props.project"
+                                    :card="card"
+                                    :appSettings="$props.appSettings"
+                                />
                             </n-space>
                         </IconedBox>
                         <div>&nbsp;<!-- this is needed to allow the editor to blur, remove when adding a new iconed box below the editor--></div>
@@ -99,6 +99,8 @@ import { CardAttachmentChangeTransaction, CardAttachmentContentChangeTransaction
 import type Card from "@/common/data/Card";
 import type Label from "@/common/data/Label";
 import type Project from "@/common/Project";
+import type Settings from "@/common/settings/AppSettings";
+
 
 import type { Board as BoardObservable, Card as CardObservable } from "@/common/Observable";
 import type { Entry as LogEntry } from "@/common/logs/LogEntry";
@@ -112,11 +114,16 @@ const $props = defineProps<{
     cardObservable: CardObservable;
     board: BoardObservable;
     show: Ref<boolean>;
+    appSettings: Settings;
 }>();
 
 const $emit = defineEmits(["update:show"]);
 
 const transactions = useTransactions()
+
+const editorTheme = computed(()=>({
+    darkMode: $props.appSettings.darkMode,
+}))
 
 const emitTitle = (title: string) => transactions.commit(new CardChangeTransaction($props.cardObservable.id, 'name', title))
 

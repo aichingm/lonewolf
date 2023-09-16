@@ -8,13 +8,16 @@
     >
         <transition name="editor" :duration=".3">
             <n-el tag="div" class="editor" v-if="editMode">
-                <ToolbarVue :id="toolbarId" v-if="viewReady && $props.showToolbar && editMode" :editor-view="view as EditorView" @previewToggleChanged="setEditMode"
-                            :toolbarConfig="$props.toolbarConfig"
-                            :attachmentStore="$props.attachmentStore"
-                            :attachments="$props.attachments"
-
-                            @save="commit(); hide();"
-                            @reset="reset()"
+                <ToolbarVue 
+                    v-if="viewReady && $props.showToolbar && editMode" 
+                    :editor-view="view as EditorView" 
+                    :id="toolbarId" 
+                    :toolbarConfig="$props.toolbarConfig"
+                    :attachmentStore="$props.attachmentStore"
+                    :attachments="$props.attachments"
+                    @previewToggleChanged="setEditMode"
+                    @save="commit(); hide();"
+                    @reset="reset()"
                 />
                 <Codemirror
                     class="cm6"
@@ -33,6 +36,7 @@
         </transition >
         <Markdown
             v-if="!editMode && editorContent != ''" @click="(e)=>e.defaultPrevented||setEditMode(true)"
+            :darkMode="editorStyle.darkMode"
             :value="editorContent"
             :imageInterceptor="(e) => $props.markdownHandler.renderImage(e)"
             :imageUpdater="(e) => $props.markdownHandler.updateImage(e)"
@@ -43,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef } from 'vue'
+import { ref, shallowRef, computed } from 'vue'
 import { v1 as uuid } from "uuid";
 
 import { minimalSetup, EditorView } from "codemirror"
@@ -57,6 +61,10 @@ import { autocompletion } from "@codemirror/autocomplete"
 
 import ToolbarVue from "./Toolbar.vue"
 import ToolbarConfig from "./ToolbarConfig"
+import { fill as fillStyle } from "./EditorStyle"
+import type { EditorStyle } from './EditorStyle'
+
+
 import { isChildOfId, findNextTabable } from "@/utils/dom"
 import Markdown from "../Markdown.vue"
 import { VoidMarkdownHandler } from "./MarkdownHandler"
@@ -67,27 +75,31 @@ import type CardAttachment from "@/common/data/CardAttachment";
 
 
 const $props = withDefaults(defineProps<{
-    value: string
-    attachmentStore?: AttachmentStore
-    markdownHandler?: MarkdownHandler
-    attachments?: CardAttachment[]
-    showToolbar?: boolean
-    toolbarConfig?: ToolbarConfig
-    placeholder?: string
-    updateOnBlur?: boolean
-    updateOnCtrlEnter?: boolean
-    exitOnEsc?: boolean
-    clearAfterEdit?: boolean
+    value: string;
+    editorStyle?: Partial<EditorStyle>;
+    attachmentStore?: AttachmentStore;
+    markdownHandler?: MarkdownHandler;
+    attachments?: CardAttachment[];
+    showToolbar?: boolean;
+    toolbarConfig?: Partial<ToolbarConfig>;
+    placeholder?: string;
+    updateOnBlur?: boolean;
+    updateOnCtrlEnter?: boolean;
+    exitOnEsc?: boolean;
+    clearAfterEdit?: boolean;
 }>(),{
-    markdownHandler: ()=>new VoidMarkdownHandler(),
+    markdownHandler: () => new VoidMarkdownHandler(),
     showToolbar: true,
-    toolbarConfig: ()=>ToolbarConfig.withAll(),
+    toolbarConfig: () => ToolbarConfig.withAll(),
     placeholder: "",
     updateOnBlur: false,
     updateOnCtrlEnter: true,
     exitOnEsc: true,
     clearAfterEdit: false,
+    editorStyle: ()=>({}),
 });
+
+const editorStyle = computed(() => fillStyle($props.editorStyle))
 
 const domId = uuid()
 
@@ -188,6 +200,14 @@ const editorContent = ref($props.value)
 //   }
 // }
 
+const cmTheme = {
+    "&.cm-focused .cm-cursor": {
+        borderLeftColor: editorStyle.value.darkMode? "var(--primary-color)" : "##fff",
+    },
+    "&.cm-focused .cm-selectionBackground, ::selection": {
+        backgroundColor: editorStyle.value.darkMode? "rgb(72, 72, 78)" : "#e2e2e2"
+    },
+}
 
 const extensions = [
     EditorView.domEventHandlers({ // NOTICE the keyevents have to have the highest priority! Even higher than minimalSetup
@@ -251,7 +271,8 @@ const extensions = [
             }
         }
     }),
-    EditorView.lineWrapping
+    EditorView.lineWrapping,
+    EditorView.theme(cmTheme),
 ]
 
 function dropText(view: EditorView, event: DragEvent, text: string, _direct: boolean) {
@@ -298,12 +319,10 @@ const handleReady = (payload: { view: EditorView; state: EditorState; container:
 }
 
 .cm6 {
-    background-color: var(--base-color);
     display: block !important;
 }
 
 .preview {
-    background-color: var(--base-color);
     display: block;
     --overflow: hidden; /* hide top and bottom margins from inner content*/
 }
@@ -344,7 +363,6 @@ const handleReady = (payload: { view: EditorView; state: EditorState; container:
 }
 
 .cm-wrapper {
-    background-color: var(--base-color);
     display: block;
 }
 

@@ -11,6 +11,8 @@
 import { computed } from "vue";
 import type { Ref } from "vue";
 
+import { useThemeVars } from "naive-ui";
+import { themeCast } from "@/themes/theme";
 
 import type List from "@/common/data/List";
 import type { List as ListObservable} from "@/common/Observable";
@@ -28,6 +30,8 @@ const $props = defineProps<{
 }>();
 
 const transactions = useTransactions()
+
+const theme = themeCast(useThemeVars())
 
 const list = computed(()=>{$props.list.version; return $props.project.board.findListInclArchives($props.list.id);}) as Ref<List> // if list is null, something else is f'ed up
 
@@ -71,13 +75,12 @@ function actionMenuSelected(
 }
 
 .card {
-  background-color: #fff;
+  background-color: v-bind('theme.cardColor');
   border-radius: 3px;
   box-shadow: 0 8px 6px -6px black;
   padding: 8px;
   margin-left: 10px;
   margin-right: 10px;
-  --border: solid 1px #ff4949;
 }
 
 .card > .n-h3 {
@@ -89,6 +92,6 @@ function actionMenuSelected(
 }
 
 .card:hover {
-  background-color: #f2f2f2;
+  background-color: v-bind('theme.cardColorHover');
 }
 </style>

@@ -3,7 +3,7 @@
         <InitialFocus/>
         <n-space justify="space-between">
             <div>Dark Mode</div>
-            <n-switch class="settings-line" v-model:value="darkMode" />
+            <n-switch class="settings-line" v-model:value="darkMode" :round="false" />
         </n-space>
     </n-space>
 </template>

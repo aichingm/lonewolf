@@ -46,6 +46,9 @@
 
 <script setup lang="ts">
 import { computed, watch, ref } from "vue";
+import { useThemeVars } from 'naive-ui'
+import { themeCast } from '@/themes/theme'
+
 import type { Ref } from "vue";
 
 import CardLabelBadge from "./CardLabelBadge.vue";
@@ -71,6 +74,8 @@ const $props = defineProps<{
 }>();
 
 const $emit = defineEmits(["card-edit"]);
+
+const theme = themeCast(useThemeVars())
 
 const transactions = useTransactions()
 
@@ -243,7 +248,7 @@ function dueDateType (dueDate: number | null): string {
 }
 
 .card {
-  background-color: #fff;
+  background-color: v-bind('theme.cardColor');
   border-radius: 3px;
   box-shadow: 0 8px 6px -6px black;
   padding: 8px;
@@ -261,6 +266,6 @@ function dueDateType (dueDate: number | null): string {
 }
 
 .card:hover {
-  background-color: #f2f2f2;
+  background-color: v-bind('theme.cardColorHover');
 }
 </style>

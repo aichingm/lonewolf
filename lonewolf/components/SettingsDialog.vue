@@ -13,10 +13,12 @@
             <!--<template #header>
                 Settings
             </template>-->
-            <n-layout has-sider
-                      class="reset-left-card-margin"
+            <n-layout 
+                has-sider
+                class="reset-left-card-margin modal-background"
             >
                 <n-layout-sider
+                    class="modal-background"
                     :native-scrollbar="false"
                     bordered
                     collapse-mode="width"
@@ -153,6 +155,10 @@ const breadcrumbs = computed(()=>menuModel.value.split('/').map((w)=>w.charAt(0)
 
 .reset-left-card-margin {
     margin-left: -32px;
+}
+
+.modal-background {
+    background-color: var(--modal-color);
 }
 
 .content {

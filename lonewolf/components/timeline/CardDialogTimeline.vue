@@ -31,6 +31,7 @@
                             :attachmentStore="$props.project.board.attachmentStore()"
                             :markdownHandler="markdownHandler"
                             @addAttachment="(location: string, name: string, type: string)=>handleNewAttachment(entry, location, name, type)"
+                            :editorStyle="editorTheme"
                     />
                 </div>
             </div>
@@ -68,6 +69,7 @@ import { CardCommentChangeTransaction } from "@/common/transactions/CardCommentT
 import type Project from "@/common/Project";
 import type Card from "@/common/data/Card";
 import type CardComment from "@/common/data/CardComment";
+import type Settings from "@/common/settings/AppSettings";
 
 
 const $props = defineProps<{
@@ -75,9 +77,14 @@ const $props = defineProps<{
     project: Project;
     logbook: LogEntry[];
     showDetails: boolean;
+    appSettings: Settings
 }>();
 
 const transactions = useTransactions()
+
+const editorTheme = computed(()=>({
+    darkMode: $props.appSettings.darkMode,
+}))
 
 const logbookEntries = computed(()=>{
     if($props.showDetails){

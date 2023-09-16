@@ -21,59 +21,58 @@ export default class ToolbarConfig {
     saveIcon = "fluent:save-20-regular";
     resetable = false;
 
-    public static withAll(): ToolbarConfig {
-        const t = new ToolbarConfig()
-        t.showCreateBold = true;
-        t.showCreateItalic = true;
-        t.showCreateCode = true;
-        t.showCreateLink = true;
-        t.showCreateImage = true;
-        t.showCreateHeadline1 = true;
-        t.showCreateCodeFence = true;
-        t.showCreateList = true;
-        t.showCreateOrderedList = true;
-        t.showCreateTaskList = true;
-        t.showCreateBlockquote = true;
-        t.showCreateTable = true;
-        t.showAddFile = supportsChooseFile();
-        t.showMarkdownReference = true
-        t.showPreviewToggle = false;
-        t.saveable = true;
-        t.saveIcon = "fluent:save-20-regular";
-        t.resetable = true;
-
-
-        return t
+    public constructor(tc: Partial<ToolbarConfig>) {
+        Object.assign(this, tc);
     }
 
-    public static forNewComment(): ToolbarConfig {
-        const t = new ToolbarConfig()
-        t.showCreateBold = true;
-        t.showCreateItalic = true;
-        t.showCreateCode = true;
-        t.showCreateLink = true;
-        t.showCreateImage = true;
-        t.showCreateHeadline1 = false;
-        t.showCreateCodeFence = true;
-        t.showCreateList = true;
-        t.showCreateOrderedList = true;
-        t.showCreateTaskList = false;
-        t.showCreateBlockquote = true;
-        t.showCreateTable = false;
-        t.showAddFile = supportsChooseFile();
-        t.showMarkdownReference = false
-        t.showPreviewToggle = false;
-        t.saveable = true;
-        t.saveIcon = "fluent:comment-add-20-regular";
-        t.resetable = false;
-
-        return t
+    public static withAll(): Partial<ToolbarConfig> {
+        return {
+            showCreateBold: true,
+            showCreateItalic: true,
+            showCreateCode: true,
+            showCreateLink: true,
+            showCreateImage: true,
+            showCreateHeadline1: true,
+            showCreateCodeFence: true,
+            showCreateList: true,
+            showCreateOrderedList: true,
+            showCreateTaskList: true,
+            showCreateBlockquote: true,
+            showCreateTable: true,
+            showAddFile: supportsChooseFile(),
+            showMarkdownReference: true,
+            showPreviewToggle: false,
+            saveable: true,
+            saveIcon: "fluent:save-20-regular",
+            resetable: true,
+        }
     }
 
-    public static forComment(): ToolbarConfig {
-        const t = ToolbarConfig.forNewComment()
-        t.saveIcon = "fluent:save-20-regular";
-        return t
+    public static forNewComment(): Partial<ToolbarConfig> {
+        return {
+            showCreateBold: true,
+            showCreateItalic: true,
+            showCreateCode: true,
+            showCreateLink: true,
+            showCreateImage: true,
+            showCreateHeadline1: false,
+            showCreateCodeFence: true,
+            showCreateList: true,
+            showCreateOrderedList: true,
+            showCreateTaskList: false,
+            showCreateBlockquote: true,
+            showCreateTable: false,
+            showAddFile: supportsChooseFile(),
+            showMarkdownReference: false,
+            showPreviewToggle: false,
+            saveable: true,
+            saveIcon: "fluent:comment-add-20-regular",
+            resetable: false,
+        }
+    }
+
+    public static forComment(): Partial<ToolbarConfig> {
+        return {saveIcon: "fluent:save-20-regular"}
     }
 
 }

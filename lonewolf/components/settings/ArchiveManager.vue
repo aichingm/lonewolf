@@ -30,6 +30,10 @@
 
 
 <script setup lang="ts">
+
+import { useThemeVars } from "naive-ui";
+import { themeCast } from "@/themes/theme";
+
 import CardVue from "./ArchivedCard.vue";
 import ListVue from "./ArchivedList.vue";
 import InitialFocus from "@/components/InitialFocus.vue";
@@ -42,6 +46,7 @@ const $props = defineProps<{
     board: BoardObservable;
 }>();
 
+const theme = themeCast(useThemeVars())
 
 </script>
 <style scoped>
@@ -52,7 +57,7 @@ const $props = defineProps<{
     display: flex;
     flex-direction: column;
     gap: 10px 10px;
-    background-color: #e9e9ed;
+    background-color: v-bind('theme.listColor');
     margin-top: 10px;
     padding-top: 10px;
     padding-bottom: 10px;

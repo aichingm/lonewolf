@@ -48,6 +48,9 @@
 import { computed, watch, ref } from "vue";
 import type { Ref } from "vue";
 
+import { useThemeVars } from "naive-ui";
+import { themeCast } from "@/themes/theme";
+
 import CardLabelBadge from "@/components/CardLabelBadge.vue";
 import AutoTime from "@/components/AutoTime.vue";
 
@@ -74,6 +77,8 @@ const $props = defineProps<{
 const $emit = defineEmits(["card-edit"]);
 
 const transactions = useTransactions()
+
+const theme = themeCast(useThemeVars())
 
 const card = computed(()=>{$props.card.version; return $props.project.board.findCard($props.card.id);}) as Ref<Card> // if card is null, something else is f'ed up
 const lists = computed(()=>$props.board.lists.map((t: ListObservable) : List|null => $props.project.board.findList(t.id)).filter((l=>l!=null)) as List[])
@@ -168,7 +173,7 @@ function dueDateType (dueDate: number | null): string {
 }
 
 .card {
-  background-color: #fff;
+  background-color: v-bind('theme.cardColor');
   border-radius: 3px;
   box-shadow: 0 8px 6px -6px black;
   padding: 8px;
@@ -184,8 +189,7 @@ function dueDateType (dueDate: number | null): string {
   white-space: normal;
   line-height: 20px;
 }
-
 .card:hover {
-  background-color: #f2f2f2;
+  background-color: v-bind('theme.cardColorHover');
 }
 </style>

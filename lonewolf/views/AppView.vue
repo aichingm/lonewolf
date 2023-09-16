@@ -1,7 +1,8 @@
 <template>
     <div class="full-height">
         <FileMenu v-model:show="fileMenu.state" @action="(action: string)=>fileMenu.actionHandler(action)"/>
-        <div class="app-header-nav" :style="'border-bottom-color:' + borderColor + ';'">
+        <!--<div class="app-header-nav" :style="'border-bottom-color:' + borderColor + ';'">-->
+        <div class="app-header-nav">
             <n-space class="app-header-nav-space" justify="left" allign="center">
                 <n-button id="file-menu-opener" @click="fileMenu.show(true)" :ghost ="true" :block="true" :bordered="false">
                     <template #icon>
@@ -34,7 +35,7 @@
             <n-space class="app-header-nav-space" justify="right">
                 <n-tooltip trigger="hover">
                     <template #trigger>
-                        <n-badge class="badge-reset" :value="cardsStat[0]" color="#d0d0d0" :max="99">
+                        <n-badge class="badge-reset" :value="cardsStat[0]" :color="theme.headerBadgeColor" :max="99">
                         </n-badge>
                     </template>
                     {{ cardsStat[0] }} cards of {{ cardsStat[0] + cardsStat[1] }} are open, {{ cardsStat[1] }} are closed
@@ -72,6 +73,7 @@
                              :project="projectRef"
                              :board="boardObservableRef"
                              :cardObservable="cardDialogCard"
+                             :appSettings="$props.appSettings"
                 />
                 <ListDialog v-if="listDialogList.id != ''"
                             v-model:show="listDialogShow.ref"
@@ -96,7 +98,8 @@
 </template>
 <script setup lang="ts">
 import { ref, watch, shallowRef } from "vue";
-import { useThemeVars, useDialog } from 'naive-ui'
+import { useThemeVars, useDialog} from 'naive-ui'
+import { themeCast } from '@/themes/theme'
 
 import BoardComponent from "@/components/Board.vue";
 import TextInput from "@/components/inputs/TextInput.vue";
@@ -136,8 +139,10 @@ const $props = defineProps<{
 
 const dialog = useDialog()
 
-const theme  = useThemeVars();
-const borderColor = theme.value.borderColor;
+const theme = themeCast(useThemeVars());
+console.log("AV:", theme)
+//console.log(useTheme())
+
 
 // Storage
 
@@ -317,6 +322,7 @@ function actionHandler(action: string) {
 
 </script>
 <style scoped>
+
 .full-height {
     height: 100%;
 }
@@ -334,9 +340,11 @@ function actionHandler(action: string) {
 }
 
 .app-header-nav{
+    --side-padding: 32px;
     height: 47px;
-    border-bottom: solid 1px;
     display: flex;
+    border-bottom: solid 1px v-bind('theme.borderColor');
+    background-color: v-bind('theme.cardColor');
 }
 
 .app-header-nav-space{
@@ -347,6 +355,7 @@ function actionHandler(action: string) {
 
 .app-board{
     height: calc(100% - 48px);
+    background-color: v.bind('theme.bodyColor')
 }
 
 .wrapper {
