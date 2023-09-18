@@ -3,7 +3,7 @@ Version=1.0
 Type=Application
 
 Name=Lonewolf
-Comment=A personal kanban board application which lets you work on you own projects with a great desktop experience.
+Comment=Organize and track your tasks with ease and flexibility. Lonewolf is a productivity application based on the principles of Kanban. Write rich text in markdown format, labels your tasks with tags, add check lists, set due dates, attach files and more.
 Icon=site.someones.Lonewolf.png
 TryExec=lonewolf
 Exec=lonewolf open %f

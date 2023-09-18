@@ -30,7 +30,7 @@
                             </n-p>
                         </div>
                     </div>
-                    Created and distrebuted under the terms of the <n-a href="https://spdx.org/licenses/GPL-3.0-or-later.html" target="_blank">GNU General Public License v3.0</n-a>
+                    Created and distributed under the terms of the <n-a href="https://spdx.org/licenses/GPL-3.0-or-later.html" target="_blank">GNU General Public License v3.0</n-a>
                 </n-tab-pane>
                 <n-tab-pane name="Contributors" tab="Contributors">
                     <n-scrollbar class="contributors-container">

@@ -1,7 +1,7 @@
 [package]
 name = "lonewolf"
 version = "0.0.0"
-description = "A personal productivity tool"
+description = "Organize and track your tasks with ease and flexibility. Lonewolf is a productivity application based on the principles of Kanban. Write rich text in markdown format, labels your tasks with tags, add check lists, set due dates, attach files and more."
 authors = ["Mario Aichinger <aichingm@gmail.com>"]
 license = ""
 repository = ""
