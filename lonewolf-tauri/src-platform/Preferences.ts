@@ -1,7 +1,7 @@
 import Preferences from '@/common/settings/Preferences'
 import type { Storage as ProjectStorage } from "@/common/settings/Preferences";
 
-import { Store } from "tauri-plugin-store-api";
+import { Store } from "./tauri-plugin-store";
 
 export default class Storage implements ProjectStorage {
     private store = new Store(".preferences.json");

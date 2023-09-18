@@ -6,8 +6,9 @@ RUN pacman-key --init
 RUN pacman -Sy archlinux-keyring --noconfirm && \
     pacman -Syu --noconfirm \
                             bash \
-                            curl \
+                            git \
                             python \
+                            python-pipx \
                             python-aiohttp \
                             python-toml \
                             flatpak \
@@ -17,10 +18,15 @@ RUN pacman -Sy archlinux-keyring --noconfirm && \
 
 RUN flatpak install -y org.freedesktop.Platform//22.08 org.freedesktop.Sdk//22.08 org.gnome.Platform//42 org.gnome.Sdk//42 runtime/org.freedesktop.Sdk.Extension.rust-nightly/x86_64/21.08 runtime/org.freedesktop.Sdk.Extension.node16/x86_64/21.08
 
-RUN curl -o /usr/bin/flatpak-npm-generator.py https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/npm/flatpak-npm-generator.py
-RUN curl -o /usr/bin/flatpak-cargo-generator.py https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/cargo/flatpak-cargo-generator.py
 
-RUN chmod +x /usr/bin/flatpak-npm-generator.py
+RUN git clone https://github.com/flatpak/flatpak-builder-tools.git /opt/flatpak-builder-tools
+
+RUN echo 'export PATH=$PATH:/root/.local/bin' >> /root/.bashrc
+
+RUN cd /opt/flatpak-builder-tools/node; pipx install .
+
+RUN cp /opt/flatpak-builder-tools/cargo/flatpak-cargo-generator.py /usr/bin/flatpak-cargo-generator.py
+
 RUN chmod +x /usr/bin/flatpak-cargo-generator.py
 
 WORKDIR /

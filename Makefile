@@ -1,5 +1,4 @@
-.PHONY: build build-tauri-flatpak-sources build/web cce check check-image-dev check-image-flatpak clean clean-build clean-build-flatpak clean-build-web clean-images clean-tauri clean-tauri-fast clean-web default dev-tauri-X dev-web icons-tauri icons-web image-dev image-flatpak lint lint-tauri lint-web list-file-targets list-phony-targets npm-install npm-install-tauri npm-install-web shell shell-tauri shell-web test test-tauri-unit test-web-unit type-check type-check-tauri type-check-web
-
+.PHONY: build build-flatpak build-flatpak build-tauri-flatpak-sources build-web cce check check-image-dev check-image-flatpak clean clean-build clean-build-flatpak clean-build-tauri clean-build-web clean-container-images clean-tauri clean-web default dev-tauri-X dev-web icons-tauri icons-web image-dev image-flatpak lint lint-tauri lint-web list-file-targets list-phony-targets npm-install npm-install-tauri npm-install-web shell shell-tauri shell-web test test-tauri-unit test-web-unit type-check type-check-tauri type-check-web
 default: dev-web
 
 CONTAINER_ENGINE=podman
@@ -8,10 +7,29 @@ IMAGE_FLATPAK=lonewolf:flatpak
 
 build: build/web build/lonewolf.flatpak
 
-build-tauri-flatpak-sources: build/flatpak/npm-sources.json build/flatpak/cargo-sources.json
+build-tauri-flatpak-sources: build/flatpak/node-sources.json build/flatpak/cargo-sources.json
+
+build-flatpak: clean-tauri build-tauri-flatpak-sources icons-tauri check-image-flatpak
+	mkdir -p .flatpak
+	$(CONTAINER_ENGINE) run --rm --privileged -it -v .:/app-dir -w /app-dir/.flatpak $(IMAGE_FLATPAK) bash -l -c "flatpak-builder --ccache --force-clean --repo=repo application /app-dir/lonewolf-tauri/site.someones.Lonewolf.yml;"
+	$(CONTAINER_ENGINE) run --rm --privileged -it -v .:/app-dir -w /app-dir/.flatpak $(IMAGE_FLATPAK) bash -l -c "flatpak build-bundle repo lonewolf.flatpak site.someones.Lonewolf --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo;"
+	cp .flatpak/lonewolf.flatpak build/lonewolf.flatpak
+
+build-tauri: clean-build-tauri icons-tauri check-image-dev
+	mkdir -p build
+	rm -rf build/lonewolf-dev.bin
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -l -c "npm run tauri build -- -b deb"
+	cp lonewolf-tauri/src-tauri/target/release/bundle/deb/lonewolf_*/data/usr/bin/lonewolf build/lonewolf-dev.bin
+
+build-web: check-image-dev
+	rm -rf build/web
+	mkdir -p build/web
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c "npm run build"
+	cp -r lonewolf-web/dist/* build/web
+	rm -rf lonewolf-web/dist
 
 cce:
-	@if \!  hash $(CONTAINER_ENGINE) 1>/dev/null 2>&1; then echo "Container engine ($(CONTAINER_ENGINE)) not found\!"; exit 1;fi
+	@if \! hash $(CONTAINER_ENGINE) 1>/dev/null 2>&1; then echo "Container engine ($(CONTAINER_ENGINE)) not found\!"; exit 1;fi
 
 check: lint type-check
 
@@ -21,32 +39,30 @@ check-image-dev: cce
 check-image-flatpak: cce
 	@if [ $$(podman images -q $(IMAGE_FLATPAK) | wc -l) == "0" ]; then echo "Container image not found. Try running 'make image-flatpak'.";exit 1; fi
 
-clean: clean-tauri clean-web
+clean: clean-tauri clean-web clean-build
 
-clean-build: clean-build-web clean-build-flatpak
+clean-build: clean-build-web clean-build-flatpak clean-build-tauri
 	rm -rf build
 
 clean-build-flatpak:
 	rm -rf .flatpak build/flatpak build/lonewolf.flatpak
 
-clean-web:
-	rm -rf lonewolf-web/public/favicon.ico
-	rm -rf lonewolf-web/dist
+clean-build-tauri:
+	rm -rf src-tauri/icons/* lonewolf-tauri/dist lonewolf-tauri/src-tauri/target/release/build/lonewolf* build/lonewolf-dev.bin
 
-clean-images: cce
-	$(CONTAINER_ENGINE) image rm $(IMAGE_DEV)  || true
+clean-build-web:
+	rm -rf build/web lonewolf-web/dist lonewolf-web/public/favicon.ico
+
+clean-container-images: cce
+	$(CONTAINER_ENGINE) image rm $(IMAGE_DEV) || true
 	$(CONTAINER_ENGINE) image rm $(IMAGE_FLATPAK) || true
 
 clean-tauri:
-	rm -rf src-tauri/icons/*
-	rm -rf lonewolf-tauri/dist
-	rm -rf lonewolf-tauri/src-tauri/target
+	rm -rf lonewolf-tauri/src-tauri/target lonewolf-tauri/node_modules
 
-clean-tauri-fast:
-	rm -rf lonewolf-tauri/src-tauri/target/debug/build/lonewolf-* lonewolf-tauri/src-tauri/target/release/bundle
+clean-web:
+	rm -rf lonewolf-web/node_modules
 
-clean-build-web:
-	rm -rf build/web
 
 dev-tauri-X: icons-tauri
 	@make -s check-image-dev
@@ -139,42 +155,32 @@ build/Lonewolf.png: Lonewolf.lwp
 	@make -s check-image-dev
 	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c 'sh -c "export VITE_IGNORE_PLATFORM_CAN_SUPPORT=1; npm run dev -- --host" & SERVER=$$!; sleep 1; export NODE_PATH=$$(npm root --quiet -g); node scripts/print.js /app/Lonewolf.lwp /app/build/Lonewolf.png; kill -9 $$SERVER'
 
-build/lonewolf-dev.bin: clean-tauri icons-tauri
-	@make -s check-image-dev
-	mkdir -p build
-	rm -rf build/lonewolf-dev.bin
-	rm -rf lonewolf-tauri/src-tauri/target/release/build/lonewolf*
-	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -l -c "npm run tauri build -- -b deb"
-	cp lonewolf-tauri/src-tauri/target/release/bundle/deb/lonewolf_*/data/usr/bin/lonewolf build/lonewolf-dev.bin
-
 build/flatpak/cargo-sources.json: lonewolf-tauri/src-tauri/Cargo.lock
 	@make -s check-image-dev
 	mkdir -p build/flatpak
 	rm -rf build/flatpak/cargo-sources.json
 	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app $(IMAGE_FLATPAK) bash -l -c "flatpak-cargo-generator.py lonewolf-tauri/src-tauri/Cargo.lock -o build/flatpak/cargo-sources.json"
 
-build/flatpak/npm-sources.json: lonewolf-tauri/package-lock.json
+build/flatpak/package-lock_v2.json: lonewolf-tauri/package-lock.json
 	@make -s check-image-dev
 	mkdir -p build/flatpak
-	rm -rf build/flatpak/npm-sources.json
-	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app $(IMAGE_FLATPAK) bash -l -c "flatpak-npm-generator.py lonewolf-tauri/package-lock.json -o build/flatpak/npm-sources.json"
+	rm -rf build/flatpak/package-lock.json
 
-build/lonewolf.flatpak: clean-tauri build-tauri-flatpak-sources icons-tauri
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -l -c "\
+	cp package-lock.json package-lock_v3.json; \
+	npm i  --lockfile-version 2 --package-lock-only; \
+	mv package-lock.json package-lock_v2.json; \
+	mv package-lock_v3.json package-lock.json; \
+	mv package-lock_v2.json ../build/flatpak/package-lock_v2.json;"
+
+build/flatpak/node-sources.json: build/flatpak/package-lock_v2.json
 	@make -s check-image-flatpak
-	mkdir -p .flatpak
-	$(CONTAINER_ENGINE) run --rm --privileged -it -v .:/app-dir -w /app-dir/.flatpak $(IMAGE_FLATPAK) bash -l -c "flatpak-builder --ccache --force-clean --repo=repo application /app-dir/lonewolf-tauri/site.someones.Lonewolf.yml;"
-	$(CONTAINER_ENGINE) run --rm --privileged -it -v .:/app-dir -w /app-dir/.flatpak $(IMAGE_FLATPAK) bash -l -c "flatpak build-bundle repo lonewolf.flatpak site.someones.Lonewolf --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo;"
-	cp .flatpak/lonewolf.flatpak build/lonewolf.flatpak
-	@echo install with 'flatpak install --user build/lonewolf.flatpak'
-	@echo run with 'flatpak run site.someones.Lonewolf'
+	mkdir -p build/flatpak
+	rm -rf build/flatpak/node-sources.json
 
-build/web:
-	@make -s check-image-dev
-	rm -rf build/web
-	mkdir -p build/web
-	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c "npm run build"
-	cp -r lonewolf-web/dist/* build/web
-	rm -rf lonewolf-web/dist
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app $(IMAGE_FLATPAK) bash -l -c "\
+	. ~/.bashrc; \
+	flatpak-node-generator -o build/flatpak/node-sources.json npm build/flatpak/package-lock_v2.json;"
 
 
 ## WEB

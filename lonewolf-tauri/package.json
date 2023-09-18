@@ -32,7 +32,6 @@
     "import": "^0.0.6",
     "marked": "^4.1.0",
     "pinia": "^2.0.17",
-    "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store#v1",
     "uuid": "^8.3.2",
     "vue": "^3.2.45",
     "vue-codemirror": "^6.1.1",

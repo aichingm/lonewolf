@@ -1,7 +1,7 @@
 import Settings from '@/common/settings/AppSettings'
 import type { Storage as ApplicationStorage } from "@/common/settings/AppSettings";
 
-import { Store } from "tauri-plugin-store-api";
+import { Store } from "./tauri-plugin-store";
 
 
 export default class Storage implements ApplicationStorage{
