@@ -1,6 +1,20 @@
 # Lonewolf
 
-Organize and track your tasks with ease and flexibility. Lonewolf is a productivity application based on the principles of Kanban. Write rich text in markdown format, labels your tasks with tags, add check lists, set due dates, attach files and more.
+Organize and track your tasks with ease and flexibility. Lonewolf is a productivity application based on the principles of Kanban.
+
+## Features
+
+* Manages lists
+* Create cards
+* Organize cards with lables
+* Set due dates for yourself
+* Add attchments
+* Write descripotions of your tasks in markdown
+* Split up larger tasks with check lists
+* Keep your thoughts by adding comments for your future self
+
+![Screenshot main view in dark mode](assets/showcase_dark_main.png)
+![Screenshot card dialog in dark mode](assets/showcase_dark_card.png)
 
 
 ## Development Setup
