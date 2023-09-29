@@ -4,7 +4,7 @@ Type=Application
 
 Name=Lonewolf
 Comment=Organize and track your tasks with ease and flexibility. Lonewolf is a productivity application based on the principles of Kanban. Write rich text in markdown format, labels your tasks with tags, add check lists, set due dates, attach files and more.
-Icon=site.someones.Lonewolf.png
+Icon=site.someones.Lonewolf
 TryExec=lonewolf
 Exec=lonewolf open %f
 Terminal=false
