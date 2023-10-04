@@ -21,7 +21,7 @@ build-tauri: clean-build-tauri icons-tauri check-image-dev
 	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV) bash -l -c "npm run tauri build -- -b deb"
 	cp lonewolf-tauri/src-tauri/target/release/bundle/deb/lonewolf_*/data/usr/bin/lonewolf build/lonewolf-dev.bin
 
-build-web: check-image-dev
+build-web: check-image-dev icons-tauri
 	rm -rf build/web
 	mkdir -p build/web
 	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c "npm run build"
@@ -80,9 +80,12 @@ dev-web: check-image-dev icons-web
 	@make -s check-image-dev
 	$(CONTAINER_ENGINE) run --rm -it -p 5173:5173 -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) bash -c 'npm run dev -- --host'
 
-icons-tauri: lonewolf-tauri/src-tauri/icons/512x512-lonewolf.png lonewolf-tauri/public/lonewolf.png lonewolf-tauri/public/icon.png
+lonewolf/assets/icons.ts:
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/ -w /app/lonewolf/assets $(IMAGE_DEV) bash icons.sh
 
-icons-web: lonewolf-web/public/favicon.ico lonewolf-web/public/lonewolf.png lonewolf-web/public/icon.png
+icons-tauri: lonewolf/assets/icons.ts lonewolf-tauri/src-tauri/icons/512x512-lonewolf.png lonewolf-tauri/public/lonewolf.png lonewolf-tauri/public/icon.png
+
+icons-web: lonewolf/assets/icons.ts lonewolf-web/public/favicon.ico lonewolf-web/public/lonewolf.png lonewolf-web/public/icon.png
 
 image-dev: cce
 	$(CONTAINER_ENGINE) build . --no-cache -f dev.Dockerfile -t $(IMAGE_DEV)

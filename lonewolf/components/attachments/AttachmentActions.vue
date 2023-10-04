@@ -22,11 +22,11 @@
 import ConfirmButton from "@/components/buttons/ConfirmButton.vue";
 import type CardAttachment from "@/common/data/CardAttachment";
 import type { Attachment } from "@/common/attachments/Store";
-import type Project from "@/common/Project"; 
+import type Project from "@/common/Project";
 
 import { h, ref, computed } from 'vue'
 import { NAvatar, NText, NIcon } from 'naive-ui'
-import { Icon } from "@iconify/vue";
+import Icon from "@/components/icons/Icon.vue";
 
 import {presentAttachmentActionName, presentAttachment} from '@/platform/Functions'
 

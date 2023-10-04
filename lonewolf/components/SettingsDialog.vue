@@ -67,7 +67,7 @@ import type Project from "@/common/Project";
 import type Preferences from "@/common/settings/Preferences"
 import type AppSettings from "@/common/settings/AppSettings"
 
-import { Icon } from "@iconify/vue";
+import Icon from "@/components/icons/Icon.vue";
 import { NIcon } from 'naive-ui'
 
 const $props = defineProps<{

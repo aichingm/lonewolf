@@ -9,3 +9,9 @@ html, body {
     width: 100%;
 }
 
+/* prevent webkit bug (selecting svg and dragging the selection like crazy triggers "(MiniBrowser:56705): WARNING **: 00:27:52.442: WebProcess CRASHED") */
+svg, svg * {
+    user-select: none;
+    -webkit-user-select: none;
+}
+

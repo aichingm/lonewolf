@@ -9,7 +9,7 @@ import "vfonts/FiraCode.css";
 
 import "github-markdown-css/github-markdown.css"
 
-import { Icon } from "@iconify/vue";
+import Icon from "./components/icons/Icon.vue";
 
 import Codemirror from 'vue-codemirror'
 

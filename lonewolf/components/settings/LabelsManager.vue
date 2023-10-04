@@ -66,7 +66,7 @@ import InitialFocus from "@/components/InitialFocus.vue";
 import { labelStyle, tagColor } from "@/utils/labels";
 import { nameToHex } from "@/utils/colors";
 import type { Board as BoardObservable } from "@/common/Observable";
-import { Icon } from "@iconify/vue";
+import Icon from "@/components/icons/Icon.vue";
 import { NIcon } from 'naive-ui'
 
 const $props = defineProps<{

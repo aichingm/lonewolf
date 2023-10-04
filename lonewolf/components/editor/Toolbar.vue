@@ -146,7 +146,7 @@ import { h, ref, watch } from 'vue'
 import type { CSSProperties, Ref} from 'vue'
 import { NAvatar, NText, NIcon, useThemeVars } from 'naive-ui'
 import type { DropdownRenderOption } from 'naive-ui'
-import { Icon } from "@iconify/vue";
+import Icon from "@/components/icons/Icon.vue";
 
 import type { EditorView } from "codemirror"
 import { EditorSelection } from '@codemirror/state'

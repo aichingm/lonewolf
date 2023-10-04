@@ -19,7 +19,7 @@
             <n-tag v-if="card.comments.filter(c=>!c.deleted).length > 0" size="small" round :bordered="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
-                        <icon icon="fluent:comment-48-regular" />
+                        <icon icon="fluent:comment-20-regular" />
                     </n-icon>
                 </template>
                 {{ card.comments.filter(c=>!c.deleted).length }}
@@ -27,7 +27,7 @@
             <n-tag v-if="card.attachments.filter(a=>!a.deleted).length > 0" size="small" round :bordered="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
-                        <icon icon="fluent:attach-24-regular" />
+                        <icon icon="fluent:attach-20-regular" />
                     </n-icon>
                 </template>
                 {{ card.attachments.filter(a=>!a.deleted).length }}
