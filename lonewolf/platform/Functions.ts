@@ -8,7 +8,7 @@ import type { Store as AttachmentStorage } from '@/common/attachments/Store'
 import type Board from '@/common/data/Board'
 import { supportsChooseFile as platform_supportsChooseFile } from '@platform/Support'
 
-import AppSettingsStorage from "@platform/AppSettings";
+import AppSettingsStorage, { defaultKeymap as applicationSettingsKeymap } from "@platform/AppSettings";
 import PreferencesStorage from "@platform/Preferences";
 
 
@@ -21,7 +21,6 @@ export function currrentPlatform(): string{
     return import.meta.env.VITE_PLATFORM
 }
 
-
 export function projectStorage(): ProjectStorage {
     return new ProjectStorage()
 }
@@ -32,6 +31,10 @@ export function applicationSettingsStorage() {
 
 export function preferencesStorage() {
     return new PreferencesStorage()
+}
+
+export function defaultKeymap(){
+    return applicationSettingsKeymap
 }
 
 export function platformCanSupportBoard(b: Board): boolean {

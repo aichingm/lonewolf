@@ -45,7 +45,7 @@ const options = [
     },
     {
         label: 'Save As...',
-        key: 'saveas',
+        key: 'save-as',
     },
 ]
 

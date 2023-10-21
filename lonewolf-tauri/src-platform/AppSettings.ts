@@ -1,4 +1,5 @@
 import Settings from '@/common/settings/AppSettings'
+import type { Keymap } from '@/common/settings/AppSettings'
 import type { Storage as ApplicationStorage } from "@/common/settings/AppSettings";
 
 import { Store } from "./tauri-plugin-store";
@@ -30,3 +31,9 @@ export default class Storage implements ApplicationStorage{
     }
 }
 
+export const defaultKeymap: Keymap = {
+    "save": { name:"save", label: "Save", keys: "Ctrl+s"},
+    "save-as": { name:"save-as", label: "Save as", keys: "Shift+Ctrl+s"},
+    "new": { name:"new", label: "New", keys: "Ctrl+n"},
+    "open": { name:"open", label: "Open", keys: "Ctrl+o"},
+}

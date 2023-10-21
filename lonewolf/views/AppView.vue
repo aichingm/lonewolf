@@ -1,5 +1,6 @@
 <template>
     <div class="full-height">
+        <KeymapEmitter :appSettings="$props.appSettings" :target="$window" :actions="['save', 'save-as', 'new', 'open']" @action="actionHandler"/>
         <FileMenu v-model:show="fileMenu.state" @action="(action: string)=>fileMenu.actionHandler(action)"/>
         <!--<div class="app-header-nav" :style="'border-bottom-color:' + borderColor + ';'">-->
         <div class="app-header-nav">
@@ -131,6 +132,8 @@ import PlatformComponent from "@/platform/PlatformComponent.vue";
 
 import type ApplicationSettings from '@/common/settings/AppSettings'
 
+import KeymapEmitter from '@/components/KeymapEmitter.vue'
+
 import toEmoji from "emoji-name-map";
 
 const $props = defineProps<{
@@ -140,8 +143,8 @@ const $props = defineProps<{
 const dialog = useDialog()
 
 const theme = themeCast(useThemeVars());
-console.log("AV:", theme)
-//console.log(useTheme())
+
+const $window = window
 
 
 // Storage
@@ -289,7 +292,7 @@ function actionHandler(action: string) {
             extensionManager.triggerOnSave(project)
         })
         break;
-    case 'saveas':
+    case 'save-as':
         boardStorage().saveAs(project.board).then((uuid: string)=>{
             boardTransactionHandler(new BoardChangeTransaction("id", uuid))
             extensionManager.triggerOnSaveAs(project)

@@ -46,7 +46,8 @@
                         <BoardManager v-if="menuModel == 'project/board'" :project="$props.project" :board="$props.board" />
                         <ArchiveManager v-if="menuModel == 'project/archive'" :project="$props.project" :board="$props.board" />
                         <PreferencesAppearance v-if="menuModel == 'preferences/appearance'" :preferences="$props.preferences" />
-                        <SettingsManager v-if="menuModel == 'application/appearance'" :appSettings="$props.appSettings" />
+                        <SettingsAppearance v-if="menuModel == 'application/appearance'" :appSettings="$props.appSettings" />
+                        <SettingsKeymap v-if="menuModel == 'application/keyboard'" :appSettings="$props.appSettings" />
                     </n-scrollbar>
                 </div>
             </n-layout>
@@ -61,7 +62,8 @@ import LabelsManager from "@/components/settings/LabelsManager.vue";
 import BoardManager from "@/components/settings/BoardManager.vue";
 import PreferencesAppearance from "@/components/settings/PreferencesAppearance.vue";
 import ArchiveManager from "@/components/settings/ArchiveManager.vue";
-import SettingsManager from "@/components/settings/SettingsManager.vue";
+import SettingsAppearance from "@/components/settings/SettingsAppearance.vue";
+import SettingsKeymap from "@/components/settings/SettingsKeymap.vue";
 import type { Board as BoardObservable} from "@/common/Observable";
 import type Project from "@/common/Project";
 import type Preferences from "@/common/settings/Preferences"
@@ -126,6 +128,11 @@ const menuOptions = [
                 label: 'Appearance',
                 key: 'application/appearance',
                 icon: renderIcon("fluent:view-desktop-20-regular")
+            },
+            {
+                label: 'Keyboard',
+                key: 'application/keyboard',
+                icon: renderIcon("fluent:keyboard-20-regular")
             },
         ]
     },
