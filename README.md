@@ -6,85 +6,65 @@ Organize and track your tasks with ease and flexibility. Lonewolf is a productiv
 
 * Manages lists
 * Create cards
-* Organize cards with lables
+* Organize cards with labels
 * Set due dates for yourself
-* Add attchments
-* Write descripotions of your tasks in markdown
+* Add attachments
+* Write descriptions of your tasks in markdown
 * Split up larger tasks with check lists
 * Keep your thoughts by adding comments for your future self
 
 ![Screenshot main view in dark mode](assets/showcase_dark_main.png)
 ![Screenshot card dialog in dark mode](assets/showcase_dark_card.png)
 
+## Install
 
-## Development Setup
+### Linux
 
-It seams you are interested in the development of Lonewolf, GREAT! Lonewolf is written in typescript, build with vue 3 and uses naive-ui as ui toolkit.  
-The desktop version of Lonewolf is build on top of Tauri (a more light weight alternative to electron written in rust).
+[Lonewolf is distributed as a flatpak via flathub](https://flathub.org/apps/site.someones.Lonewolf). You can use [Discover](https://apps.kde.org/de/discover/), [GNOME Software](https://apps.gnome.org/Software/) or the command line untility `flatpak`.
 
-Lonewolf uses make as build tool, so everything you might want to run is implemented as a make target.  
-To run most of the make targets only a podman compatible (eg. docker) container engine is needed.
+### Windows
 
-To build the development container run
+There is currently no build of Lonewolf distributed for Windows. If you want to run Lonewolf on Windows it must be built from source (see below for informations on how to build Lonewolf). 
 
-```
-make image-dev
-```
+### MacOS
 
-This image is needed by most make targets, so make sure it is build before running running any of them.
+There is currently no build of Lonewolf distributed for . If you want to run Lonewolf on Windows it must be built from source (see below for informations on how to build Lonewolf).
 
+## Development
 
-## Live Development
+It seams you are interested in the development of Lonewolf, GREAT! Lonewolf is written in typescript, build with vue 3 and uses naive-ui as ui toolkit.
 
-Lonewolf can be run in to versions a web and a Tauri version.
+Lonewolf is split in to three parts:
 
-The web version can be accessed from a web browser and supports hot reloading
+* lonewolf: The core library where all the components and logic live.
+* lonewolf-web: The project which builds lonewolf as a web application. It also contains web specific components and logic. This project can be used to speed up development since it is easier to run and build.
+* lonewolf-tauri: The project which builds lonewolf as a desktop app, using the power of [Tauri](https://tauri.app/). This project contains additional components and logic specific to the desktop version od tauri. The flatpak hosted on flathub is build of this project.
+
+Lonewolf uses `make` as its main build tool, so everything you might want to run is implemented as a make target in the corresponding project directory. The projects root directory also contains a `Makefile` which wraps some of the project specific make targets within a podman container. If you do not want to run the commands in a container just run them with `make` from the projects directory.
+
+### Live Development
+
+To jump directly into developing you can run the web with a hot reloading server by executing:
 ```
 make dev-web
 ```
 
-The Tauri development version needs to be run on linux with a running Xorg server. Since this runs Lonewolf in a container not everything works as it would when running locally (eg. opening attachments calls xdg-open in the background but this is not available within the container)
+
+The same thing exists for the desktop version:
+
+The Tauri development version needs to be run on linux with a running Xorg server. Since this runs Lonewolf in a container not everything works as it would when running locally (eg. opening attachments calls xdg-open in the background but this is not available within the container). If this does not work with your environment you can allways run the `dev` target within the projects root directory directly.
 
 **Also make sure that `xhost` is installed!**
 ```
 make dev-tauri-X
 ```
 
-## Validation
+### Validation
+To make it easier to make sure that your changes pass all checks in both projects a target exists `make check test` to run linting, type checking and unit testing.
 
-To validate the functionality of your changes you can and should run
+### Building
 
-```
-make check test
-```
-
-to run linting, type checks and unit tests.
-
-There are also targets to only run validation for the web or the Tauri version:
-
-```
-make lint-web type-check-web test-web-unit
-```
-
-```
-make lint-tauri type-check-tauri test-tauri-unit
-```
-
-## Building
-
-How to build different versions of Lonewolf:
-
-```
-make build/web
-make build/lonewolf-dev.bin
-make build/lonewolf.flatpak
-```
-
-To build the flatpak bundle the `lonewolf:flatpak` image is needed. This can be built with:
-
-```
-make image-flatpak
-```
+Projects should be build from their specific build targets. If you want to build from within a container, there are two targets `shell-web` and `shell-tauri` to jump in to a containerized shell from which `make build` and all other targets can be executed.
 
 ## Other
 
@@ -95,20 +75,9 @@ There are a few other targets to help you developing
 To generate a png of the current state of the Lonewolf project run:
 
 ```
-make build/Lonewolf.png
+make Lonewolf.png
 ```
 
-### Installing node modules
-
-```
-make npm-install[-(web|tauri)]
-```
-
-### Running a shell in the container
-
-```
-make shell[-(web|tauri)]
-```
 
 ## License
 

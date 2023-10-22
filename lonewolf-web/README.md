@@ -1,59 +1,57 @@
-# lonewolf
+# Lonewolf Web
 
-This template should help get you started developing with Vue 3 in Vite.
+The goal of this project is to provide a web version of Lonewolf (can also be used enable rapid development).
 
-## Recommended IDE Setup
+## Stack
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
-
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
-
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+* Vue 3
+* Vite
+* Typescript
 
 ## Project Setup
 
 ```sh
-npm install
+make npm-install
 ```
 
-### Compile and Hot-Reload for Development
+### Run Hot-Reloading Server for Development
+
+*Before the first run make sure to create the icons (see [Icons](#icons)*
 
 ```sh
-npm run dev
+make dev
 ```
 
-### Type-Check, Compile and Minify for Production
-
+### Lint
 ```sh
-npm run build
+make line
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+### Type-Check
 
 ```sh
-npm run test:unit
+make type-check
 ```
 
-### Run End-to-End Tests with [Cypress](https://www.cypress.io/)
+### Run Unit Tests
 
 ```sh
-npm run build
-npm run test:e2e # or `npm run test:e2e:ci` for headless testing
+make test-unit
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+### Build
 
 ```sh
-npm run lint
+make build
+```
+
+### Clean
+
+```sh
+make clean
+```
+
+### Icons
+```sh
+make icons
 ```
