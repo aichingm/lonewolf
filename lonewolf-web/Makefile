@@ -33,10 +33,10 @@ type-check:
 # Files
 
 public/favicon.ico: src/assets/icon.svg
-	rsvg-convert -b "#ffffff00" src/assets/icon.svg --width=64 --height=64 --output public/favicon.png
+	rsvg-convert -b "#ffffff00" src/assets/icon.svg --width 64 --height 64 --output public/favicon.png
 
 public/lonewolf.png: src/assets/icon.svg
-	rsvg-convert -b "#ffffff00" src/assets/lonewolf.svg --width=512 --height=512 --output public/lonewolf.png
+	rsvg-convert -b "#ffffff00" src/assets/lonewolf.svg --width 512 --height 512 --output public/lonewolf.png
 
 public/icon.png: src/assets/icon.svg
-	rsvg-convert -b "#ffffff00" src/assets/icon.svg --width=128 --height=128 --output public/icon.png
+	rsvg-convert -b "#ffffff00" src/assets/icon.svg --width 128 --height 128 --output public/icon.png
