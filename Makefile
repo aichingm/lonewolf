@@ -108,5 +108,5 @@ flatpak/node-sources.json: flatpak/package-lock_v2.json
 	flatpak-node-generator -o flatpak/node-sources.json npm flatpak/package-lock_v2.json;"
 
 flatpak/icons.ts:
-	(cd lonewolf; make icons)
+	$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf $(IMAGE_DEV) bash -c "make icons"
 	cp lonewolf/assets/icons.ts flatpak/icons.ts
