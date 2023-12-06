@@ -22,6 +22,7 @@ lint:
 
 npm-install:
 	npm install
+	npm install --no-save sharp
 
 tauri-icons: src-tauri/icons/512x512-lonewolf.png
 	npm run tauri icon -- src-tauri/icons/512x512-lonewolf.png -o src-tauri/icons
