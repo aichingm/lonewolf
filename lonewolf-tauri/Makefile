@@ -38,11 +38,11 @@ type-check-tauri:
 
 src-tauri/icons/512x512-lonewolf.png: src/assets/icon.svg
 	mkdir -p src-tauri/icons
-	rsvg-convert -b "#ffffff00" src/assets/icon.svg --width 512 --height 512 --output src-tauri/icons/512x512-lonewolf.png
+	node bin/svg2png.mjs -b "#ffffff00" src/assets/icon.svg --width 512 --height 512 --output src-tauri/icons/512x512-lonewolf.png
 
 public/lonewolf.png: src/assets/icon.svg
-	rsvg-convert -b "#ffffff00" src/assets/lonewolf.svg --width 512 --height 512 --output public/lonewolf.png
+	node bin/svg2png.mjs -b "#ffffff00" src/assets/lonewolf.svg --width 512 --height 512 --output public/lonewolf.png
 
 public/icon.png: src/assets/icon.svg
-	rsvg-convert -b "#ffffff00" src/assets/icon.svg --width 128 --height 128 --output public/icon.png
+	node bin/svg2png.mjs -b "#ffffff00" src/assets/icon.svg --width 128 --height 128 --output public/icon.png
 
