@@ -1,0 +1,64 @@
+name: "publish"
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+'
+
+jobs:
+  publish-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ windows-latest ]
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: install frontend dependencies
+        working-directory: ./lonewolf-tauri
+        run: make -f Makefile.win npm-install
+
+      - name: compile assets
+        working-directory: ./lonewolf-tauri
+        run: make -f Makefile.win icons
+
+      - name: check and test
+        working-directory: ./lonewolf-tauri
+        run: make -f Makefile.win check test-unit
+
+      - id: parse-version
+        name: parse version
+        shell: bash
+        run: |
+          version=$(echo ${{github.ref}} | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: inject version
+        shell: bash
+        working-directory: ./lonewolf-tauri/src-tauri
+        run: |
+          jq '.package.version = "${{ steps.parse-version.outputs.version }}"' tauri.conf.json > tauri.conf.json.new
+          mv tauri.conf.json.new tauri.conf.json
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: ./lonewolf-tauri/src-tauri
+          tagName: ${{ github.ref }}
+          releaseName: Lonewolf ${{ github.ref }}
+          releaseBody: "Download available installers from below."
+          prerelease: ${{contains(github.ref, 'rc')}}
