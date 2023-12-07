@@ -73,4 +73,4 @@ jobs:
           projectPath: ./lonewolf-tauri
           tagName: lonewolf-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "Lonewolf v__VERSION__"
-          releaseBody: "Check the assets below :D"
+          releaseBody: "This build was automatically created. Check the assets below for the binaries for your platform :D"
