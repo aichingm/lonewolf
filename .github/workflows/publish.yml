@@ -60,12 +60,6 @@ jobs:
           make test-unit
           cd ..
 
-      # - name: build executable
-      #   run: |
-      #     cd lonewolf-tauri
-      #     make build
-      #     cd ..
-
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
