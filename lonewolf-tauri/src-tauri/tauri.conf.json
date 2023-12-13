@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "lonewolf",
-    "version": "1.1.1"
+    "version": "0.0.0"
   },
   "tauri": {
     "cli": {
@@ -44,11 +44,7 @@
         "all": false,
         "readFile": true,
         "writeFile": true,
-        "scope": [
-          "$HOME",
-          "$HOME/*",
-          "$HOME/**"
-        ]
+        "scope": ["$HOME", "$HOME/*", "$HOME/**"]
       }
     },
     "bundle": {

@@ -2,8 +2,9 @@ name: "publish"
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+'
 
 jobs:
   publish-tauri:
@@ -12,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-20.04, windows-latest]
+        platform: [ windows-latest ]
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -26,39 +27,22 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
-      - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-20.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
-
-      - name: change Makefile (windows only)
-        if: matrix.platform == 'windows-latest'
-        run: |
-          cd lonewolf-tauri
-          mv Makefile Makefile.lin
-          mv Makefile.win Makefile
-          cd ..
-
       - name: install frontend dependencies
-        run: |
-          cd lonewolf-tauri
-          make npm-install
-          cd ..
+        working-directory: ./lonewolf-tauri
+        run: make -f Makefile.win npm-install
 
       - name: compile assets
-        run: |
-          cd lonewolf-tauri
-          make icons
-          make tauri-icons
-          cd ..
-      
+        working-directory: ./lonewolf-tauri
+        run: make -f Makefile.win icons
+
       - name: check and test
+        working-directory: ./lonewolf-tauri
+        run: make -f Makefile.win check test-unit
+
+      - id: get-version
         run: |
-          cd lonewolf-tauri
-          make check
-          make test-unit
-          cd ..
+          version=$(echo ${{github.ref}} | grep -oP "[\d]+\.[\d]+\.[\d]+")
+          echo "::set-output name=version::$version"
 
       - uses: tauri-apps/tauri-action@v0
         env:
@@ -68,3 +52,5 @@ jobs:
           tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "Lonewolf v__VERSION__"
           releaseBody: "This build was automatically created. Check the assets below for the binaries for your platform :D"
+          appVersion: ${{steps.get-version.outputs.version}}
+          prerelease: ${{contains(github.ref, 'rc')}}
