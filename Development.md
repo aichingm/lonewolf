@@ -9,8 +9,8 @@ There are a few places where version numbers appare:
 |Core   |lonewolf/content/version.ts:3                   |`x.y.z`|Yes |
 |Web    |lonewolf-web/src-platform/content/version.ts:3  |`x.y.z`|Yes |
 |Desktop|lonewolf-tauri/src-platform/content/version.ts:3|`x.y.z`|Yes |
-|Desktop|lonewolf-tauri/src-tauri/tauri.conf.json:11     |`x.y.z`|Yes |
 |Desktop|lonewolf-tauri/src-tauri/Cargo.toml:3           |`0.0.0`|No  |
+|Desktop|lonewolf-tauri/src-tauri/tauri.conf.json:11     |`0.0.0`|No  |
 |Desktop|lonewolf-tauri/package.json:4                   |`0.0.0`|No  |
 |Desktop|lonewolf-tauri/package-lock.json:3              |`0.0.0`|No  |
 |Desktop|lonewolf-tauri/package-lock.json:9              |`0.0.0`|No  |

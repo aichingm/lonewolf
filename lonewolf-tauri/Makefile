@@ -22,7 +22,6 @@ lint:
 
 npm-install:
 	npm install
-	npm install --no-save sharp
 
 tauri-icons: src-tauri/icons/512x512-lonewolf.png
 	npm run tauri icon -- src-tauri/icons/512x512-lonewolf.png -o src-tauri/icons
@@ -39,11 +38,11 @@ type-check-tauri:
 
 src-tauri/icons/512x512-lonewolf.png: src/assets/icon.svg
 	mkdir -p src-tauri/icons
-	node bin/svg2png.mjs -b "#ffffff00" src/assets/icon.svg --width 512 --height 512 --output src-tauri/icons/512x512-lonewolf.png
+	rsvg-convert -b "#ffffff00" src/assets/icon.svg --width 512 --height 512 --output src-tauri/icons/512x512-lonewolf.png
 
 public/lonewolf.png: src/assets/icon.svg
-	node bin/svg2png.mjs -b "#ffffff00" src/assets/lonewolf.svg --width 512 --height 512 --output public/lonewolf.png
+	rsvg-convert -b "#ffffff00" src/assets/lonewolf.svg --width 512 --height 512 --output public/lonewolf.png
 
 public/icon.png: src/assets/icon.svg
-	node bin/svg2png.mjs -b "#ffffff00" src/assets/icon.svg --width 128 --height 128 --output public/icon.png
+	rsvg-convert -b "#ffffff00" src/assets/icon.svg --width 128 --height 128 --output public/icon.png
 
