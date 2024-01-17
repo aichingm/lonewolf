@@ -97,6 +97,7 @@ fn get_cwd() -> Result<String, String> {
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
+        .plugin(tauri_plugin_window_state::Builder::default().build())
         .invoke_handler(tauri::generate_handler![mime, open_file, sync_cwd_to, get_cwd])
         .register_uri_scheme_protocol("fs", move |_app, request| {
 

@@ -27,6 +27,12 @@ const content: Project[] = [
         repository: "https://github.com/tauri-apps/tauri",
     },
     {
+        project: "Tauri Plugins",
+        license: "MIT",
+        url: "https://tauri.app/",
+        repository: "https://github.com/tauri-apps/plugins-workspace",
+    },
+    {
         project: "Fira Code",
         license: "OFL-1.1",
         url: "https://fonts.google.com/specimen/Fira+Code/about",
