@@ -1,6 +1,6 @@
 <template>
-    <n-space class="container" :wrap-item="false" >
-        <div v-if="!editMode" class="text" :style="{marginTop: '1px', fontSize: $props.fontSize}" tabindex="0" @focus="showEdit()">
+    <n-space class="container" :wrap-item="false">
+        <div v-if="!editMode" class="text" :style="{fontSize: $props.fontSize}" tabindex="0" @focus="showEdit()">
             <div>{{ textValue }}</div>
         </div>
         <n-input-group v-if="editMode" :style="{width: $props.width}">
@@ -151,10 +151,11 @@ defineExpose({ inputRef })
 }
 
 .text {
+    cursor: auto;
+    min-width: 20px;
+    white-space: nowrap;
     margin-left: 12px;
-    height: 100%;
-    display: inline-flex;
-    flex-direction: column;
-    justify-content: center;
+    display: flex;
+    align-items: center;
 }
 </style>

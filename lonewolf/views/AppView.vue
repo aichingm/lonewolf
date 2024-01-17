@@ -2,17 +2,18 @@
     <div class="full-height">
         <KeymapEmitter :appSettings="$props.appSettings" :target="$window" :actions="['save', 'save-as', 'new', 'open']" @action="actionHandler"/>
         <FileMenu v-model:show="fileMenu.state" @action="(action: string)=>fileMenu.actionHandler(action)"/>
-        <!--<div class="app-header-nav" :style="'border-bottom-color:' + borderColor + ';'">-->
         <div class="app-header-nav">
-            <n-space class="app-header-nav-space" justify="left" allign="center">
-                <n-button id="file-menu-opener" @click="fileMenu.show(true)" :ghost ="true" :block="true" :bordered="false">
-                    <template #icon>
-                        <n-icon size="24" color="gray">
-                            <icon icon="fluent:panel-left-expand-20-filled" />
-                        </n-icon>
-                    </template>
-                </n-button>
-                <TextInput fontSize="20px" :value="title.ref" @update:value="title.update" placeholder="Title" autosize commitOnBlur commitOnEnter selectOnEdit/>
+            <div class="app-header-nav-start">
+                <div>
+                    <n-button id="file-menu-opener" @click="fileMenu.show(true)" :ghost ="true" :block="true" :bordered="false">
+                        <template #icon>
+                            <n-icon size="24" color="gray">
+                                <icon icon="fluent:panel-left-expand-20-filled" />
+                            </n-icon>
+                        </template>
+                    </n-button>
+                </div>
+                <TextInput style="overflow-x:auto;margin-left:-12px;" fontSize="20px" :value="title.ref" @update:value="title.update" placeholder="Title" autosize commitOnBlur commitOnEnter selectOnEdit/>
                 <n-tooltip v-if="!savedObserverExtension.isSavedRef().value" trigger="hover">
                     <template #trigger>
                         <n-icon size="24" :color="theme.warningColor" class="block">
@@ -29,11 +30,8 @@
                     </template>
                     The board is to large, in browser storage disabled!
                 </n-tooltip>
-            </n-space>
-            <n-space class="app-header-nav-space" justify="center">
-                <div></div>
-            </n-space>
-            <n-space class="app-header-nav-space" justify="right">
+            </div>
+            <div class="app-header-nav-end">
                 <n-tooltip trigger="hover">
                     <template #trigger>
                         <n-badge class="badge-reset" :value="cardsStat[0]" :color="theme.headerBadgeColor" :max="99">
@@ -54,7 +52,7 @@
                         </n-icon>
                     </template>
                 </n-button>
-            </n-space>
+            </div>
         </div>
         <div class="app-config-wrapper">
             <TransactionEmitter :type="'BoardTransaction'" @transaction="(t)=>boardTransactionHandler(t)">
@@ -343,17 +341,29 @@ function actionHandler(action: string) {
 }
 
 .app-header-nav{
-    --side-padding: 32px;
     height: 47px;
     display: flex;
     border-bottom: solid 1px v-bind('theme.borderColor');
     background-color: v-bind('theme.cardColor');
+    justify-content: space-between;
 }
 
 .app-header-nav-space{
     height: 48px;
+}
+
+.app-header-nav-start{
+    display: flex;
     align-items: center;
-    width: calc( 100% / 3);
+    max-width: calc(100% - 80px);
+    gap: 0px 8px;
+
+}
+
+.app-header-nav-end{
+    display: flex;
+    align-items: center;
+    gap: 0px 8px;
 }
 
 .app-board{
