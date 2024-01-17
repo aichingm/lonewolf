@@ -59,11 +59,19 @@
   </screenshots>
 
   <releases>
+    <release type="stable" version="1.2.0" date="2024-01-18">
+      <description>
+        <ul>
+          <li>Window position and size are now stored between opening and closing the app</li>
+          <li>Bug fix: long titles are breaking the layout</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.1.0" date="2023-10-21">
       <description>
         <ul><li>Add keyboard shortcuts (for: new, open, save)</li></ul>
       </description>
-    </release> 
+    </release>
     <release type="stable" version="1.0.4" date="2023-10-05">
       <description>
         <ul><li>Bug fix: Icons are not always displayed</li></ul>
