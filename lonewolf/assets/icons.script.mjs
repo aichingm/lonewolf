@@ -13,7 +13,11 @@ function listFiles(paths) {
         let ent = null;
         while ((ent = dir.readSync()) != null) {
             if (ent.isFile()) {
-                files.push(join(ent.path, ent.name))
+                if (ent.parentPath) { // check if version is >18
+                    files.push(join(ent.parentPath, ent.name))
+                } else {
+                    files.push(ent.path)
+                }
             }
         }
         dir.closeSync()
@@ -52,6 +56,7 @@ async function loadIconPath(iconName) {
         httpReq.end()
     })
 }
+
 function missingIconsFromIconsTs(icons) {
     const iconsFile = readFileSync("icons.ts")
     const missingIcons = []
@@ -63,9 +68,14 @@ function missingIconsFromIconsTs(icons) {
     return missingIcons
 }
 
+function sorted(array) { // needed, since node 18 does not have toSorted
+    array.sort()
+    return array
+}
+
 if (argv[2] == "generate") {
     const files = listFiles(["../components", "../views"])
-    const icons = [...new Set(files.map(f=>findIconsInFile(f)).flat())].toSorted()
+    const icons = sorted([...new Set(files.map(f=>findIconsInFile(f)).flat())])
 
     if (existsSync("icons.ts") && missingIconsFromIconsTs(icons).length == 0) {
         console.log("icons.ts exists and does not need to be updated")
@@ -86,7 +96,7 @@ if (argv[2] == "generate") {
 
 } else if (argv[2] == "check") {
     const files = listFiles(["../components", "../views"])
-    const icons = [...new Set(files.map(f=>findIconsInFile(f)).flat())].toSorted()
+    const icons = sorted([...new Set(files.map(f=>findIconsInFile(f)).flat())])
 
     const missingIcons = missingIconsFromIconsTs(icons)
 
