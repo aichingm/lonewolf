@@ -1,4 +1,5 @@
-.PHONY: check check-container-engine check-container-image clean clean-container-images contaienr-image default dev-tauri-X dev-web help lint shell-tauri shell-web test type-check 
+.PHONY: default check check-container-engine check-container-image clean clean-container-images container-image dev-tauri-X dev-web flatpak-files lint help shell-tauri shell-web test type-check
+
 default: help
 
 CONTAINER_ENGINE=podman
@@ -6,10 +7,6 @@ IMAGE_DEV=lonewolf:dev
 MAKE_PREFIX=$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf $(IMAGE_DEV)
 MAKE_PREFIX_WEB=$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-web $(IMAGE_DEV)
 MAKE_PREFIX_TAURI=$(CONTAINER_ENGINE) run --rm -it -v .:/app -w /app/lonewolf-tauri $(IMAGE_DEV)
-
-build-tauri-flatpak-sources: build/flatpak/node-sources.json build/flatpak/cargo-sources.json
-
-build-tauri: clean-build-tauri icons-tauri check-image-dev
 
 check:
 	$(MAKE_PREFIX_WEB) make check
@@ -30,6 +27,9 @@ clean:
 clean-container-images: check-container-engine
 	$(CONTAINER_ENGINE) image rm $(IMAGE_DEV) || true
 
+container-image: check-container-engine
+	$(CONTAINER_ENGINE) build . --no-cache -f Dockerfile -t $(IMAGE_DEV)
+
 dev-tauri-X:
 	@make -s check-container-image
 	xhost +
@@ -39,9 +39,6 @@ dev-tauri-X:
 dev-web:
 	@make -s check-container-image
 	$(CONTAINER_ENGINE) run --rm -it -p 5173:5173 -v .:/app -w /app/lonewolf-web $(IMAGE_DEV) make dev
-
-container-image: check-container-engine
-	$(CONTAINER_ENGINE) build . --no-cache -f Dockerfile -t $(IMAGE_DEV)
 
 flatpak-files: flatpak/cargo-sources.json flatpak/package-lock_v2.json flatpak/node-sources.json flatpak/icons.ts
 
@@ -53,9 +50,8 @@ lint:
 help:
 	@echo Available targets:
 	@echo
-	@echo -n "* "
-	@echo check check-container-engine check-container-image clean clean-container-images container-image default dev-tauri-X dev-web help lint shell-tauri shell-web test type-check | sed -e "s/ /\n* /g"
-
+	@tail +2 Makefile | grep -oE "^[\.a-zA-Z0-9\/_-]+:" | sed -e 's/://' -e 's/^/* /'
+	#@tail +2 Makefile | grep -oE "^[\.a-zA-Z0-9\/_-]+:" | sed -e 's/://' | xargs echo
 
 shell-tauri:
 	$(MAKE_PREFIX_TAURI) bash -l
@@ -63,7 +59,7 @@ shell-tauri:
 shell-web:
 	$(MAKE_PREFIX_WEB) bash -l
 
-test: 
+test:
 	@make -s check-container-image
 	$(MAKE_PREFIX_WEB) make test
 	$(MAKE_PREFIX_TAURI) make test
