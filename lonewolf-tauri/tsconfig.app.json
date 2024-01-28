@@ -10,5 +10,7 @@
       "@platform/*": ["./src-platform/*"]
     },
     "lib": ["ES2021.String"],
+    "jsx": "preserve",
+    "jsxImportSource": "vue"
   }
 }
