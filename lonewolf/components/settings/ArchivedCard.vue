@@ -1,52 +1,51 @@
 <template>
-    <div class="card" @click="$emit('card-edit', card, $props.card)">
+    <div class="card" @click="$emit('card-edit', data.card, $props.card)">
         <div class="badges">
-            <CardLabelBadge v-for="l in activeLabels" :key="l.id" :color="l.color" :borderColor="l.color" :name="l.name" />
+            <CardLabelBadge v-for="l in data.activeLabels" :key="l.id" :color="l.color" :borderColor="l.color" :name="l.name" />
         </div>
         <div class="quick-edit">
-            <ActionDropdown :options="actions" @selected="actionMenuSelected" />
+            <ActionDropdown :options="data.actions" @selected="actionMenuSelected" />
         </div>
-        <n-h3>{{ card.name }}</n-h3>
+        <n-h3>{{ data.card.name }}</n-h3>
         <n-space :size="[8,0]" justify="left">
-            <n-tag v-if="hasDueDate" size="small" round :bordered="false" :type="dueDateType(card.dueDate)">
+            <n-tag v-if="data.hasDueDate" size="small" round :bordered="false" :type="dueDateType(data.card.dueDate)">
                 <template #icon>
                     <n-icon size="20" >
                         <icon icon="fluent:timer-20-regular" />
                     </n-icon>
                 </template>
-                <AutoTime :data="card.dueDate || 0" /><!-- passing 0 only to make the compiler happy card.dueDate can not be null since the component is only shown if hasDueDate == true -->
+                <AutoTime :data="data.card.dueDate || 0" /><!-- passing 0 only to make the compiler happy card.dueDate can not be null since the component is only shown if hasDueDate == true -->
             </n-tag>
-            <n-tag v-if="card.comments.filter(c=>!c.deleted).length > 0" size="small" round :bordered="false">
+            <n-tag v-if="data.card.comments.filter(c=>!c.deleted).length > 0" size="small" round :bordered="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:comment-20-regular" />
                     </n-icon>
                 </template>
-                {{ card.comments.filter(c=>!c.deleted).length }}
+                {{ data.card.comments.filter(c=>!c.deleted).length }}
             </n-tag>
-            <n-tag v-if="card.attachments.length > 0" size="small" round :bordered="false">
+            <n-tag v-if="data.card.attachments.length > 0" size="small" round :bordered="false">
                 <template #icon>
                     <n-icon size="20" color="gray">
                         <icon icon="fluent:attach-20-regular" />
                     </n-icon>
                 </template>
-                {{ card.attachments.length }}
+                {{ data.card.attachments.length }}
             </n-tag>
-            <n-tag v-if="totalTasks[1] > 0" size="small" type="success" :bordered="false">
+            <n-tag v-if="data.totalTasks[1] > 0" size="small" type="success" :bordered="false">
                 <template #icon>
                     <n-icon size="20" color="#18a058">
-                        <icon :icon="totalTasks[0]==0?'fluent:checkbox-unchecked-20-regular':totalTasks[0] == totalTasks[1]?'fluent:checkbox-checked-20-regular':'fluent:checkbox-indeterminate-20-regular'" />
+                        <icon :icon="data.totalTasks[0]==0?'fluent:checkbox-unchecked-20-regular':data.totalTasks[0] == data.totalTasks[1]?'fluent:checkbox-checked-20-regular':'fluent:checkbox-indeterminate-20-regular'" />
                     </n-icon>
                 </template>
-                {{ totalTasks[0] + "/" + totalTasks[1]}}
+                {{ data.totalTasks[0] + "/" + data.totalTasks[1]}}
             </n-tag>
         </n-space>
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed, watch, ref } from "vue";
-import type { Ref } from "vue";
+import { computed } from "vue";
 
 import { useThemeVars } from "naive-ui";
 import { themeCast } from "@/themes/theme";
@@ -65,7 +64,6 @@ import { CardMoveTransaction } from "@/common/transactions/CardTransactions";
 
 import ActionDropdown from "@/components/ActionDropdown.vue";
 import ActionDropdownOption from "@/common/ActionDropdownOption";
-import { assignArray } from "@/utils/vue";
 import { taskStats } from "@/utils/markdown";
 
 const $props = defineProps<{
@@ -80,26 +78,38 @@ const transactions = useTransactions()
 
 const theme = themeCast(useThemeVars())
 
-const card = computed(()=>{$props.card.version; return $props.project.board.findCard($props.card.id);}) as Ref<Card> // if card is null, something else is f'ed up
-const lists = computed(()=>$props.board.lists.map((t: ListObservable) : List|null => $props.project.board.findList(t.id)).filter((l=>l!=null)) as List[])
+const data = computed(()=>{
 
-const activeLabels = ref([...card.value.labels.filter(l=>l.visibility)])
-watch([$props.board.labels, $props.card], ()=> assignArray(activeLabels, card.value.labels.filter(l=>l.visibility)))
+    const card = $props.project.board.findCard($props.card.id) as Card
 
-const tasks = computed(()=>taskStats(card.value.description))
+    const lists = $props.board.lists.map((t: ListObservable) : List|null => $props.project.board.findList(t.id)).filter((l=>l!=null)) as List[]
 
-const tasksComments = computed(()=>card.value.comments.map(c=>taskStats(c.content)).reduce((a, v)=> [a[0] + v[0], a[1] + v[1]], [0, 0]))
+    const activeLabels = card.labels.filter(l=>l.visibility)
 
-const totalTasks = computed(()=>[tasks.value[0] + tasksComments.value[0], tasks.value[1] + tasksComments.value[1]])
+    const tasks = taskStats(card.description)
 
-const hasDueDate = ref(card.value.dueDate!=null)
-watch($props.card, ()=> hasDueDate.value = (card.value.dueDate != null))
+    const tasksComments = card.comments.map(c=>taskStats(c.content)).reduce((a, v)=> [a[0] + v[0], a[1] + v[1]], [0, 0])
 
-/*
-$props.card.version: why?
-lists.value, cards.value: for actions wich have the name of other lists or cards included (move, moveTo)
-*/
-const actions = computed(()=>{$props.card.version; return generateActions(lists.value)})
+    const totalTasks = [tasks[0] + tasksComments[0], tasks[1] + tasksComments[1]]
+
+    const hasDueDate = card.dueDate!=null
+
+    const actions = generateActions(lists)
+
+    return {
+        card: card,
+        lists: lists,
+        activeLabels: activeLabels,
+        tasks: tasks,
+        tasksComments: tasksComments,
+        totalTasks: totalTasks,
+        hasDueDate: hasDueDate,
+        actions: actions,
+        labelsObservable: $props.board.labels.version,
+        version: $props.card.version // this triggers the recomputation in case of a change in the card
+    }
+
+})
 
 const generateActions = function (lists: List[]) {
     const listChildren = filterMoveLists(lists);
@@ -115,7 +125,6 @@ const generateActions = function (lists: List[]) {
         ),
     ];
 };
-
 
 function filterMoveLists(lists: List[]) {
     return lists.map((l) => {
@@ -137,13 +146,13 @@ function actionMenuSelected(
 ) {
 
     if (optionObject.command == "moveTo" && optionObject.data != null) {
-        transactions.commit(new CardMoveTransaction(card.value.id, card.value.list.id, card.value.position, optionObject.data.id, 0))
+        transactions.commit(new CardMoveTransaction(data.value.card.id, data.value.card.list.id, data.value.card.position, optionObject.data.id, 0))
     }
 
 }
 
 function dueDateType (dueDate: number | null): string {
-    if(dueDate == null || card.value.list.cardsAreClosed) {
+    if(dueDate == null || data.value.card.list.cardsAreClosed) {
         return "default"
     }
     if(dueDate < Date.now()) {

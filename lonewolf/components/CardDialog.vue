@@ -14,10 +14,10 @@
                 <div class="scroll-shadow-fixer-inner">
                     <n-space vertical>
                         <IconedBox icon="fluent:rename-20-filled" :contentOffsetX="12" :iconOffsetY="8">
-                            <TextInput fontSize="20px" v-model:value="titleModel" @update:value="emitTitle" placeholder="Title" commitOnBlur commitOnEnter selectOnEdit/>
+                            <TextInput fontSize="20px" :value="data?.card.name||''" @update:value="emitTitle" placeholder="Title" commitOnBlur commitOnEnter selectOnEdit/>
                         </IconedBox>
                         <IconedBox icon="fluent:tag-20-filled" :contentOffsetX="24">
-                            <LabelSelector :project="$props.project" :activeLabels="activeLabels" :board="$props.board" @add="addLabel" @remove="removeLabel"/>
+                            <LabelSelector :project="$props.project" :activeLabels="data?.activeLabels||[]" :board="$props.board" @add="addLabel" @remove="removeLabel"/>
                         </IconedBox>
                         <IconedBox icon="fluent:timer-20-filled" :contentOffsetX="24">
                             <n-date-picker v-model:value="timestampModel" type="datetime" placeholder="Due Date" clearable size="small" />
@@ -28,13 +28,13 @@
                                     placeholder="Add Description..."
                                     :attachmentStore="$props.project.board.attachmentStore()"
                                     :markdownHandler="markdownHandler"
-                                    :attachments="attachments"
+                                    :attachments="data?.attachments||[]"
                                     @addAttachment="handleNewAttachment"
                                     :editorStyle="editorTheme"
                             />
                         </IconedBox>
                         <IconedBox icon="fluent:document-20-filled" :contentOffsetX="24">
-                            <AttachmentManager :attachments="attachments" @delete="handleDeleteAttachment" :project="$props.project" :board="$props.board" @add="handleNewAttachment" @edit="handleEditAttachment"/>
+                            <AttachmentManager :attachments="data?.attachments||[]" @delete="handleDeleteAttachment" :project="$props.project" :board="$props.board" @add="handleNewAttachment" @edit="handleEditAttachment"/>
                         </IconedBox>
                         <IconedBox icon="fluent:comment-20-filled" :contentOffsetX="24">
                             <div class="editor-container">
@@ -58,12 +58,12 @@
                                     <n-switch v-model:value="timelineShowDetailsModel">
                                     </n-switch>
                                 </n-space>
-                                <CardDialogTimeline 
-                                    v-if="card != null"
+                                <CardDialogTimeline
+                                    v-if="data != null"
                                     :show-details="timelineShowDetailsModel"
-                                    :logbook="logbook"
+                                    :logbook="data.logbook"
                                     :project="$props.project"
-                                    :card="card"
+                                    :card="data.card"
                                     :appSettings="$props.appSettings"
                                 />
                             </n-space>
@@ -96,7 +96,6 @@ import { useTransactions } from './transactions/api'
 import { CardAddLabelTransaction, CardRemoveLabelTransaction, CardChangeTransaction, AddCommentTransaction, AddAttachmentTransaction } from "@/common/transactions/CardTransactions";
 import { CardAttachmentChangeTransaction, CardAttachmentContentChangeTransaction } from "@/common/transactions/CardAttachmentTransactions";
 
-import type Card from "@/common/data/Card";
 import type Label from "@/common/data/Label";
 import type Project from "@/common/Project";
 import type Settings from "@/common/settings/AppSettings";
@@ -125,30 +124,42 @@ const editorTheme = computed(()=>({
     darkMode: $props.appSettings.darkMode,
 }))
 
-const emitTitle = (title: string) => transactions.commit(new CardChangeTransaction($props.cardObservable.id, 'name', title))
 
-const card = computed(()=>{$props.cardObservable.version; return $props.project.board.findCard($props.cardObservable.id)})
+const markdownHandler = new MarkdownHandler($props.project.board.attachmentStore())
+const timelineShowDetailsModel = ref(false)
 
-watch(card, ()=>{if(card.value!= null) setRefs(card.value)})
+const data = computed(()=>{
 
-const activeLabels = computed(() => {
-    if (card.value != null) {
-        return card.value.labels.filter((l: Label)=>l.visibility);
+    const card = $props.project.board.findCard($props.cardObservable.id)
+    if (card != null) {
+
+        const activeLabels = card.labels.filter((l: Label)=>l.visibility)
+        const attachments = [...card.attachments.filter((a)=>a.deleted != true)]
+        const logbook = card.logbook.map(tId=>$props.project.board.logbook.get(tId)).filter((e)=>e!=undefined) as LogEntry[]
+
+        return {
+            card: card,
+            activeLabels: activeLabels,
+            attachments: attachments,
+            logbook: logbook,
+            version: $props.cardObservable.version // this triggers the recomputation in case of a change in the card
+        }
+
     }
-    return [];
+    return null
 })
 
-const attachments = computed(() => {
-    if (card.value != null) {
-        return [...card.value.attachments.filter((a)=>a.deleted != true)];
-    }
-    return [];
+let descriptionOriginal = data.value?.card.description||""
+const descriptionModel = ref(data.value?.card.description||"")
+let timestampOriginal = data.value?.card.dueDate||null
+const timestampModel = ref(data.value?.card.dueDate||null)
+
+watch(data, ()=>{
+    descriptionOriginal = data.value?.card.description||""
+    descriptionModel.value = data.value?.card.description||""
+    timestampOriginal = data.value?.card.dueDate||null
+    timestampModel.value = data.value?.card.dueDate||null
 })
-
-const titleModel = ref(card.value!=null?card.value.name:"")
-
-let descriptionOriginal = card.value!=null?card.value.description:""
-const descriptionModel = ref(card.value!=null?card.value.description:"")
 
 watch(descriptionModel, () => {
     if (descriptionModel.value != descriptionOriginal) {
@@ -156,13 +167,13 @@ watch(descriptionModel, () => {
     }
 })
 
+watch(timestampModel, ()=> {
+    if (timestampModel.value != timestampOriginal) {
+        transactions.commit(new CardChangeTransaction($props.cardObservable.id, 'dueDate', timestampModel.value))
+    }
+})
 
-const logbook = computed(
-    () => card.value == null ? [] : card.value.logbook.map(tId=>$props.project.board.logbook.get(tId)).filter((e)=>e!=undefined) as LogEntry[])
-
-const markdownHandler = new MarkdownHandler($props.project.board.attachmentStore())
-
-const timelineShowDetailsModel = ref(false)
+const emitTitle = (title: string) => transactions.commit(new CardChangeTransaction($props.cardObservable.id, 'name', title))
 
 const emitNewCommentTransaction = (value: string) => {
     if (value != "") {
@@ -171,45 +182,21 @@ const emitNewCommentTransaction = (value: string) => {
 }
 
 function handleNewAttachment(location: string, name: string, type: string) {
-    if (card.value != null) {
-        transactions.commit(new AddAttachmentTransaction(card.value.id, location, name, type))
+    if (data.value != null) {
+        transactions.commit(new AddAttachmentTransaction(data.value.card.id, location, name, type))
     }
 }
 
 function handleDeleteAttachment(attachmentId: string) {
-    if (card.value != null) {
-        transactions.commit(new CardAttachmentChangeTransaction(card.value.id, attachmentId, 'deleted', true))
+    if (data.value != null) {
+        transactions.commit(new CardAttachmentChangeTransaction(data.value.card.id, attachmentId, 'deleted', true))
     }
 }
 
 function handleEditAttachment(id: string, location: string, name: string, mime: string) {
-    if (card.value != null) {
-        transactions.commit(new CardAttachmentContentChangeTransaction(card.value.id, id, name, mime))
+    if (data.value != null) {
+        transactions.commit(new CardAttachmentContentChangeTransaction(data.value.card.id, id, name, mime))
     }
-}
-
-function timestampOrNull(timestamp: number | null): number | null {
-    if(timestamp == null || card.value == null){
-        return null
-    }
-    return card.value.dueDate
-}
-
-let timestampOriginal = card.value != null ? timestampOrNull(card.value.dueDate): null
-const timestampModel = ref(card.value != null ? timestampOrNull(card.value.dueDate): null)
-
-watch(timestampModel, ()=> {
-    if (timestampModel.value != timestampOriginal) {
-        transactions.commit(new CardChangeTransaction($props.cardObservable.id, 'dueDate', timestampModel.value))
-    }
-})
-
-const setRefs = (card: Card) => {
-    titleModel.value = card.name
-    descriptionOriginal = card.description
-    descriptionModel.value = card.description
-    timestampOriginal = timestampOrNull(card.dueDate)
-    timestampModel.value = timestampOrNull(card.dueDate)
 }
 
 const showModel = ref(true)

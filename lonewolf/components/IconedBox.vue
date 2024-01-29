@@ -1,7 +1,7 @@
 <template>
     <div class="iconed-box">
         <n-icon :color="$props.color" :size="$props.iconSize" :style="style">
-            <icon :icon="$props.icon" />
+            <Icon :icon="$props.icon" />
         </n-icon>
         <slot class="slot"></slot>
     </div>

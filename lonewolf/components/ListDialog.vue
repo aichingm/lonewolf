@@ -15,15 +15,15 @@
                 <div class="scroll-shadow-fixer-inner">
                     <n-space vertical>
                         <IconedBox icon="fluent:rename-20-filled" :contentOffsetX="12" :iconOffsetY="8">
-                            <TextInput fontSize="20px" v-model:value="titleModel" @update:value="emitTitle" placeholder="Title" commitOnBlur commitOnEnter selectOnEdit/>
+                            <TextInput fontSize="20px" :value="data?.list.name||''" @update:value="emitTitle" placeholder="Title" commitOnBlur commitOnEnter selectOnEdit/>
                         </IconedBox>
                         <IconedBox icon="fluent:book-question-mark-20-filled" :contentOffsetX="24" :iconOffsetY="8">
                             <n-space class="flex-grow" justify="space-between" align="center">Cards are Closed
-                                <n-switch :round="false" :value="cardsClosed" @update:value="handleCardsAreClosedChanged"/>
+                                <n-switch :round="false" :value="data?.list.cardsAreClosed||false" @update:value="handleCardsAreClosedChanged"/>
                             </n-space>
                         </IconedBox>
                         <IconedBox icon="fluent:timeline-20-filled" :contentOffsetX="24">
-                            <ListDialogTimeline v-if="list != null" :logbook="logbook" :board="$props.board" :list="list" />
+                            <ListDialogTimeline v-if="data != null" :logbook="data?.logbook||[]" :board="$props.board" :list="data.list" />
                         </IconedBox>
                     </n-space>
                 </div>
@@ -42,7 +42,6 @@ import IconedBox from "@/components/IconedBox.vue";
 import { useTransactions } from '@/components/transactions/api'
 import { ListChangeTransaction } from "@/common/transactions/ListTransactions";
 
-import type List from "@/common/data/List";
 import type Project from "@/common/Project";
 import type { List as ListObservable, Board as BoardObservable } from "@/common/Observable";
 import ListDialogTimeline from "@/components/timeline/ListDialogTimeline.vue";
@@ -61,27 +60,37 @@ const transactions = useTransactions()
 
 const emitTitle = (title: string) => transactions.commit(new ListChangeTransaction($props.listObservable.id, 'name', title))
 
-const list = computed(()=>{$props.listObservable.version; return $props.project.board.findList($props.listObservable.id)})
+const data = computed(()=>{
 
-watch(list, ()=>{if(list.value != null) setRefs(list.value)})
+    const list = $props.project.board.findList($props.listObservable.id)
 
-const logbook = computed(()=>list.value == null?[]:list.value.logbook.map((tId)=>$props.project.board.logbook.get(tId)).filter(e=>e!=undefined) as LogEntry[])
+    if (list != null) {
+        const logbook = list.logbook.map((tId)=>$props.project.board.logbook.get(tId)).filter(e=>e!=undefined) as LogEntry[]
+
+        return {
+            list: list,
+            logbook: logbook,
+            version: $props.listObservable.version,
+        }
+    }
+    return null
+})
+
+/*const titleModel = ref(data.value?.list.name||"")
+const cardsClosed = ref(data.value?.list.cardsAreClosed||false)
+
+watch(data, ()=>{
+    titleModel.value = ref(data.value?.list.name||"")
+    cardsClosed.value = ref(data.value?.list.cardsAreClosed||false)
+})
+*/
 
 const showModel = ref(true)
 watch($props.show, ()=>{showModel.value = $props.show.value;})
 watch(showModel, ()=>$emit("update:show", showModel))
 
-const titleModel = ref(list.value!=null?list.value.name:"")
-const cardsClosed = ref(list.value!=null?list.value.cardsAreClosed:false)
-
-const setRefs = (list: List) => {
-    titleModel.value = list.name
-    cardsClosed.value = list.cardsAreClosed
-}
-
 function handleCardsAreClosedChanged (value: boolean) {
-    cardsClosed.value = value
-    transactions.commit(new ListChangeTransaction($props.listObservable.id, 'cardsAreClosed', cardsClosed.value))
+    transactions.commit(new ListChangeTransaction($props.listObservable.id, 'cardsAreClosed', value))
 }
 
 </script>

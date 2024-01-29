@@ -33,13 +33,13 @@ export class Board extends Observable{
     public lists = new Array<List>();
     public cardArchive = new List("Archive", uuid());
     public listArchive = new Array<List>();
-    public labels = new Array<Label>();
+    public labels = new ObservableArray("labels", uuid(), [] as Label[]);
     public settings = new Observable("settings", uuid());
 
     public reset() {
         super.reset()
         this.lists.splice(0, this.lists.length)
-        this.labels.splice(0, this.labels.length)
+        this.labels.reset()
         this.settings.version = uuid()
     }
 
@@ -60,6 +60,28 @@ export class List extends Observable{
 
 
 }
+
+export class ObservableArray<T> extends Observable{
+    public items = new Array<T>();
+
+    constructor (id: string, version: string, items: Array<T>) {
+        super(id, version)
+        this.items = items
+    }
+
+    public reset() {
+        super.reset()
+        this.items.splice(0, this.items.length)
+    }
+
+    public assign(o: ObservableArray<T>) {
+        super.assign(o)
+        this.items = o.items
+    }
+
+
+}
+
 
 export class Card extends Observable{
 

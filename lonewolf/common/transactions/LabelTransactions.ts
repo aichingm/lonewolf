@@ -26,11 +26,12 @@ export abstract class LabelTransaction extends BaseTransaction {
     }
 
     public mutate(bo: BoardObservable, _board: Board): boolean {
-        const  lo = bo.labels.find((l)=>l.id == this._labelId)
+        const  lo = bo.labels.items.find((l)=>l.id == this._labelId)
         if (lo == null) {
             throw new Error("Label[" + this._labelId + "] not found (SD)")
         }
         lo.version = this.id
+        bo.labels.version = this.id
         return true
     }
 
@@ -74,7 +75,8 @@ export class NewLabelTransaction extends LabelTransaction {
     }
 
     public mutate(bo: BoardObservable, _board: Board): boolean {
-        bo.labels.push(new LabelObservable(this._labelId, this.id))
+        bo.labels.items.push(new LabelObservable(this._labelId, this.id))
+        bo.labels.version = this.id
         return true
     }
 
@@ -89,11 +91,12 @@ export class DeleteLabelTransaction extends LabelTransaction {
     }
 
     public mutate(bo: BoardObservable, _board: Board): boolean {
-        const  sdlIndex = bo.labels.findIndex((l)=>l.id == this._labelId)
+        const  sdlIndex = bo.labels.items.findIndex((l)=>l.id == this._labelId)
         if (sdlIndex < 0) {
             throw new Error("Label[" + this._labelId + "] not found (SD)")
         }
-        bo.labels.splice(sdlIndex, 1);
+        bo.labels.items.splice(sdlIndex, 1);
+        bo.labels.version = this.id
         return true
     }
 
