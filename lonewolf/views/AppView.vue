@@ -16,11 +16,15 @@
                 <TextInput style="overflow-x:auto;margin-left:-12px;" fontSize="20px" :value="title.ref" @update:value="title.update" placeholder="Title" autosize commitOnBlur commitOnEnter selectOnEdit/>
                 <n-tooltip v-if="!savedObserverExtension.isSavedRef().value" trigger="hover">
                     <template #trigger>
-                        <n-icon size="24" :color="theme.warningColor" class="block">
-                            <icon icon="fluent:warning-20-filled" />
-                        </n-icon>
+                        <n-button quaternary circle type="warning" @click="actionHandler('save')">
+                            <template #icon>
+                                <n-icon size="24" :color="theme.warningColor" class="block">
+                                    <icon icon="fluent:warning-20-filled" />
+                                </n-icon>
+                            </template>
+                        </n-button>
                     </template>
-                    The board has unsaved changes!
+                    The board has unsaved changes, click to save!
                 </n-tooltip>
                 <n-tooltip v-if="mostRecentExtension.failedRef().value" trigger="hover">
                     <template #trigger>
