@@ -77,13 +77,14 @@ const $props = defineProps<{
     project: Project;
     logbook: LogEntry[];
     showDetails: boolean;
-    appSettings: Settings
+    appSettings: Settings;
+    darkMode: boolean;
 }>();
 
 const transactions = useTransactions()
 
 const editorTheme = computed(()=>({
-    darkMode: $props.appSettings.darkMode,
+    darkMode: $props.darkMode,
 }))
 
 const logbookEntries = computed(()=>{

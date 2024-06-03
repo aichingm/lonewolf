@@ -73,6 +73,7 @@
                              :board="boardObservableRef"
                              :cardObservable="cardDialogCard"
                              :appSettings="$props.appSettings"
+                             :darkMode="$props.darkMode"
                 />
                 <ListDialog v-if="listDialogList.id != ''"
                             v-model:show="listDialogShow.ref"
@@ -136,6 +137,7 @@ import toEmoji from "emoji-name-map";
 
 const $props = defineProps<{
     appSettings: ApplicationSettings
+    darkMode: boolean
 }>()
 
 const dialog = useDialog()

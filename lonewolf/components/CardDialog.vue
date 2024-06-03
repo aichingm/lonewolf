@@ -65,6 +65,7 @@
                                     :project="$props.project"
                                     :card="data.card"
                                     :appSettings="$props.appSettings"
+                                    :darkMode="$props.darkMode"
                                 />
                             </n-space>
                         </IconedBox>
@@ -114,14 +115,16 @@ const $props = defineProps<{
     board: BoardObservable;
     show: Ref<boolean>;
     appSettings: Settings;
+    darkMode: boolean;
 }>();
 
 const $emit = defineEmits(["update:show"]);
 
 const transactions = useTransactions()
 
+
 const editorTheme = computed(()=>({
-    darkMode: $props.appSettings.darkMode,
+    darkMode: $props.darkMode,
 }))
 
 
