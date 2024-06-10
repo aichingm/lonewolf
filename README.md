@@ -24,11 +24,11 @@ Organize and track your tasks with ease and flexibility. Lonewolf is a productiv
 
 ### Windows
 
-There is currently no build of Lonewolf distributed for Windows. If you want to run Lonewolf on Windows it must be built from source (see below for informations on how to build Lonewolf). 
+There is currently no build of Lonewolf distributed for Windows. If you want to run Lonewolf on Windows it must be built from source (see below for informations on how to build Lonewolf).
 
 ### MacOS
 
-There is currently no build of Lonewolf distributed for . If you want to run Lonewolf on Windows it must be built from source (see below for informations on how to build Lonewolf).
+There is currently no build of Lonewolf distributed for macOS. If you want to run Lonewolf on macOS it must be built from source (see below for informations on how to build Lonewolf).
 
 ## Development
 
