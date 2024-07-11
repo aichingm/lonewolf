@@ -61,6 +61,14 @@
   </screenshots>
 
   <releases>
+    <release type="stable" version="1.4.0" date="2024-07-12">
+      <description>
+        <ul>
+          <li>New setting to allow changes to be automatically saved</li>
+          <li>The maximum number of cards a list can hold is now configurable</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.3.0" date="2024-06-03">
       <description>
         <ul>
