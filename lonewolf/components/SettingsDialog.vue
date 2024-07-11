@@ -45,6 +45,7 @@
                         <LabelsManager v-if="menuModel == 'project/labels'" :project="$props.project" :board="$props.board" />
                         <BoardManager v-if="menuModel == 'project/board'" :project="$props.project" :board="$props.board" />
                         <ArchiveManager v-if="menuModel == 'project/archive'" :project="$props.project" :board="$props.board" />
+                        <PreferencesProject v-if="menuModel == 'preferences/project'" :preferences="$props.preferences" />
                         <PreferencesAppearance v-if="menuModel == 'preferences/appearance'" :preferences="$props.preferences" />
                         <SettingsAppearance v-if="menuModel == 'application/appearance'" :appSettings="$props.appSettings" />
                         <SettingsKeymap v-if="menuModel == 'application/keyboard'" :appSettings="$props.appSettings" />
@@ -61,6 +62,7 @@ import type { Ref } from "vue";
 import LabelsManager from "@/components/settings/LabelsManager.vue";
 import BoardManager from "@/components/settings/BoardManager.vue";
 import PreferencesAppearance from "@/components/settings/PreferencesAppearance.vue";
+import PreferencesProject from "@/components/settings/PreferencesProject.vue";
 import ArchiveManager from "@/components/settings/ArchiveManager.vue";
 import SettingsAppearance from "@/components/settings/SettingsAppearance.vue";
 import SettingsKeymap from "@/components/settings/SettingsKeymap.vue";
@@ -112,6 +114,11 @@ const menuOptions = [
         key: 'preferences',
         icon: renderIcon("fluent:options-20-filled"),
         children: [
+            {
+                label: 'Project',
+                key: 'preferences/project',
+                icon: renderIcon("fluent:preview-link-20-regular")
+            },
             {
                 label: 'Appearance',
                 key: 'preferences/appearance',

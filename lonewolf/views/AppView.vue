@@ -121,6 +121,7 @@ import type Card from "@/common/data/Card";
 import type List from "@/common/data/List";
 
 import SavedObserver from "@/common/extensions/SavedObserver";
+import AutoSaveExt from "@/common/extensions/AutoSave";
 import MostRecent from "@/common/extensions/MostRecent";
 import PreferencesExt from "@/common/extensions/Preferences";
 
@@ -177,10 +178,12 @@ const savedObserverExtension = SavedObserver.getInstance()
 savedObserverExtension.persist()
 const mostRecentExtension = new MostRecent()
 const preferencesExt = new PreferencesExt()
+const autoSaveExt = new AutoSaveExt(()=>actionHandler, preferencesExt)
 
 extensionManager.use(savedObserverExtension)
 extensionManager.use(mostRecentExtension)
 extensionManager.use(preferencesExt)
+extensionManager.use(autoSaveExt)
 
 platformExtensions().forEach(e=>extensionManager.use(e))
 
