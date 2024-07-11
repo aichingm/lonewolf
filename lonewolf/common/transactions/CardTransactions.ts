@@ -47,7 +47,6 @@ export abstract class CardTransaction extends BaseTransaction {
     }
 
     protected list(board: Board, listId: string): List {
-        console.log(board)
         const list = board.findListInclArchives(listId)
         if (list == null) {
             throw new Error("List[" + listId + "] not found")

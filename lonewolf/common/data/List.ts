@@ -7,6 +7,8 @@ import { List as ListObservable } from "../Observable";
 export default class List extends Indexable {
     private _cards = new IndexedMap<Card>();
     public cardsAreClosed = false
+    public enableCardLimit = false
+    public cardLimit = 0
     private _logbook = new Array<string>();
 
     private _board: Board;
@@ -29,6 +31,14 @@ export default class List extends Indexable {
         c.attachTo(this)
     }
 
+    public canAcceptCard() {
+        return !this.enableCardLimit || this._cards.items.length < this.cardLimit
+    }
+
+    public actualCardLimit(){
+        return this.cardLimit == undefined? this.cards.items.length : this.cardLimit
+    }
+
     public insertCard(c: Card): void {
         this.cards.insert(c)
         c.attachTo(this)
@@ -48,6 +58,8 @@ export default class List extends Indexable {
         l.name = this.name
         l.position = this.position
         l.cardsAreClosed = this.cardsAreClosed
+        l.enableCardLimit = this.enableCardLimit
+        l.cardLimit = this.cardLimit
         l.logbook = [...this._logbook]
 
         return l;
@@ -57,6 +69,8 @@ export default class List extends Indexable {
         const l = new List(board, s.id, s.name)
         l.position = s.position
         l.cardsAreClosed = s.cardsAreClosed || false
+        l.enableCardLimit = s.enableCardLimit  || false
+        l.cardLimit = s.cardLimit == undefined ? 0 : s.cardLimit
         if (s.logbook) {  // FIXME old version had no logbook... DELETE this check on product release
             s.logbook.forEach((logEntryId: string)=> {if(board.logbook.get(logEntryId) != undefined){l.logbook.push(logEntryId)}})
         }
@@ -77,6 +91,8 @@ export class SerializableList {
     public name = "";
     public position = -1;
     public cardsAreClosed = false;
+    public enableCardLimit = false;
+    public cardLimit = 0
     public logbook = new Array<string>();
 
 }

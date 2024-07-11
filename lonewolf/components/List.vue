@@ -3,13 +3,19 @@
         <div class="list-header list-part list-dragger" @click="$emit('list-edit', data.list, $props.list)">
             <div class="list-name">{{ data.list.name }}</div>
             <n-space :size="7" align="center" gap="0">
-                <n-badge :value="data.cards.length" show-zero  :color="theme.listBadgeColor"></n-badge>
+                <n-badge
+                    :value="data.cards.length + (data?.list.enableCardLimit? ('/' + data?.list.actualCardLimit()) : '')"
+                    show-zero
+                    :color="data?.list.enableCardLimit && !data?.list.canAcceptCard() ? undefined : theme.listBadgeColor"
+                    :type="data?.list.enableCardLimit && !data?.list.canAcceptCard() ? 'error' : 'default'"
+                ></n-badge>
                 <ActionDropdown :options="data.actions" @selected="actionMenuSelected" />
             </n-space>
         </div>
         <div :class="'cards list-part ' + (inputHasFocus?'':'list-dragger')">
             <!-- eslint-disable vue/no-mutating-props -->
             <draggable
+                :data-id="$props.list.id"
                 :list="$props.list.cards"
                 group="cards"
                 animation="200"
@@ -17,6 +23,7 @@
                 ghostClass="ghost-card"
                 dragClass="drag-card"
                 @change="dragEvent($event)"
+                :move="checkDrag"
                 :force-fallback="(isChrome() /* this fixes that chrome includes the background of the element */ || isWebkit() /* this fixes webkit cliping the rotated element to the original shape*/)">
 
                 <!-- eslint-enable -->
@@ -24,6 +31,7 @@
                     <CardVue
                         :project="$props.project"
                         :card="element"
+                        :data-id="element.id"
                         :board="$props.board"
                         @card-edit="(card, simpleCard)=>$emit('card-edit', card, simpleCard)"
                     />
@@ -38,8 +46,10 @@
                     :theme-overrides="inputThemeOverrides"
                     @focus="inputHasFocus = true"
                     @blur="inputHasFocus = false"
+                    :disabled="!data?.list.canAcceptCard()"
                 />
                 <n-button type="primary" @click="newCardButtonClicked()" tabindex="-1"
+                          :disabled="!data?.list.canAcceptCard()"
                 >+</n-button
                 >
             </n-input-group>
@@ -214,7 +224,21 @@ function newCardButtonClicked() {
     }
 }
 
-function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number}, added: {element: Card, newIndex: number}}) {
+function checkDrag(e: {to: HTMLElement}) { // NOTICE vuedraggable does not export types...
+    const listId = e.to.dataset.id
+    if (!listId) {
+        return false
+    }
+
+    const targetList = $props.project.board.findList(listId)
+    if(targetList == null) {
+        return false
+    }
+
+    return targetList.canAcceptCard() || listId === data.value.list.id
+}
+
+function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number}, added: {element: Card, newIndex: number}}) { // NOTICE vuedraggable does not export types...
     if (e.moved) {
         const card = data.value.list.cards.find(e.moved.element.id)
         if (card != null) {

@@ -191,15 +191,18 @@ function filterMoveCards(card: Card, cards: Card[]) {
 
 function filterMoveLists(card: Card, lists: List[]) {
     return lists
-        .filter((l) =>  card.list && l.id != card.list.id)
         .map((l) => {
+            const list = $props.project.board.findList(l.id)
+            const canAccept = list != null && list.canAcceptCard()
+            const isNotOwn = card.list != null && l.id != card.list.id
+
             return new ActionDropdownOption(
                 l.id,
                 l.name,
                 "moveTo",
                 l,
                 null,
-                false,
+                !canAccept || !isNotOwn,
                 null
             );
         });

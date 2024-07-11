@@ -22,6 +22,20 @@
                                 <n-switch :round="false" :value="data?.list.cardsAreClosed||false" @update:value="handleCardsAreClosedChanged"/>
                             </n-space>
                         </IconedBox>
+                        <IconedBox icon="fluent:number-symbol-square-20-filled" :contentOffsetX="24">
+                            <n-space class="flex-grow" justify="space-between" align="center">Card Limit
+                                <n-space align="center">
+                                    <n-switch :round="false" :value="data?.list.enableCardLimit||false" @update:value="handleEnableCardLimitChanged"/>
+                                    <n-input-number
+                                        :disabled="!(data?.list.enableCardLimit==undefined?false:data?.list.enableCardLimit)"
+                                        :value="data?.list.actualCardLimit()"
+                                        placeholder="#"
+                                        :min="0"
+                                        @update:value="handleCardLimitChanged"
+                                    />
+                                </n-space>
+                            </n-space>
+                        </IconedBox>
                         <IconedBox icon="fluent:timeline-20-filled" :contentOffsetX="24">
                             <ListDialogTimeline v-if="data != null" :logbook="data?.logbook||[]" :board="$props.board" :list="data.list" />
                         </IconedBox>
@@ -91,6 +105,16 @@ watch(showModel, ()=>$emit("update:show", showModel))
 
 function handleCardsAreClosedChanged (value: boolean) {
     transactions.commit(new ListChangeTransaction($props.listObservable.id, 'cardsAreClosed', value))
+}
+
+
+function handleEnableCardLimitChanged (value: boolean) {
+    transactions.commit(new ListChangeTransaction($props.listObservable.id, 'enableCardLimit', value))
+}
+
+
+function handleCardLimitChanged (value: number) {
+    transactions.commit(new ListChangeTransaction($props.listObservable.id, 'cardLimit', value))
 }
 
 </script>

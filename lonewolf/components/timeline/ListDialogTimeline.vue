@@ -78,6 +78,10 @@ function fieldToText(entry: LogEntry): string {
         return "title"
     case "cardsAreClosed":
         return "'Cards are Closed' setting"
+    case "enableCardLimit":
+        return "'Enable Card Limit' setting"
+    case "cardLimit":
+        return "'Card Limit' setting"
     default:
         return "something"
     }
