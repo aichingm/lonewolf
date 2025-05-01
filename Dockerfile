@@ -26,7 +26,7 @@ RUN pacman -Sy archlinux-keyring --noconfirm && \
                              python-aiohttp \
                              python-pipx \
                              python-toml \
-                             webkit2gtk \
+                             webkit2gtk-4.1 \
                              wget
 
 RUN npm update -g npm

@@ -1,0 +1,32 @@
+{
+  "identifier": "desktop",
+  "description": "Permissions for the Desktop Application",
+  "platforms": [
+    "macOS",
+    "windows",
+    "linux"
+  ],
+  "local": true,
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "fs:allow-read-file",
+    "fs:allow-write-file",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        "$HOME",
+        "$HOME/*",
+        "$HOME/**"
+      ]
+    },
+    "shell:allow-open",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "dialog:default",
+    "cli:default",
+    "store:default"
+  ]
+}

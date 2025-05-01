@@ -3,9 +3,9 @@
 </template>
 <script setup lang="ts">
 
-import { invoke } from "@tauri-apps/api/tauri";
-import { getMatches } from '@tauri-apps/api/cli'
-import type { CliMatches } from '@tauri-apps/api/cli'
+import { invoke } from "@tauri-apps/api/core";
+import { getMatches } from '@tauri-apps/plugin-cli'
+import type { CliMatches } from '@tauri-apps/plugin-cli'
 
 
 import Board from "@/common/data/Board";

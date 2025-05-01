@@ -2,11 +2,11 @@ import Settings from '@/common/settings/AppSettings'
 import type { Keymap } from '@/common/settings/AppSettings'
 import type { Storage as ApplicationStorage } from "@/common/settings/AppSettings";
 
-import { Store } from "./tauri-plugin-store";
+import { LazyStore } from "@tauri-apps/plugin-store";
 
 
 export default class Storage implements ApplicationStorage{
-    private store = new Store(".appSettings.json");
+    private store = new LazyStore(".appSettings.json");
 
     public load(): Promise<Settings>{
         return new Promise<Settings>((res, _rej) => {

@@ -3,17 +3,17 @@
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
-use tauri::http::ResponseBuilder;
-use tauri::Size;
-use tauri::PhysicalSize;
-use tauri::Manager;
-use std::fs::read;
-use std::path::Path;
 use faccess::{AccessMode, PathExt};
 use std::env;
+use std::fs::read;
+use std::path::Path;
+use tauri::http;
+use tauri::PhysicalSize;
+use tauri::Size;
+use tauri::Manager;
+
 
 use webbrowser;
-
 
 #[tauri::command]
 fn mime(path: &str) -> String {
@@ -21,7 +21,7 @@ fn mime(path: &str) -> String {
 
     let mime_opt = match mime_res {
         Ok(v) => v,
-        Err(_e) =>  return "application/octet-stream".to_string(),
+        Err(_e) => return "application/octet-stream".to_string(),
     };
 
     if mime_opt.is_none() {
@@ -57,7 +57,7 @@ fn open_file(uri: &str) {
             println!("[failed] open_file (data url) [webbrowser] ...");
         }
     } else if uri.starts_with("http") {
-        let path  = Path::new(uri);
+        let path = Path::new(uri);
         if opener::open(path).is_ok() {
             println!("open_file (http/s) {} ...", uri);
         } else {
@@ -66,7 +66,6 @@ fn open_file(uri: &str) {
     } else {
         println!("[failed] open_file {} failed", uri);
     }
-
 }
 
 #[tauri::command]
@@ -76,8 +75,8 @@ fn sync_cwd_to(path: &str) {
         Some(parent) => {
             env::set_current_dir(&parent).unwrap_or(());
             Some(parent)
-        },
-        None => None
+        }
+        None => None,
     };
 }
 #[tauri::command]
@@ -96,35 +95,31 @@ fn get_cwd() -> Result<String, String> {
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_cli::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_window_state::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![mime, open_file, sync_cwd_to, get_cwd])
+        .invoke_handler(tauri::generate_handler![
+            mime,
+            open_file,
+            sync_cwd_to,
+            get_cwd
+        ])
         .register_uri_scheme_protocol("fs", move |_app, request| {
+            let absolute_origin = "absolute.local";
+            let relative_origin = "relative.local";
 
-            let absolute_origin = "fs://absolute.local";
-            let relative_origin = "fs://relative.local";
-            let relative_origin_root = "fs://relative.local/";
+            let bad_request = http::Response::builder().status(400).body(Vec::new()).unwrap();
 
+            let forbidden = http::Response::builder().status(403).body(Vec::new()).unwrap();
 
-            let bad_request = ResponseBuilder::new()
-                .status(400)
-                .body(Vec::new());
+            let not_found = http::Response::builder().status(404).body(Vec::new()).unwrap();
 
-            let forbidden = ResponseBuilder::new()
-                .status(403)
-                .body(Vec::new());
+            let method_not_alowed = http::Response::builder().status(405).body(Vec::new()).unwrap();
 
-            let not_found = ResponseBuilder::new()
-                .status(404)
-                .body(Vec::new());
-
-            let method_not_alowed = ResponseBuilder::new()
-                .status(405)
-                .body(Vec::new());
-
-            let server_error = ResponseBuilder::new()
-                .status(500)
-                .body(Vec::new());
+            let server_error = http::Response::builder().status(500).body(Vec::new()).unwrap();
 
             if request.method() != "GET" {
                 return method_not_alowed;
@@ -132,23 +127,17 @@ fn main() {
 
             let uri = request.uri();
 
-            if !(uri.starts_with(absolute_origin) || uri.starts_with(relative_origin_root)) {
-                return bad_request
+            if !(uri.host() == Some(absolute_origin) || uri.host() == Some(relative_origin)) {
+                return bad_request;
             }
 
-            let path_opt = if uri.starts_with(absolute_origin) {
-                uri.get(absolute_origin.len()..uri.len())
+            let path = if uri.host() == Some(absolute_origin) {
+                Path::new(uri.path())
             } else {
-                uri.get((relative_origin.len() + 1)..uri.len())
+                Path::new(&uri.path()[1..])
             };
 
-            if path_opt.is_none() {
-                return bad_request
-            }
-
-            let path = Path::new(path_opt.unwrap());
-
-            let cwd = &env::current_dir()?;
+            let cwd = &env::current_dir().unwrap();
             let new_absolute_path = Path::new(cwd).join(path);
 
             let absolute_path = if path.is_absolute() {
@@ -158,28 +147,29 @@ fn main() {
             };
 
             if !absolute_path.is_file() {
-                return not_found
+                return not_found;
             }
 
             if !absolute_path.access(AccessMode::READ).is_ok() {
-                return forbidden
+                return forbidden;
             }
 
             let path_str = path.to_str().unwrap_or("");
 
             let local_file = if let Ok(data) = read(absolute_path) {
-                tauri::http::ResponseBuilder::new()
-                    .mimetype(&mime(path_str))
-                    .body(data)
+                http::Response::builder()
+                    .header("Content-Type", &mime(path_str))
+                    .body(data).unwrap()
             } else {
-                return server_error
+                return server_error;
             };
 
             local_file
         })
         .setup(|app| {
-            let main_window = app.get_window("main").unwrap();
-            main_window.set_min_size(Some(Size::Physical(PhysicalSize {
+            let main_window = app.get_webview_window("main").unwrap();
+            main_window
+                .set_min_size(Some(Size::Physical(PhysicalSize {
                     width: 1000,
                     height: 600,
                 })))

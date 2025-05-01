@@ -1,10 +1,10 @@
 import Preferences from '@/common/settings/Preferences'
 import type { Storage as ProjectStorage } from "@/common/settings/Preferences";
 
-import { Store } from "./tauri-plugin-store";
+import { LazyStore } from "@tauri-apps/plugin-store";
 
 export default class Storage implements ProjectStorage {
-    private store = new Store(".preferences.json");
+    private store = new LazyStore(".preferences.json");
 
     public load(projectId: string): Promise<Preferences>{
         return new Promise<Preferences>((res, _rej) => {

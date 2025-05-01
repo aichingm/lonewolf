@@ -1,6 +1,6 @@
 import Extension from '@/common/Extension'
 import type Project from '@/common/Project'
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 
 export function extensions(): Extension[] {
     return [new ProjectLoadCwdSyncer()]
