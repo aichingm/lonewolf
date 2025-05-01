@@ -2,8 +2,8 @@ import type { IStorage, IStorageEntry } from '@/common/storage/Storage'
 import type FSStore from '@/common/attachments/FileSystemStore'
 import { choosePathAndRead } from './Files'
 import Board from '@/common/data/Board'
-import { save } from '@tauri-apps/api/dialog';
-import { writeTextFile } from '@tauri-apps/api/fs';
+import { save } from '@tauri-apps/plugin-dialog';
+import { writeTextFile } from '@tauri-apps/plugin-fs';
 import { Path } from '@/utils/path'
 import { v1 as uuid } from "uuid";
 

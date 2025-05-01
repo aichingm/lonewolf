@@ -20,6 +20,7 @@ module.exports = {
     ],
     rules: {
         "vue/multi-word-component-names": ["off"],
+        "vue/no-ref-as-operand": ["off"],
         "@typescript-eslint/no-unused-vars": [
             "warn",
             { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
