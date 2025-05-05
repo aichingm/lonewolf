@@ -1,17 +1,17 @@
 <template>
     <n-dropdown
         :show="showRef"
-        :options="fixedOptions"
+        :options="$props.options"
         placement="right-start"
         @select="selected"
+        @clickoutside="show(false)"
     >
         <n-button
             :id="showButtonId"
             quaternary
             size="tiny"
             @focus="show(true)"
-            @blur="show(false)"
-            @click.stop
+            @keydown.tab="show(false)"
         >
             <template #icon>
                 <n-icon
@@ -26,13 +26,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { v1 as uuid1 } from "uuid";
-
-import type ActionDropdownOption from "@/common/ActionDropdownOption";
+import type { DropdownOption } from "./DropdownOption"
 
 const $props = defineProps<{
-    options: ActionDropdownOption[];
+    options: DropdownOption[];
 }>();
 
 const $emit = defineEmits(["selected"]);
@@ -43,23 +42,11 @@ const showRef = ref(false);
 function show(value: boolean) {
     showRef.value = value;
 }
-function selected(key: string | number, optionObject: ActionDropdownOption) {
+
+function selected(key: string | number, optionObject: DropdownOption) {
     show(false);
     $emit("selected", key, optionObject);
     document.getElementById(showButtonId)?.blur();
 }
 
-const fixedOptions = computed(() => fixOptions($props.options));
-
-function fixOptions(optList: ActionDropdownOption[]) {
-    for (const item of optList) {
-        item.props = { onMousedown: () => selected(item.key, item) };
-        if (item.children != null) {
-            item.children = fixOptions(item.children);
-        } else {
-            item.children = undefined; // the dropdown draws an arrow if the `children` field is defined
-        }
-    }
-    return optList;
-}
 </script>

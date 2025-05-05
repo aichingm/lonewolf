@@ -108,7 +108,8 @@ import { useTransactions } from '../transactions/api'
 import { CardMoveTransaction } from "@/common/transactions/CardTransactions";
 
 import ActionDropdown from "@/components/ActionDropdown.vue";
-import ActionDropdownOption from "@/common/ActionDropdownOption";
+import type { DropdownOption } from "@/components/DropdownOption";
+import { staticOption, groupOption } from "@/components/DropdownOption";
 import { taskStats } from "@/utils/markdown";
 
 const $props = defineProps<{
@@ -156,38 +157,20 @@ const data = computed(()=>{
 
 })
 
-const generateActions = function (lists: List[]) {
+function generateActions(lists: List[]): DropdownOption[] {
     const listChildren = filterMoveLists(lists);
     return [
-        new ActionDropdownOption(
-            "moveToKey",
-            "Move To",
-            "moveTo",
-            null,
-            listChildren,
-            listChildren.length == 0,
-            null
-        ),
+        groupOption("moveTo", "moveToKey", "Move To", null, listChildren, listChildren.length == 0),
     ];
-};
+}
 
 function filterMoveLists(lists: List[]) {
-    return lists.map((l) => {
-        return new ActionDropdownOption(
-            l.id,
-            l.name,
-            "moveTo",
-            l,
-            null,
-            false,
-            null
-        );
-    });
+    return lists.map((l) => staticOption("moveTo", l.id, l.name, l));
 }
 
 function actionMenuSelected(
     key: string | number,
-    optionObject: ActionDropdownOption
+    optionObject: DropdownOption
 ) {
 
     if (optionObject.command == "moveTo" && optionObject.data != null) {

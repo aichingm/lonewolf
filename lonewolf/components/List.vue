@@ -14,6 +14,7 @@
                 :size="7"
                 align="center"
                 gap="0"
+                @click.stop
             >
                 <n-badge
                     :value="data.cards.length + (data?.list.enableCardLimit? ('/' + data?.list.actualCardLimit()) : '')"
@@ -81,14 +82,15 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from "vue";
 
-import { useThemeVars } from 'naive-ui'
+import { useThemeVars, useDialog } from 'naive-ui'
 
 import draggable from "vuedraggable";
 import { v1 as uuid1 } from "uuid";
 
 import CardVue from "./Card.vue";
 import ActionDropdown from "./ActionDropdown.vue";
-import ActionDropdownOption from "@/common/ActionDropdownOption";
+import type { DropdownOption } from "./DropdownOption";
+import { staticOption, groupOption } from "./DropdownOption";
 import { isChrome, isWebkit } from "@/utils/browser-comp";
 
 import type Project from "@/common/Project";
@@ -99,7 +101,7 @@ import type Preferences from "@/common/settings/Preferences";
 import type { List as ListObservable, Board as BoardObservable, Card as CardObservable} from "@/common/Observable";
 
 import { useTransactions } from '@/components/transactions/api'
-import { ListSortTransaction, ListArchiveTransaction } from "@/common/transactions/ListTransactions";
+import { ListDeleteTransaction, ListSortTransaction, ListArchiveTransaction } from "@/common/transactions/ListTransactions";
 import { NewCardTransaction, CardSortTransaction, CardMoveTransaction } from "@/common/transactions/CardTransactions";
 
 import { themeCast } from '@/themes/theme'
@@ -116,6 +118,8 @@ const $emit = defineEmits(["card-edit", "list-edit"]);
 const theme = themeCast(useThemeVars())
 
 const transactions = useTransactions()
+
+const  dialog = useDialog()
 
 const data = computed(()=> {
     const list = $props.project.board.findList($props.list.id) as List
@@ -139,36 +143,13 @@ const data = computed(()=> {
 const listWidth = computed(()=>$props.preferences.boardListsJustification == "equal"?'flex-grow: 1;':('width:' + $props.preferences.boardListsWidth + 'px;'))
 
 
-function generateActions(cards: CardObservable[], list: List, lists: List[]): ActionDropdownOption[] {
+function generateActions(cards: CardObservable[], list: List, lists: List[]): DropdownOption[] {
     const children = filterMoveList(list, lists);
     return [
-        new ActionDropdownOption(
-            "editKey",
-            "Edit",
-            "edit",
-            list,
-            null,
-            false,
-            null
-        ),
-        new ActionDropdownOption(
-            "moveKey",
-            "Move",
-            "move",
-            null,
-            children,
-            children?.length == 0,
-            null
-        ),
-        new ActionDropdownOption(
-            "archiveKey",
-            "Archive",
-            "archive",
-            null,
-            null,
-            cards.length != 0,
-            null
-        ),
+        staticOption("edit", "editKey", "Edit", list),
+        groupOption("move", "moveKey", "Move", list, children, children?.length == 0),
+        staticOption("archive", "archiveKey", "Archive", list, cards.length != 0),
+        staticOption("delete", "deleteKey", "Delete", list, cards.length != 0),
     ];
 }
 
@@ -180,27 +161,11 @@ function filterMoveList(list: List, lists: List[]) {
             i++; // skip next iteration moving before next is the same as current position
             continue; // skip current can not move before self
         }
-        const o = new ActionDropdownOption(
-            i,
-            "Before " + lists[i].name,
-            "moveList",
-            null,
-            null,
-            false,
-            null
-        );
+        const o = staticOption("moveList", lists[i].id, "Before " + lists[i].name, lists[i])
         filteredLists.push(o);
     }
     if (lists[lists.length - 1].id != list.id) {
-        const o = new ActionDropdownOption(
-            lists.length,
-            "After " + lists[lists.length - 1].name,
-            "moveList",
-            null,
-            null,
-            false,
-            null
-        );
+        const o = staticOption("moveList", lists[lists.length - 1].id, "After " + lists[lists.length - 1].name, lists[lists.length - 1])
         filteredLists.push(o);
     }
     return filteredLists;
@@ -208,7 +173,7 @@ function filterMoveList(list: List, lists: List[]) {
 
 function actionMenuSelected(
     key: string | number,
-    optionObject: ActionDropdownOption
+    optionObject: DropdownOption
 ) {
     if (optionObject.command == "moveList") {
         if (typeof key === 'number') {
@@ -222,6 +187,18 @@ function actionMenuSelected(
 
     if (optionObject.command == "archive") {
         transactions.commit(new ListArchiveTransaction(data.value.list.id, data.value.list.position, ListArchiveTransaction.Archive));
+    }
+
+    if (optionObject.command == "delete" && optionObject.data != null) {
+        dialog.warning({
+            title: 'Delete',
+            content: 'Deleting a list can not be undone, are you sure?',
+            positiveText: 'I am sure!',
+            negativeText: 'Cancel',
+            onPositiveClick: () => {
+                transactions.commit(new ListDeleteTransaction(data.value.list.id))
+            },
+        })
     }
 }
 

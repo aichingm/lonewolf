@@ -12,7 +12,10 @@
                 :name="l.name"
             />
         </div>
-        <div class="quick-edit">
+        <div
+            class="quick-edit"
+            @click.stop
+        >
             <ActionDropdown
                 :options="data.actions"
                 @selected="actionMenuSelected"
@@ -94,6 +97,7 @@ import { computed } from "vue";
 import { useThemeVars } from 'naive-ui'
 import { themeCast } from '@/themes/theme'
 
+
 import CardLabelBadge from "./CardLabelBadge.vue";
 import AutoTime from "./AutoTime.vue";
 
@@ -107,7 +111,8 @@ import { useTransactions } from '@/components/transactions/api'
 import { CardSortTransaction, CardMoveTransaction } from "@/common/transactions/CardTransactions";
 
 import ActionDropdown from "./ActionDropdown.vue";
-import ActionDropdownOption from "@/common/ActionDropdownOption";
+import type { DropdownOption } from "./DropdownOption";
+import { staticOption, groupOption } from "./DropdownOption";
 import { taskStats } from "@/utils/markdown";
 
 const $props = defineProps<{
@@ -157,46 +162,14 @@ const data = computed(()=>{
     }
 })
 
-function generateActions (card: Card, lists: List[], cards: Card[]) {
+function generateActions (card: Card, lists: List[], cards: Card[]): DropdownOption[] {
     const cardsChildren = filterMoveCards(card, cards);
     const listChildren = filterMoveLists(card, lists);
     return [
-        new ActionDropdownOption(
-            "editKey",
-            "Edit",
-            "edit",
-            card,
-            null,
-            false,
-            null
-        ),
-        new ActionDropdownOption(
-            "moveKey",
-            "Move",
-            "move",
-            null,
-            cardsChildren,
-            cardsChildren.length == 0,
-            null
-        ),
-        new ActionDropdownOption(
-            "moveToKey",
-            "Move To",
-            "moveTo",
-            null,
-            listChildren,
-            listChildren.length == 0,
-            null
-        ),
-        new ActionDropdownOption(
-            "archiveKey",
-            "Archive",
-            "archive",
-            card,
-            null,
-            false,
-            null
-        ),
+        staticOption("edit", "editKey", "Edit", card),
+        groupOption("move", "moveKey", "Move", card, cardsChildren, cardsChildren.length == 0),
+        groupOption("moveTo", "moveToKey", "Move To", card, listChildren, listChildren.length == 0),
+        staticOption("archive", "archiveKey", "Archive", card),
     ];
 }
 
@@ -208,27 +181,11 @@ function filterMoveCards(card: Card, cards: Card[]) {
             i++; // skip next iteration moving before next is the same as current position
             continue; // skip current can not move before self
         }
-        const o = new ActionDropdownOption(
-            i,
-            "Before " + cards[i].name,
-            "move",
-            cards[i],
-            null,
-            false,
-            null
-        );
+        const o = staticOption("move", i, "Before " + cards[i].name, cards[i])
         filteredCards.push(o);
     }
     if (cards.length > 0 && cards[cards.length -1].id != card.id) {
-        const o = new ActionDropdownOption(
-            cards.length,
-            "After " + cards[cards.length -1].name,
-            "move",
-            cards[cards.length -1],
-            null,
-            false,
-            null
-        );
+        const o = staticOption("move", cards.length, "After " + cards[cards.length -1].name, cards[cards.length -1])
         filteredCards.push(o);
     }
     return filteredCards;
@@ -240,22 +197,13 @@ function filterMoveLists(card: Card, lists: List[]) {
             const list = $props.project.board.findList(l.id)
             const canAccept = list != null && list.canAcceptCard()
             const isNotOwn = card.list != null && l.id != card.list.id
-
-            return new ActionDropdownOption(
-                l.id,
-                l.name,
-                "moveTo",
-                l,
-                null,
-                !canAccept || !isNotOwn,
-                null
-            );
+            return staticOption("moveTo", l.id, l.name, l, !canAccept || !isNotOwn)
         });
 }
 
 function actionMenuSelected(
     key: string | number,
-    optionObject: ActionDropdownOption
+    optionObject: DropdownOption
 ) {
     if (optionObject.command == "edit") {
         $emit("card-edit", data.value.card, $props.card);
@@ -264,7 +212,7 @@ function actionMenuSelected(
     if (optionObject.command == "move" && optionObject.data != null) {
         if (typeof key === 'number') {
             // FIXME does not sort correctly when moving card down off by one
-            transactions.commit(new CardSortTransaction(data.value.card.id, data.value.card.position, key)) 
+            transactions.commit(new CardSortTransaction(data.value.card.id, data.value.card.position, key))
         }
     }
 

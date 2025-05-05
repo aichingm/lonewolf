@@ -25,7 +25,8 @@ import { useTransactions } from '../transactions/api'
 import { ListArchiveTransaction } from "@/common/transactions/ListTransactions";
 
 import ActionDropdown from "@/components/ActionDropdown.vue";
-import ActionDropdownOption from "@/common/ActionDropdownOption";
+import { staticOption } from "@/components/DropdownOption";
+import type { DropdownOption } from "@/components/DropdownOption";
 
 const $props = defineProps<{
     project: Project;
@@ -44,23 +45,15 @@ const list = computed(()=>{$props.list.version; return $props.project.board.find
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
 const actions = computed(()=>{$props.list.version; return generateActions()})
 
-const generateActions = function () {
+function generateActions(): DropdownOption[] {
     return [
-        new ActionDropdownOption(
-            "restoreKey",
-            "Restore",
-            "restore",
-            null,
-            null,
-            false,
-            null
-        ),
+        staticOption("restore", "restoreKey", "Restore", list)
     ];
-};
+}
 
 function actionMenuSelected(
     key: string | number,
-    optionObject: ActionDropdownOption
+    optionObject: DropdownOption
 ) {
 
     if (optionObject.command == "restore") {
