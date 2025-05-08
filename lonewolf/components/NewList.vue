@@ -1,19 +1,29 @@
 <template>
-    <div class="list" :id="scrollTargetId" :style="'width: ' + ($props.size - 20) + 'px;'">
-        <div class="list-name">New List</div>
+    <div
+        :id="scrollTargetId"
+        class="list"
+        :style="'width: ' + ($props.size - 20) + 'px;'"
+    >
+        <div class="list-name">
+            New List
+        </div>
         <div class="cards">
             <n-input-group>
                 <n-input
                     :id="listNameInputId"
                     ref="listNameInput"
                     v-model:value="listName"
-                    @keyup.enter="newButtonClicked()"
                     placeholder="New List"
                     :theme-overrides="inputThemeOverrides"
+                    @keyup.enter="newButtonClicked()"
                 />
-                <n-button type="primary" @click="newButtonClicked()" tabindex="-1"
-                >+</n-button
+                <n-button
+                    type="primary"
+                    tabindex="-1"
+                    @click="newButtonClicked()"
                 >
+                    +
+                </n-button>
             </n-input-group>
         </div>
     </div>

@@ -39,7 +39,7 @@ function instanceofChain(t: TransactionTarget, name: string): boolean {
 
 </script>
 <template>
-    <slot/>
+    <slot />
 </template>
 <style>
 </style>

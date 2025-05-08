@@ -1,13 +1,26 @@
 <template>
     <n-space vertical>
-        <InitialFocus/>
+        <InitialFocus />
         <n-space justify="space-between">
             <div>List arrangement</div>
-            <n-slider class="setting-line" v-model:value="listsJustification" :tooltip="false" :marks="marks" step="mark" />
+            <n-slider
+                v-model:value="listsJustification"
+                class="setting-line"
+                :tooltip="false"
+                :marks="marks"
+                step="mark"
+            />
         </n-space>
         <n-space justify="space-between">
             <div>List width</div>
-            <n-slider class="setting-line" v-model:value="listsWidth" step="1" :min="160" :max="1600" :disabled="listsJustification==reverseTranslate('equal')"/>
+            <n-slider
+                v-model:value="listsWidth"
+                class="setting-line"
+                step="1"
+                :min="160"
+                :max="1600"
+                :disabled="listsJustification==reverseTranslate('equal')"
+            />
         </n-space>
     </n-space>
 </template>

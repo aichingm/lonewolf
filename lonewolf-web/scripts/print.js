@@ -1,6 +1,4 @@
-/* eslint-env node */
-
-const puppeteer = require('puppeteer');
+import puppeteer from 'puppeteer'
 
 (async () => {
     // Launch the browser and open a new blank page

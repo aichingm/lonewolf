@@ -1,48 +1,62 @@
 <template>
-    <n-el 
-        tag="div" 
-        :id="domId" 
+    <n-el
+        :id="domId"
+        tag="div"
         class="editor-root"
         tabindex="0"
         @focus="acceptFocus"
     >
-        <transition name="editor" :duration=".3">
-            <n-el tag="div" class="editor" v-if="editMode">
-                <ToolbarVue 
-                    v-if="viewReady && $props.showToolbar && editMode" 
-                    :editor-view="view as EditorView" 
-                    :id="toolbarId" 
-                    :toolbarConfig="$props.toolbarConfig"
-                    :attachmentStore="$props.attachmentStore"
+        <transition
+            name="editor"
+            :duration=".3"
+        >
+            <n-el
+                v-if="editMode"
+                tag="div"
+                class="editor"
+            >
+                <ToolbarVue
+                    v-if="viewReady && $props.showToolbar && editMode"
+                    :id="toolbarId"
+                    :editor-view="view as EditorView"
+                    :toolbar-config="$props.toolbarConfig"
+                    :attachment-store="$props.attachmentStore"
                     :attachments="$props.attachments"
-                    @previewToggleChanged="setEditMode"
+                    @preview-toggle-changed="setEditMode"
                     @save="commit(); hide();"
                     @reset="reset()"
                 />
                 <Codemirror
+                    v-model="editorContent"
                     class="cm6"
                     placeholder="..."
                     :autofocus="true"
                     :indent-with-tab="true"
                     :tab-size="2"
                     :extensions="extensions"
-                    v-model="editorContent"
                     @ready="handleReady"
                     @blur="onBlur"
                 />
-                <div class="editor-decoration editor-decoration-border"></div>
-                <div class="editor-decoration editor-decoration-shadow"></div>
+                <div class="editor-decoration editor-decoration-border" />
+                <div class="editor-decoration editor-decoration-shadow" />
             </n-el>
-        </transition >
+        </transition>
         <Markdown
-            v-if="!editMode && editorContent != ''" @click="(e)=>e.defaultPrevented||setEditMode(true)"
-            :darkMode="editorStyle.darkMode"
+            v-if="!editMode && editorContent != ''"
+            :dark-mode="editorStyle.darkMode"
             :value="editorContent"
-            :imageInterceptor="(e) => $props.markdownHandler.renderImage(e)"
-            :imageUpdater="(e) => $props.markdownHandler.updateImage(e)"
-            :linkClickInterceptor="(e) => $props.markdownHandler.linkClicked(e)"
+            :image-interceptor="(e) => $props.markdownHandler.renderImage(e)"
+            :image-updater="(e) => $props.markdownHandler.updateImage(e)"
+            :link-click-interceptor="(e) => $props.markdownHandler.linkClicked(e)"
+            @click="(e)=>e.defaultPrevented||setEditMode(true)"
         />
-        <n-text v-if="!editMode && editorContent == ''" depth="3" @click="setEditMode(true)">{{ $props.placeholder }}</n-text>
+        <n-text
+            v-if="!editMode && editorContent == ''"
+            depth="3"
+            @click="setEditMode(true)"
+        >
+            {{ $props.placeholder }}
+        </n-text>
     </n-el>
 </template>
 
@@ -97,6 +111,9 @@ const $props = withDefaults(defineProps<{
     exitOnEsc: true,
     clearAfterEdit: false,
     editorStyle: ()=>({}),
+    attachmentStore: undefined,
+    attachments: undefined,
+
 });
 
 const editorStyle = computed(() => fillStyle($props.editorStyle))

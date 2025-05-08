@@ -1,14 +1,25 @@
 {
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.config.json"
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "lib": ["ESNext", "DOM", "ES2021.String"],
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@platform/*": ["./src-platform/*"]
     },
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.vitest.json"
-    }
-  ]
+  },
+  "include": [
+    "./src-platform/**/.ts","src-platform/**/*.d.ts","src-platform/**/*.vue",
+    "src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue", "env.d.ts", "decs.d.ts"
+  ],
 }
+

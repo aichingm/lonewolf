@@ -26,7 +26,10 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', eve
             >
                 <n-global-style />
                 <n-dialog-provider>
-                    <AppView :appSettings="appSettings" :darkMode="appSettings.darkMode=='system'?systemDarkMode:appSettings.darkMode=='dark'" />
+                    <AppView
+                        :app-settings="appSettings"
+                        :dark-mode="appSettings.darkMode=='system'?systemDarkMode:appSettings.darkMode=='dark'"
+                    />
                 </n-dialog-provider>
             </n-config-provider>
         </template>

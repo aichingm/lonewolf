@@ -2,7 +2,6 @@ import { fileURLToPath, URL } from "node:url";
 
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
-import vueJsx from "@vitejs/plugin-vue-jsx";
 
 // https://github.com/vbenjs/vite-plugin-compression
 import viteCompression from "vite-plugin-compression";
@@ -13,7 +12,6 @@ import zlib from "zlib";
 export default defineConfig({
     plugins: [
         vue(),
-        vueJsx(),
         viteCompression({
             algorithm: "brotliCompress",
             filter: /\.(js|mjs|json|css|html|svg)$/i,

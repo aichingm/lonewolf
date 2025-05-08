@@ -1,8 +1,30 @@
 <template>
     <div class="list">
-        <n-input ref="inputRef" class="input" autofocus v-model:value="filter" placeholder="Filter" @keyup="handleKey" @keydown="handleKeyDown" @blur="handleBlur" clearable/>
+        <n-input
+            ref="inputRef"
+            v-model:value="filter"
+            class="input"
+            autofocus
+            placeholder="Filter"
+            clearable
+            @keyup="handleKey"
+            @keydown="handleKeyDown"
+            @blur="handleBlur"
+        />
         <div class="tags">
-            <div v-for="(o, index)  of options" :key="o.id" :class="'tag-line ' + (index==active?'tag-line-active':'')" ><n-tag :color="tagColor(o.color)" @click="optionClicked(o)" tabindex="-1" >{{ o.name }}</n-tag></div>
+            <div
+                v-for="(o, index) of options"
+                :key="o.id"
+                :class="'tag-line ' + (index==active?'tag-line-active':'')"
+            >
+                <n-tag
+                    :color="tagColor(o.color)"
+                    tabindex="-1"
+                    @click="optionClicked(o)"
+                >
+                    {{ o.name }}
+                </n-tag>
+            </div>
         </div>
     </div>
 </template>

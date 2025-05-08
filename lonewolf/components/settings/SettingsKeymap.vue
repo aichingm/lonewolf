@@ -1,24 +1,46 @@
 <template>
     <n-space vertical>
-        <InitialFocus/>
-        <n-input placeholder="Search" v-model:value="filter" clearable >
+        <InitialFocus />
+        <n-input
+            v-model:value="filter"
+            placeholder="Search"
+            clearable
+        >
             <template #prefix>
                 <n-icon>
                     <icon icon="fluent:search-20-regular" />
                 </n-icon>
             </template>
         </n-input>
-        <div v-for="entry in keymapEntries" :key="entry.name">
+        <div
+            v-for="entry in keymapEntries"
+            :key="entry.name"
+        >
             <n-space justify="space-between">
-                <div>{{entry.label}}</div>
-                <n-tag v-if="entry.keys !=''" type="success" closable @close="()=>handleClose(entry.name)">{{ entry.keys }}</n-tag>
+                <div>{{ entry.label }}</div>
+                <n-tag
+                    v-if="entry.keys !=''"
+                    type="success"
+                    closable
+                    @close="()=>handleClose(entry.name)"
+                >
+                    {{ entry.keys }}
+                </n-tag>
                 <n-space v-else>
-                    <n-button strong secondary @click="(e: Event)=>handleAssign(entry.name, e)">
+                    <n-button
+                        strong
+                        secondary
+                        @click="(e: Event)=>handleAssign(entry.name, e)"
+                    >
                         Assign
                     </n-button>
                     <n-tooltip trigger="hover">
                         <template #trigger>
-                            <n-button strong secondary @click="()=>handleRestore(entry.name)">
+                            <n-button
+                                strong
+                                secondary
+                                @click="()=>handleRestore(entry.name)"
+                            >
                                 <n-icon><icon icon="fluent:arrow-undo-20-regular" /></n-icon>
                             </n-button>
                         </template>

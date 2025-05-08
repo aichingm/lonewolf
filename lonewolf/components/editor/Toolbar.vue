@@ -1,113 +1,223 @@
 <template>
     <div class="toolbar">
         <div class="left">
-            <n-button v-if="toolbarConfig.showCreateBold" quaternary @click="bold" >
+            <n-button
+                v-if="toolbarConfig.showCreateBold"
+                quaternary
+                @click="bold"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:text-bold-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="toolbarConfig.showCreateItalic" quaternary @click="italic" >
+            <n-button
+                v-if="toolbarConfig.showCreateItalic"
+                quaternary
+                @click="italic"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:text-italic-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="toolbarConfig.showCreateCode" quaternary @click="code" >
+            <n-button
+                v-if="toolbarConfig.showCreateCode"
+                quaternary
+                @click="code"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:code-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <div class="new-section"></div>
-            <n-button v-if="toolbarConfig.showCreateLink" quaternary @click="link" >
+            <div class="new-section" />
+            <n-button
+                v-if="toolbarConfig.showCreateLink"
+                quaternary
+                @click="link"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:link-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="toolbarConfig.showCreateImage" quaternary @click="image" >
+            <n-button
+                v-if="toolbarConfig.showCreateImage"
+                quaternary
+                @click="image"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:image-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <div class="new-section"></div>
-            <n-button v-if="toolbarConfig.showCreateHeadline1" quaternary @click="headline" >
+            <div class="new-section" />
+            <n-button
+                v-if="toolbarConfig.showCreateHeadline1"
+                quaternary
+                @click="headline"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:text-header-1-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="toolbarConfig.showCreateCodeFence" quaternary @click="codeFence" >
+            <n-button
+                v-if="toolbarConfig.showCreateCodeFence"
+                quaternary
+                @click="codeFence"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:braces-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="toolbarConfig.showCreateBlockquote" quaternary @click="blockqoute" >
+            <n-button
+                v-if="toolbarConfig.showCreateBlockquote"
+                quaternary
+                @click="blockqoute"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:text-quote-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <div class="new-section"></div>
-            <n-button v-if="toolbarConfig.showCreateList" quaternary @click="list" >
+            <div class="new-section" />
+            <n-button
+                v-if="toolbarConfig.showCreateList"
+                quaternary
+                @click="list"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:text-bullet-list-ltr-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="toolbarConfig.showCreateOrderedList" quaternary @click="orderedList" >
+            <n-button
+                v-if="toolbarConfig.showCreateOrderedList"
+                quaternary
+                @click="orderedList"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:text-number-list-ltr-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="toolbarConfig.showCreateTaskList" quaternary @click="taskList" >
+            <n-button
+                v-if="toolbarConfig.showCreateTaskList"
+                quaternary
+                @click="taskList"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:task-list-ltr-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="toolbarConfig.showCreateTable" quaternary @click="table" >
+            <n-button
+                v-if="toolbarConfig.showCreateTable"
+                quaternary
+                @click="table"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:table-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-dropdown v-if="attachmentOptions.length > 0" trigger="click" @clickoutside="attachmentOptionsShow=false" :options="attachmentOptions" :show="attachmentOptionsShow" :show-arrow="true">
-                <n-button v-if="$props.attachments != undefined" quaternary @click="attachmentOptionsShow=!attachmentOptionsShow">
+            <n-dropdown
+                v-if="attachmentOptions.length > 0"
+                trigger="click"
+                :options="attachmentOptions"
+                :show="attachmentOptionsShow"
+                :show-arrow="true"
+                @clickoutside="attachmentOptionsShow=false"
+            >
+                <n-button
+                    v-if="$props.attachments != undefined"
+                    quaternary
+                    @click="attachmentOptionsShow=!attachmentOptionsShow"
+                >
                     <template #icon>
-                        <n-icon size="20" color="gray">
+                        <n-icon
+                            size="20"
+                            color="gray"
+                        >
                             <icon icon="fluent:attach-20-filled" />
                         </n-icon>
                     </template>
                 </n-button>
             </n-dropdown>
-            <n-button v-if="toolbarConfig.showAddFile" quaternary @click="addFile" >
+            <n-button
+                v-if="toolbarConfig.showAddFile"
+                quaternary
+                @click="addFile"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:document-add-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-
         </div>
         <div class="right">
-            <n-switch v-if="toolbarConfig.showPreviewToggle" class="preview-toggle" size="small" @update:value="(value: boolean) => $emit('previewToggleChanged', value)" :rail-style="previewRailStyle" >
+            <n-switch
+                v-if="toolbarConfig.showPreviewToggle"
+                class="preview-toggle"
+                size="small"
+                :rail-style="previewRailStyle"
+                @update:value="(value: boolean) => $emit('previewToggleChanged', value)"
+            >
                 <template #checked>
                     Preview
                 </template>
@@ -115,23 +225,46 @@
                     Editing
                 </template>
             </n-switch>
-            <n-button v-if="toolbarConfig.showMarkdownReference" quaternary tag="a" href="https://www.markdownguide.org/basic-syntax/" target="_blank" >
+            <n-button
+                v-if="toolbarConfig.showMarkdownReference"
+                quaternary
+                tag="a"
+                href="https://www.markdownguide.org/basic-syntax/"
+                target="_blank"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:calendar-info-20-regular" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="toolbarConfig.resetable" quaternary @click="$emit('reset')">
+            <n-button
+                v-if="toolbarConfig.resetable"
+                quaternary
+                @click="$emit('reset')"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:arrow-reset-20-filled" />
                     </n-icon>
                 </template>
             </n-button>
-            <n-button v-if="toolbarConfig.saveable" quaternary @click="$emit('save')" >
+            <n-button
+                v-if="toolbarConfig.saveable"
+                quaternary
+                @click="$emit('save')"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon :icon="toolbarConfig.saveIcon" />
                     </n-icon>
                 </template>

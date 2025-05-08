@@ -1,44 +1,89 @@
 <template>
-    <div class="card" @click="$emit('card-edit', data.card, $props.card)">
+    <div
+        class="card"
+        @click="$emit('card-edit', data.card, $props.card)"
+    >
         <div class="badges">
-            <CardLabelBadge v-for="l in data.activeLabels" :key="l.id" :color="l.color" :borderColor="l.color" :name="l.name" />
+            <CardLabelBadge
+                v-for="l in data.activeLabels"
+                :key="l.id"
+                :color="l.color"
+                :border-color="l.color"
+                :name="l.name"
+            />
         </div>
         <div class="quick-edit">
-            <ActionDropdown :options="data.actions" @selected="actionMenuSelected" />
+            <ActionDropdown
+                :options="data.actions"
+                @selected="actionMenuSelected"
+            />
         </div>
         <n-h3>{{ data.card.name }}</n-h3>
-        <n-space :size="[8,0]" justify="left">
-            <n-tag v-if="data.hasDueDate" size="small" round :bordered="false" :type="dueDateType(data.card)">
+        <n-space
+            :size="[8,0]"
+            justify="left"
+        >
+            <n-tag
+                v-if="data.hasDueDate"
+                size="small"
+                round
+                :bordered="false"
+                :type="dueDateType(data.card)"
+            >
                 <template #icon>
-                    <n-icon size="20" >
+                    <n-icon size="20">
                         <icon icon="fluent:timer-20-regular" />
                     </n-icon>
                 </template>
                 <AutoTime :data="data.card.dueDate || 0" /><!-- passing 0 only to make the compiler happy card.dueDate can not be null since the component is only shown if hasDueDate == true -->
             </n-tag>
-            <n-tag v-if="data.card.comments.filter(c=>!c.deleted).length > 0" size="small" round :bordered="false">
+            <n-tag
+                v-if="data.card.comments.filter(c=>!c.deleted).length > 0"
+                size="small"
+                round
+                :bordered="false"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:comment-20-regular" />
                     </n-icon>
                 </template>
                 {{ data.card.comments.filter(c=>!c.deleted).length }}
             </n-tag>
-            <n-tag v-if="data.card.attachments.filter(a=>!a.deleted).length > 0" size="small" round :bordered="false">
+            <n-tag
+                v-if="data.card.attachments.filter(a=>!a.deleted).length > 0"
+                size="small"
+                round
+                :bordered="false"
+            >
                 <template #icon>
-                    <n-icon size="20" color="gray">
+                    <n-icon
+                        size="20"
+                        color="gray"
+                    >
                         <icon icon="fluent:attach-20-regular" />
                     </n-icon>
                 </template>
                 {{ data.card.attachments.filter(a=>!a.deleted).length }}
             </n-tag>
-            <n-tag v-if="data.totalTasks[1] > 0" size="small" type="success" :bordered="false">
+            <n-tag
+                v-if="data.totalTasks[1] > 0"
+                size="small"
+                type="success"
+                :bordered="false"
+            >
                 <template #icon>
-                    <n-icon size="20" color="#18a058">
+                    <n-icon
+                        size="20"
+                        color="#18a058"
+                    >
                         <icon :icon="data.totalTasks[0]==0?'fluent:checkbox-unchecked-20-regular':data.totalTasks[0] == data.totalTasks[1]?'fluent:checkbox-checked-20-regular':'fluent:checkbox-indeterminate-20-regular'" />
                     </n-icon>
                 </template>
-                {{ data.totalTasks[0] + "/" + data.totalTasks[1]}}
+                {{ data.totalTasks[0] + "/" + data.totalTasks[1] }}
             </n-tag>
         </n-space>
     </div>

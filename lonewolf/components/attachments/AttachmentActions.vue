@@ -4,7 +4,8 @@
         trigger="hover"
         placement="bottom-start"
         @select="handleSelect"
-    ><!-- NOTICE this is set to bottom-start because buttom is blury on linux-tauri https://stackoverflow.com/questions/42669491/css-translate-with-percentage-causes-blurred-image -->
+    >
+        <!-- NOTICE this is set to bottom-start because buttom is blury on linux-tauri https://stackoverflow.com/questions/42669491/css-translate-with-percentage-causes-blurred-image -->
         <n-button
             text
             tag="a"
@@ -13,7 +14,7 @@
             type="primary"
             class="dropdown-trigger"
         >
-            {{$props.attachment.name}}
+            {{ $props.attachment.name }}
         </n-button>
     </n-dropdown>
 </template>
@@ -40,6 +41,8 @@ const $emit = defineEmits(["delete", "edit"]);
 
 const url = ref($props.url)
 
+// NOTICE computed is not a function but a macro, we need to tell the macro that it should depend on a Proxy changing thats why we have unused expressions in computed macros
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 const options = computed(()=>{url.value; return [
     {
         key: 'header',

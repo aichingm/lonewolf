@@ -4,31 +4,31 @@ import { readFile } from "@tauri-apps/plugin-fs"
 import type { OpenDialogOptions } from '@tauri-apps/plugin-dialog'
 
 
-export function read(path: string): Promise<ArrayBuffer>{
-    return new Promise<ArrayBuffer>((res, rej)=>{
+export function read(path: string): Promise<Uint8Array>{
+    return new Promise<Uint8Array>((res, rej)=>{
         readFile(path).then((content)=>{
-            res(content.buffer)
+            res(content)
         }).catch(rej)
     })
 }
 
-export function chooseFileAndRead(properties?: OpenDialogOptions): Promise<[string, string, ArrayBuffer]>{
-    return new Promise<[string, string, ArrayBuffer]>((resolve, _reject)=>{
+export function chooseFileAndRead(properties?: OpenDialogOptions): Promise<[string, string, Uint8Array]>{
+    return new Promise<[string, string, Uint8Array]>((resolve, _reject)=>{
         chooseFile(properties).then((data)=>{
             const [_name, mime, path] = data
             readFile(path).then((content)=>{
-                resolve([path.split(/[\\/]/).pop() || path, mime as string, content.buffer])
+                resolve([path.split(/[\\/]/).pop() || path, mime as string, content])
             })
         })
     })
 }
 
-export function choosePathAndRead(properties?: OpenDialogOptions): Promise<[string, string, ArrayBuffer]>{
-    return new Promise<[string, string, ArrayBuffer]>((resolve, _reject)=>{
+export function choosePathAndRead(properties?: OpenDialogOptions): Promise<[string, string, Uint8Array]>{
+    return new Promise<[string, string, Uint8Array]>((resolve, _reject)=>{
         chooseFile(properties).then((data)=>{
             const [_name, mime, path] = data
             readFile(path).then((content)=>{
-                resolve([path, mime as string, content.buffer])
+                resolve([path, mime as string, content])
             })
         })
     })

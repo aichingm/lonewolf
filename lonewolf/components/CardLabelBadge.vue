@@ -1,7 +1,13 @@
 <template>
-    <n-tooltip placement="bottom" trigger="hover">
+    <n-tooltip
+        placement="bottom"
+        trigger="hover"
+    >
         <template #trigger>
-            <div class="badge" :style="style"></div>
+            <div
+                class="badge"
+                :style="style"
+            />
         </template>
         <span> {{ $props.name }} </span>
     </n-tooltip>

@@ -1,7 +1,7 @@
 import { downloadUri } from '@/utils/download'
 
-export function chooseFileAndRead(): Promise<[string, string, ArrayBuffer]>{
-    return new Promise<[string, string, ArrayBuffer]>((resolve, reject)=>{
+export function chooseFileAndRead(): Promise<[string, string, Uint8Array]>{
+    return new Promise<[string, string, Uint8Array]>((resolve, reject)=>{
         const input = document.createElement('input');
         input.type = "file"
         input.click();
@@ -17,8 +17,8 @@ export function chooseFileAndRead(): Promise<[string, string, ArrayBuffer]>{
             reader.onload = function(e) {
                 const target = e.target
                 if(target != null && target.result != null) {
-                    target.result
-                    resolve([file.name, file.type, target.result as ArrayBuffer ]) // NOTICE this can be said because we use readAsArrayBuffer
+                    const arr = target.result as ArrayBuffer // NOTICE this can be said because we use readAsArrayBuffer
+                    resolve([file.name, file.type, new Uint8Array(arr)])
                 } else {
                     return reject()
                 }

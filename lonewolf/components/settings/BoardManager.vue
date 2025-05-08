@@ -1,9 +1,12 @@
 <template>
     <n-space vertical>
-        <InitialFocus/>
+        <InitialFocus />
         <n-space justify="space-between">
             <div>Show "New List"</div>
-            <n-switch v-model:value="showNewList" :round="false" />
+            <n-switch
+                v-model:value="showNewList"
+                :round="false"
+            />
         </n-space>
     </n-space>
 </template>

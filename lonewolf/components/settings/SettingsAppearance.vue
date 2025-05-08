@@ -1,9 +1,13 @@
 <template>
     <n-space vertical>
-        <InitialFocus/>
+        <InitialFocus />
         <n-space justify="space-between">
             <div>Dark Mode</div>
-            <n-select v-model:value="darkMode" :options="options" :consistent-menu-width="false" />
+            <n-select
+                v-model:value="darkMode"
+                :options="options"
+                :consistent-menu-width="false"
+            />
         </n-space>
     </n-space>
 </template>

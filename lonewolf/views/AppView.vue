@@ -1,24 +1,63 @@
 <template>
     <div class="full-height">
-        <KeymapEmitter :appSettings="$props.appSettings" :target="$window" :actions="['save', 'save-as', 'new', 'open']" @action="actionHandler"/>
-        <FileMenu v-model:show="fileMenu.state" @action="(action: string)=>fileMenu.actionHandler(action)"/>
+        <KeymapEmitter
+            :app-settings="$props.appSettings"
+            :target="$window"
+            :actions="['save', 'save-as', 'new', 'open']"
+            @action="actionHandler"
+        />
+        <FileMenu
+            v-model:show="fileMenu.state"
+            @action="(action: string)=>fileMenu.actionHandler(action)"
+        />
         <div class="app-header-nav">
             <div class="app-header-nav-start">
                 <div>
-                    <n-button id="file-menu-opener" @click="fileMenu.show(true)" :ghost ="true" :block="true" :bordered="false">
+                    <n-button
+                        id="file-menu-opener"
+                        :ghost="true"
+                        :block="true"
+                        :bordered="false"
+                        @click="fileMenu.show(true)"
+                    >
                         <template #icon>
-                            <n-icon size="24" color="gray">
+                            <n-icon
+                                size="24"
+                                color="gray"
+                            >
                                 <icon icon="fluent:panel-left-expand-20-filled" />
                             </n-icon>
                         </template>
                     </n-button>
                 </div>
-                <TextInput style="overflow-x:auto;margin-left:-12px;" fontSize="20px" :value="title.ref" @update:value="title.update" placeholder="Title" autosize commitOnBlur commitOnEnter selectOnEdit/>
-                <n-tooltip v-if="!savedObserverExtension.isSavedRef().value" trigger="hover">
+                <TextInput
+                    style="overflow-x:auto;margin-left:-12px;"
+                    font-size="20px"
+                    :value="title.ref"
+                    placeholder="Title"
+                    autosize
+                    commit-on-blur
+                    commit-on-enter
+                    select-on-edit
+                    @update:value="title.update"
+                />
+                <n-tooltip
+                    v-if="!savedObserverExtension.isSavedRef().value"
+                    trigger="hover"
+                >
                     <template #trigger>
-                        <n-button quaternary circle type="warning" @click="actionHandler('save')">
+                        <n-button
+                            quaternary
+                            circle
+                            type="warning"
+                            @click="actionHandler('save')"
+                        >
                             <template #icon>
-                                <n-icon size="24" :color="theme.warningColor" class="block">
+                                <n-icon
+                                    size="24"
+                                    :color="theme.warningColor"
+                                    class="block"
+                                >
                                     <icon icon="fluent:warning-20-filled" />
                                 </n-icon>
                             </template>
@@ -26,9 +65,16 @@
                     </template>
                     The board has unsaved changes, click to save!
                 </n-tooltip>
-                <n-tooltip v-if="mostRecentExtension.failedRef().value" trigger="hover">
+                <n-tooltip
+                    v-if="mostRecentExtension.failedRef().value"
+                    trigger="hover"
+                >
                     <template #trigger>
-                        <n-icon size="24" :color="theme.errorColor" class="block">
+                        <n-icon
+                            size="24"
+                            :color="theme.errorColor"
+                            class="block"
+                        >
                             <icon icon="fluent:warning-20-filled" />
                         </n-icon>
                     </template>
@@ -38,20 +84,35 @@
             <div class="app-header-nav-end">
                 <n-tooltip trigger="hover">
                     <template #trigger>
-                        <n-badge class="badge-reset" :value="cardsStat[0]" :color="theme.headerBadgeColor" :max="99">
-                        </n-badge>
+                        <n-badge
+                            class="badge-reset"
+                            :value="cardsStat[0]"
+                            :color="theme.headerBadgeColor"
+                            :max="99"
+                        />
                     </template>
                     {{ cardsStat[0] }} cards of {{ cardsStat[0] + cardsStat[1] }} are open, {{ cardsStat[1] }} are closed
                 </n-tooltip>
-                <n-tooltip v-if="cardsStat[0]==0" trigger="hover">
+                <n-tooltip
+                    v-if="cardsStat[0]==0"
+                    trigger="hover"
+                >
                     <template #trigger>
                         {{ toEmoji.get("tada") }}
                     </template>
                     All done, take a break!
                 </n-tooltip>
-                <n-button quaternary circle class="settings-button" @click="settingsDialogShow.assign(true)">
+                <n-button
+                    quaternary
+                    circle
+                    class="settings-button"
+                    @click="settingsDialogShow.assign(true)"
+                >
                     <template #icon>
-                        <n-icon size="18" color="gray">
+                        <n-icon
+                            size="18"
+                            color="gray"
+                        >
                             <icon icon="fluent:more-vertical-20-filled" />
                         </n-icon>
                     </template>
@@ -59,46 +120,54 @@
             </div>
         </div>
         <div class="app-config-wrapper">
-            <TransactionEmitter :type="'BoardTransaction'" @transaction="(t)=>boardTransactionHandler(t)">
-                <div class="wrapper" >
+            <TransactionEmitter
+                :type="'BoardTransaction'"
+                @transaction="(t)=>boardTransactionHandler(t)"
+            >
+                <div class="wrapper">
                     <BoardComponent
                         :project="projectRef"
                         :board="boardObservableRef"
-                        :appSettings="$props.appSettings"
+                        :app-settings="$props.appSettings"
                         class="board"
+                        :preferences="preferencesRef"
                         @card-edit="showCardDialog"
                         @list-edit="showListDialog"
-                        :preferences="preferencesRef"
                     />
                 </div>
-                <CardDialog  v-if="cardDialogCard.id != ''"
-                             v-model:show="cardDialogShow.ref"
-                             :project="projectRef"
-                             :board="boardObservableRef"
-                             :cardObservable="cardDialogCard"
-                             :appSettings="$props.appSettings"
-                             :darkMode="$props.darkMode"
+                <CardDialog
+                    v-if="cardDialogCard.id != ''"
+                    v-model:show="cardDialogShow.ref"
+                    :project="projectRef"
+                    :board="boardObservableRef"
+                    :card-observable="cardDialogCard"
+                    :app-settings="$props.appSettings"
+                    :dark-mode="$props.darkMode"
                 />
-                <ListDialog v-if="listDialogList.id != ''"
-                            v-model:show="listDialogShow.ref"
-                            :project="projectRef"
-                            :board="boardObservableRef"
-                            :listObservable="listDialogList"
+                <ListDialog
+                    v-if="listDialogList.id != ''"
+                    v-model:show="listDialogShow.ref"
+                    :project="projectRef"
+                    :board="boardObservableRef"
+                    :list-observable="listDialogList"
                 />
-                <TransactionEmitter type="PreferencesTransaction" @transaction="(t)=>preferencesTransactionHandler(t)">
+                <TransactionEmitter
+                    type="PreferencesTransaction"
+                    @transaction="(t)=>preferencesTransactionHandler(t)"
+                >
                     <SettingsDialog
                         v-model:show="settingsDialogShow.ref"
                         :project="projectRef"
                         :board="boardObservableRef"
                         :preferences="preferencesRef"
-                        :appSettings="$props.appSettings"
+                        :app-settings="$props.appSettings"
                     />
                 </TransactionEmitter>
             </TransactionEmitter>
-            <AboutDialog v-model:show="aboutDialogShow.ref"/>
+            <AboutDialog v-model:show="aboutDialogShow.ref" />
         </div>
     </div>
-    <PlatformComponent @loadBoard="b => openBoard(b)"/>
+    <PlatformComponent @load-board="b => openBoard(b)" />
 </template>
 <script setup lang="ts">
 import { ref, watch, shallowRef } from "vue";

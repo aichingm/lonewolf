@@ -1,7 +1,18 @@
 <template>
-    <slot v-if="state==0" name="resolving"/>
-    <slot v-if="state==1" name="then"  v-bind="{then: then}"/>
-    <slot v-if="state==2" name="catch" v-bind="{error: error}"/>
+    <slot
+        v-if="state==0"
+        name="resolving"
+    />
+    <slot
+        v-if="state==1"
+        name="then"
+        v-bind="{then: then}"
+    />
+    <slot
+        v-if="state==2"
+        name="catch"
+        v-bind="{error: error}"
+    />
 </template>
 
 <script setup lang="ts">

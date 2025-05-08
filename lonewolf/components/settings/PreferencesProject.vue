@@ -1,9 +1,12 @@
 <template>
     <n-space vertical>
-        <InitialFocus/>
+        <InitialFocus />
         <n-space justify="space-between">
             <div>Auto Save</div>
-            <n-switch :round="false" v-model:value="projectAutoSave"/>
+            <n-switch
+                v-model:value="projectAutoSave"
+                :round="false"
+            />
         </n-space>
     </n-space>
 </template>

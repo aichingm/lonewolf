@@ -1,11 +1,28 @@
 <template>
     <n-space align="center">
-        <Async v-for="attachment in $props.attachments.filter(a=>!a.deleted)" :key="attachment.id"
-               :promise="$props.project.board.attachmentStore().url(attachment.location)"
-        ><template  #then="{then}">
-            <AttachmentActions class="block" :project="project" :attachment="attachment" :url="then!=null?then:''" @delete="(id)=>$emit('delete', id)" @edit="(id, location, name, mime)=>$emit('edit', id, location, name, mime)" />
-        </template></Async>
-        <n-button dashed class="dropdown-trigger" @click="handleNewAttachmentClick">+</n-button>
+        <Async
+            v-for="attachment in $props.attachments.filter(a=>!a.deleted)"
+            :key="attachment.id"
+            :promise="$props.project.board.attachmentStore().url(attachment.location)"
+        >
+            <template #then="{then}">
+                <AttachmentActions
+                    class="block"
+                    :project="project"
+                    :attachment="attachment"
+                    :url="then!=null?then:''"
+                    @delete="(id)=>$emit('delete', id)"
+                    @edit="(id, location, name, mime)=>$emit('edit', id, location, name, mime)"
+                />
+            </template>
+        </Async>
+        <n-button
+            dashed
+            class="dropdown-trigger"
+            @click="handleNewAttachmentClick"
+        >
+            +
+        </n-button>
     </n-space>
 </template>
 

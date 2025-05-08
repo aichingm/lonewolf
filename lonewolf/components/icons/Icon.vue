@@ -1,6 +1,17 @@
 <template>
-    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 20 20" v-html="content">
-    </svg>
+    <!-- eslint-disable vue/no-v-html -->
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        aria-hidden="true"
+        role="img"
+        width="1em"
+        height="1em"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 20 20"
+        v-html="content"
+    />
+    <!-- eslint-enable vue/no-v-html -->
 </template>
 
 <script setup lang="ts">

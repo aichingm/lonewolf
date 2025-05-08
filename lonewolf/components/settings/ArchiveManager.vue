@@ -1,28 +1,54 @@
 <template>
     <n-space vertical>
         <InitialFocus />
-        <n-tabs type="line" animated default-value="Cards" justify-content="space-evenly">
-            <n-tab-pane name="Cards" tab="Cards">
-                <div v-if="$props.board.cardArchive.cards.length != 0" class="list-lane" >
-                    <CardVue v-for="card in $props.board.cardArchive.cards" :key="card.id"
-                             :card="card"
-                             :board="$props.board"
-                             :project="$props.project"
+        <n-tabs
+            type="line"
+            animated
+            default-value="Cards"
+            justify-content="space-evenly"
+        >
+            <n-tab-pane
+                name="Cards"
+                tab="Cards"
+            >
+                <div
+                    v-if="$props.board.cardArchive.cards.length != 0"
+                    class="list-lane"
+                >
+                    <CardVue
+                        v-for="card in $props.board.cardArchive.cards"
+                        :key="card.id"
+                        :card="card"
+                        :board="$props.board"
+                        :project="$props.project"
                     />
                 </div>
-                <n-empty v-else description="No archived cards!" class="empty-top-offset">
-                </n-empty>
+                <n-empty
+                    v-else
+                    description="No archived cards!"
+                    class="empty-top-offset"
+                />
             </n-tab-pane>
-            <n-tab-pane name="Lists" tab="Lists">
-                <div v-if="$props.board.listArchive.length != 0" class="list-lane" >
-                    <ListVue v-for="list in $props.board.listArchive" :key="list.id"
-                             :list="list"
-                             :project="$props.project"
+            <n-tab-pane
+                name="Lists"
+                tab="Lists"
+            >
+                <div
+                    v-if="$props.board.listArchive.length != 0"
+                    class="list-lane"
+                >
+                    <ListVue
+                        v-for="list in $props.board.listArchive"
+                        :key="list.id"
+                        :list="list"
+                        :project="$props.project"
                     />
                 </div>
-                <n-empty v-else description="No archived lists!" class="empty-top-offset">
-                </n-empty>
-
+                <n-empty
+                    v-else
+                    description="No archived lists!"
+                    class="empty-top-offset"
+                />
             </n-tab-pane>
         </n-tabs>
     </n-space>

@@ -5,7 +5,6 @@
     "module": "ESNext",
     "moduleResolution": "Node",
     "strict": true,
-    "jsx": "preserve",
     "sourceMap": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -19,7 +18,7 @@
     },
   },
   "include": [
-    "src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "env.d.ts", "decs.d.ts"
+    "./src-platform/**/.ts","src-platform/**/*.d.ts","src-platform/**/*.vue",
+    "src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue", "env.d.ts", "decs.d.ts"
   ],
-  "references": [{ "path": "./tsconfig.node.json" }],
 }

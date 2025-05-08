@@ -1,7 +1,16 @@
 <template>
-    <n-color-picker show-preview :show-alpha="false" :actions="$props.confirmable?['confirm']:[]" :modes="['hex']" :default-value="$props.color" @update:value="onUpdate" @confirm="onConfirm" @keyDown="handleKeyDown">
+    <n-color-picker
+        show-preview
+        :show-alpha="false"
+        :actions="$props.confirmable?['confirm']:[]"
+        :modes="['hex']"
+        :default-value="$props.color"
+        @update:value="onUpdate"
+        @confirm="onConfirm"
+        @key-down="handleKeyDown"
+    >
         <template #label>
-            <slot name="trigger"></slot>
+            <slot name="trigger" />
         </template>
     </n-color-picker>
 </template>

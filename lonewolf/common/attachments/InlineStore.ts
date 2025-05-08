@@ -2,7 +2,7 @@ import type { Store, StoreType, Descriptor, Location } from "./Store"
 import { Attachment } from "./Store"
 
 import { v1 as uuid } from "uuid";
-import { toBase64 } from "@/utils/array-buffer";
+import { toBase64 } from "@/utils/uint8-array";
 import { chooseFileAndRead } from '@platform/Files'
 
 
@@ -67,7 +67,7 @@ export default class InlineStore implements Store {
 
     }
 
-    public pushData(location: Location, data: ArrayBuffer): Promise<void>{
+    public pushData(location: Location, data: Uint8Array): Promise<void>{
         return new Promise((resolve, _reject)=>{
             this._descriptor.data.set(location, toBase64(data))
             resolve()
@@ -97,7 +97,7 @@ export default class InlineStore implements Store {
 
     chooseAttachment(): Promise<[Location, Attachment]> {
         return new Promise<[Location, Attachment]>((resolve, _reject)=>{
-            chooseFileAndRead().then((data: [string, string, ArrayBuffer])=>{
+            chooseFileAndRead().then((data: [string, string, Uint8Array])=>{
                 const [name, type, content ] = data;
                 const meta = new Attachment(name, type)
                 this.createLocation(meta).then((location: Location)=>{
@@ -110,7 +110,7 @@ export default class InlineStore implements Store {
 
     updateAttachment(location: Location): Promise<Attachment> {
         return new Promise<Attachment>((resolve, _reject)=>{
-            chooseFileAndRead().then((data: [string, string, ArrayBuffer])=>{
+            chooseFileAndRead().then((data: [string, string, Uint8Array])=>{
                 const [name, mime, content] = data;
                 const meta = new Attachment(name, mime)
                 this.pushData(location, content)

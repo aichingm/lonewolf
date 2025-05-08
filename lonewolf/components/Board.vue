@@ -6,13 +6,13 @@
             :list="lists"
             group="lists"
             animation="200"
-            ghostClass="ghost-card"
-            dragClass="drag-list"
+            ghost-class="ghost-card"
+            drag-class="drag-list"
             item-key="id"
             handle=".list-dragger"
+            :force-fallback="(isChrome() /* this fixes that chrome includes the background of the element */ || isWebkit() /* this fixes webkit cliping the rotated element to the original shape*/)"
             @change="dragEvent"
-            :force-fallback="(isChrome() /* this fixes that chrome includes the background of the element */ || isWebkit() /* this fixes webkit cliping the rotated element to the original shape*/)">
-
+        >
             >
             <template #item="{ element }">
                 <ListVue
@@ -25,7 +25,11 @@
                 />
             </template>
             <template #footer>
-                <NewList v-if="showNewList" @newList="newList" :style="listWidth"/>
+                <NewList
+                    v-if="showNewList"
+                    :style="listWidth"
+                    @new-list="newList"
+                />
             </template>
         </draggable>
     </div>
@@ -57,8 +61,12 @@ const $emit = defineEmits(["card-edit", "list-edit"]);
 
 const transactions = useTransactions()
 
+// NOTICE computed is not a function but a macro, we need to tell the macro that it should depend on a Proxy changing thats why we have unused expressions in computed macros
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 const lists = computed(()=>{$props.board; $props.board.version; return $props.board.lists})
 
+// NOTICE computed is not a function but a macro, we need to tell the macro that it should depend on a Proxy changing thats why we have unused expressions in computed macros
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 const showNewList = computed(()=>{$props.board.settings.version; return $props.project.board.settings.boardShowNewList})
 
 const listsJustification = computed(()=>$props.preferences.boardListsJustification)
@@ -81,7 +89,7 @@ function dragEvent(e: {moved: {element: List, oldIndex: number, newIndex: number
 
 </script>
 
-<style >
+<style>
 .board {
   white-space: nowrap;
 }

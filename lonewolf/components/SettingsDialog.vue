@@ -1,5 +1,4 @@
 <template>
-
     <n-modal
         v-model:show="showModel"
     >
@@ -30,25 +29,52 @@
                     @expand="collapsedModel = false"
                 >
                     <n-menu
+                        v-model:value="menuModel"
                         :collapsed="collapsedModel"
                         :collapsed-width="64"
                         :collapsed-icon-size="22"
                         :options="menuOptions"
                         :default-expand-all="true"
-                        v-model:value="menuModel"
                     />
                 </n-layout-sider>
-                <div class="content"
-                >
-                    <n-h3><n-text depth="3">{{ breadcrumbs }}</n-text></n-h3>
+                <div class="content">
+                    <n-h3>
+                        <n-text depth="3">
+                            {{ breadcrumbs }}
+                        </n-text>
+                    </n-h3>
                     <n-scrollbar class="scroll-content">
-                        <LabelsManager v-if="menuModel == 'project/labels'" :project="$props.project" :board="$props.board" />
-                        <BoardManager v-if="menuModel == 'project/board'" :project="$props.project" :board="$props.board" />
-                        <ArchiveManager v-if="menuModel == 'project/archive'" :project="$props.project" :board="$props.board" />
-                        <PreferencesProject v-if="menuModel == 'preferences/project'" :preferences="$props.preferences" />
-                        <PreferencesAppearance v-if="menuModel == 'preferences/appearance'" :preferences="$props.preferences" />
-                        <SettingsAppearance v-if="menuModel == 'application/appearance'" :appSettings="$props.appSettings" />
-                        <SettingsKeymap v-if="menuModel == 'application/keyboard'" :appSettings="$props.appSettings" />
+                        <LabelsManager
+                            v-if="menuModel == 'project/labels'"
+                            :project="$props.project"
+                            :board="$props.board"
+                        />
+                        <BoardManager
+                            v-if="menuModel == 'project/board'"
+                            :project="$props.project"
+                            :board="$props.board"
+                        />
+                        <ArchiveManager
+                            v-if="menuModel == 'project/archive'"
+                            :project="$props.project"
+                            :board="$props.board"
+                        />
+                        <PreferencesProject
+                            v-if="menuModel == 'preferences/project'"
+                            :preferences="$props.preferences"
+                        />
+                        <PreferencesAppearance
+                            v-if="menuModel == 'preferences/appearance'"
+                            :preferences="$props.preferences"
+                        />
+                        <SettingsAppearance
+                            v-if="menuModel == 'application/appearance'"
+                            :app-settings="$props.appSettings"
+                        />
+                        <SettingsKeymap
+                            v-if="menuModel == 'application/keyboard'"
+                            :app-settings="$props.appSettings"
+                        />
                     </n-scrollbar>
                 </div>
             </n-layout>

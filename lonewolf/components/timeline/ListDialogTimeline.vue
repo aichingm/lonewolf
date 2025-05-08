@@ -1,9 +1,18 @@
 <template>
     <n-timeline>
-        <n-timeline-item v-for="entry in logbookEntries" :key="entry.id" :type="computeType(entry)">
-            <n-space justify="space-between" align="center" >
+        <n-timeline-item
+            v-for="entry in logbookEntries"
+            :key="entry.id"
+            :type="computeType(entry)"
+        >
+            <n-space
+                justify="space-between"
+                align="center"
+            >
                 <n-space>
-                    <n-text depth="3">{{ computeText(entry) }} <AutoTime :data="entry.timestamp" /></n-text>
+                    <n-text depth="3">
+                        {{ computeText(entry) }} <AutoTime :data="entry.timestamp" />
+                    </n-text>
                 </n-space>
             </n-space>
             <template #icon>

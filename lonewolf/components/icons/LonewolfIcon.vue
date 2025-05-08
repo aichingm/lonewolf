@@ -1,5 +1,8 @@
 <template>
-    <div class="icon" :style="style"></div>
+    <div
+        class="icon"
+        :style="style"
+    />
 </template>
 
 <script setup lang="ts">

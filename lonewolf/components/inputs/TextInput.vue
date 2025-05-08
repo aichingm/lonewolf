@@ -1,16 +1,49 @@
 <template>
-    <n-space class="container" :wrap-item="false">
-        <div v-if="!editMode" class="text" :style="{fontSize: $props.fontSize}" tabindex="0" @focus="showEdit()">
+    <n-space
+        class="container"
+        :wrap-item="false"
+    >
+        <div
+            v-if="!editMode"
+            class="text"
+            :style="{fontSize: $props.fontSize}"
+            tabindex="0"
+            @focus="showEdit()"
+        >
             <div>{{ textValue }}</div>
         </div>
-        <n-input-group v-if="editMode" :style="{width: $props.width}">
-            <n-input :autosize="$props.autosize" :style="{fontSize: $props.fontSize}" ref="inputRef" @blur="onBlur" type="text" v-model:value="textValue" :placeholder="$props.placeholder" @keyup="handleKeyUp" @keydown="handleKeyDown" />
-            <n-button :id="resetButtonId" v-if="$props.resetable" type="default" @click="resetClicked">
+        <n-input-group
+            v-if="editMode"
+            :style="{width: $props.width}"
+        >
+            <n-input
+                ref="inputRef"
+                v-model:value="textValue"
+                :autosize="$props.autosize"
+                :style="{fontSize: $props.fontSize}"
+                type="text"
+                :placeholder="$props.placeholder"
+                @blur="onBlur"
+                @keyup="handleKeyUp"
+                @keydown="handleKeyDown"
+            />
+            <n-button
+                v-if="$props.resetable"
+                :id="resetButtonId"
+                type="default"
+                @click="resetClicked"
+            >
                 <n-icon size="20">
-                    <icon icon="fluent:arrow-reset-20-filled"/>
+                    <icon icon="fluent:arrow-reset-20-filled" />
                 </n-icon>
             </n-button>
-            <n-button :id="saveButtonId" v-if="$props.saveable" type="primary" @click="saveClicked"  @blur="onBlur">
+            <n-button
+                v-if="$props.saveable"
+                :id="saveButtonId"
+                type="primary"
+                @click="saveClicked"
+                @blur="onBlur"
+            >
                 <n-icon size="20">
                     <icon icon="fluent:save-20-regular" />
                 </n-icon>

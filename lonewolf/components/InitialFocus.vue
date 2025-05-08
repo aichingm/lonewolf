@@ -1,5 +1,8 @@
 <template>
-    <div tabindex="0" class="element" ></div>
+    <div
+        tabindex="0"
+        class="element"
+    />
 </template>
 <script setup lang="ts">
 </script>

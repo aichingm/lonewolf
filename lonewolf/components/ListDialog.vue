@@ -11,21 +11,58 @@
             content-style="padding-left: 32px; padding-right: 32px;"
         >
             <InitialFocus />
-            <n-scrollbar class="scrollbar scroll-shadow-fixer-outer" >
+            <n-scrollbar class="scrollbar scroll-shadow-fixer-outer">
                 <div class="scroll-shadow-fixer-inner">
                     <n-space vertical>
-                        <IconedBox icon="fluent:rename-20-filled" :contentOffsetX="12" :iconOffsetY="8">
-                            <TextInput fontSize="20px" :value="data?.list.name||''" @update:value="emitTitle" placeholder="Title" commitOnBlur commitOnEnter selectOnEdit/>
+                        <IconedBox
+                            icon="fluent:rename-20-filled"
+                            :content-offset-x="12"
+                            :icon-offset-y="8"
+                        >
+                            <TextInput
+                                font-size="20px"
+                                :value="data?.list.name||''"
+                                placeholder="Title"
+                                commit-on-blur
+                                commit-on-enter
+                                select-on-edit
+                                @update:value="emitTitle"
+                            />
                         </IconedBox>
-                        <IconedBox icon="fluent:book-question-mark-20-filled" :contentOffsetX="24" :iconOffsetY="8">
-                            <n-space class="flex-grow" justify="space-between" align="center">Cards are Closed
-                                <n-switch :round="false" :value="data?.list.cardsAreClosed||false" @update:value="handleCardsAreClosedChanged"/>
+                        <IconedBox
+                            icon="fluent:book-question-mark-20-filled"
+                            :content-offset-x="24"
+                            :icon-offset-y="8"
+                        >
+                            <n-space
+                                class="flex-grow"
+                                justify="space-between"
+                                align="center"
+                            >
+                                Cards are Closed
+                                <n-switch
+                                    :round="false"
+                                    :value="data?.list.cardsAreClosed||false"
+                                    @update:value="handleCardsAreClosedChanged"
+                                />
                             </n-space>
                         </IconedBox>
-                        <IconedBox icon="fluent:number-symbol-square-20-filled" :contentOffsetX="24">
-                            <n-space class="flex-grow" justify="space-between" align="center">Card Limit
+                        <IconedBox
+                            icon="fluent:number-symbol-square-20-filled"
+                            :content-offset-x="24"
+                        >
+                            <n-space
+                                class="flex-grow"
+                                justify="space-between"
+                                align="center"
+                            >
+                                Card Limit
                                 <n-space align="center">
-                                    <n-switch :round="false" :value="data?.list.enableCardLimit||false" @update:value="handleEnableCardLimitChanged"/>
+                                    <n-switch
+                                        :round="false"
+                                        :value="data?.list.enableCardLimit||false"
+                                        @update:value="handleEnableCardLimitChanged"
+                                    />
                                     <n-input-number
                                         :disabled="!(data?.list.enableCardLimit==undefined?false:data?.list.enableCardLimit)"
                                         :value="data?.list.actualCardLimit()"
@@ -36,8 +73,16 @@
                                 </n-space>
                             </n-space>
                         </IconedBox>
-                        <IconedBox icon="fluent:timeline-20-filled" :contentOffsetX="24">
-                            <ListDialogTimeline v-if="data != null" :logbook="data?.logbook||[]" :board="$props.board" :list="data.list" />
+                        <IconedBox
+                            icon="fluent:timeline-20-filled"
+                            :content-offset-x="24"
+                        >
+                            <ListDialogTimeline
+                                v-if="data != null"
+                                :logbook="data?.logbook||[]"
+                                :board="$props.board"
+                                :list="data.list"
+                            />
                         </IconedBox>
                     </n-space>
                 </div>

@@ -32,7 +32,7 @@ export interface Store {
     // backend
     shouldHandleLocation(location: Location): boolean;
     createLocation(meta: Attachment): Promise<Location>;
-    pushData(location: Location, data: ArrayBuffer): Promise<void>;
+    pushData(location: Location, data: Uint8Array): Promise<void>;
     url(location: Location): Promise<string>;
     metadata(location: Location): Promise<Attachment>;
 

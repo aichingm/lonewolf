@@ -1,5 +1,8 @@
 <template>
-    <slot v-if="appSettings != null" v-bind="{appSettings: appSettings}"/>
+    <slot
+        v-if="appSettings != null"
+        v-bind="{appSettings: appSettings}"
+    />
 </template>
 
 <script setup lang="ts">

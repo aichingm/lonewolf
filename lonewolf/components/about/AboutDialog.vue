@@ -1,7 +1,8 @@
 <template>
     <n-modal
         v-model:show="showModel"
-        class="modal">
+        class="modal"
+    >
         <n-card
             class="card"
             :bordered="false"
@@ -12,10 +13,16 @@
             title="About"
             footer-style="justify-content: flex-end;display: flex;"
         >
-            <n-tabs type="line" animated>
-                <n-tab-pane name="Lonewolf" tab="Lonewolf">
+            <n-tabs
+                type="line"
+                animated
+            >
+                <n-tab-pane
+                    name="Lonewolf"
+                    tab="Lonewolf"
+                >
                     <div class="lonewolf-layout">
-                        <div class="lonewolf-logo"></div>
+                        <div class="lonewolf-logo" />
                         <div class="lonewolf-text-container">
                             <n-h1>Lonewolf<span class="lonewolf-application-version">{{ versionPlatform.version }}</span></n-h1>
                             <n-p>
@@ -24,34 +31,66 @@
                                         Core Library {{ versionCore.version }}
                                     </n-li>
                                     <n-li>
-                                        <n-a href="https://github.com/aichingm/lonewolf" target="_blank">Github</n-a>
+                                        <n-a
+                                            href="https://github.com/aichingm/lonewolf"
+                                            target="_blank"
+                                        >
+                                            Github
+                                        </n-a>
                                     </n-li>
                                 </n-ul>
                             </n-p>
                         </div>
                     </div>
-                    Created and distributed under the terms of the <n-a href="https://spdx.org/licenses/GPL-3.0-or-later.html" target="_blank">GNU General Public License v3.0</n-a>
+                    Created and distributed under the terms of the <n-a
+                        href="https://spdx.org/licenses/GPL-3.0-or-later.html"
+                        target="_blank"
+                    >
+                        GNU General Public License v3.0
+                    </n-a>
                 </n-tab-pane>
-                <n-tab-pane name="Contributors" tab="Contributors">
+                <n-tab-pane
+                    name="Contributors"
+                    tab="Contributors"
+                >
                     <n-scrollbar class="contributors-container">
                         <n-h1>Core</n-h1>
                         <div class="contributors-grid">
-                            <Contributor v-for="c in contributorsCore" :contributor="c" :key="c.name"/>
+                            <Contributor
+                                v-for="c in contributorsCore"
+                                :key="c.name"
+                                :contributor="c"
+                            />
                         </div>
-                        <n-divider class="mb-none"/>
+                        <n-divider class="mb-none" />
                         <n-h1>Platform</n-h1>
                         <div clas="contributors-grid">
-                            <Contributor v-for="c in contributorsPlatform" :contributor="c" :key="c.name"/>
+                            <Contributor
+                                v-for="c in contributorsPlatform"
+                                :key="c.name"
+                                :contributor="c"
+                            />
                         </div>
                     </n-scrollbar>
                 </n-tab-pane>
-                <n-tab-pane name="Third Party" tab="Third Party" class="third-party-licenses-tab">
-                    <ThirdPartyLicense v-for="p in thirdPartyLicenses.sort(sortByIname)" :key="p.project" :project="p"/>
+                <n-tab-pane
+                    name="Third Party"
+                    tab="Third Party"
+                    class="third-party-licenses-tab"
+                >
+                    <ThirdPartyLicense
+                        v-for="p in thirdPartyLicenses.sort(sortByIname)"
+                        :key="p.project"
+                        :project="p"
+                    />
                 </n-tab-pane>
             </n-tabs>
-            <n-divider class="mb-none"/>
+            <n-divider class="mb-none" />
             <template #footer>
-                <n-button type="primary" @click="showModel = false">
+                <n-button
+                    type="primary"
+                    @click="showModel = false"
+                >
                     Thanks!
                 </n-button>
             </template>

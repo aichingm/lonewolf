@@ -1,17 +1,38 @@
 <template>
     <n-timeline>
-        <n-timeline-item v-for="entry in logbookEntries" :key="entry.id" :type="computeType(entry)">
+        <n-timeline-item
+            v-for="entry in logbookEntries"
+            :key="entry.id"
+            :type="computeType(entry)"
+        >
             <!-- IF -->
             <div v-if="typeOf(entry) == TimelineKind.CommentAdd">
-                <n-space class="line-height" justify="space-between" >
-                    <n-space >
-                        <n-text depth="3">{{ computeText(entry) }} <AutoTime :data="entry.timestamp" /></n-text>
+                <n-space
+                    class="line-height"
+                    justify="space-between"
+                >
+                    <n-space>
+                        <n-text depth="3">
+                            {{ computeText(entry) }} <AutoTime :data="entry.timestamp" />
+                        </n-text>
                     </n-space>
                     <n-space>
                         <n-button-group>
-                            <n-popconfirm :show-icon="false" :negative-text="'Delete it'" :positive-text="'Oh, nevermind'" :negative-button-props="{type:'error'}" :positive-button-props="{type:'default'}" @negative-click="handleDeleteComment(entry)">
+                            <n-popconfirm
+                                :show-icon="false"
+                                :negative-text="'Delete it'"
+                                :positive-text="'Oh, nevermind'"
+                                :negative-button-props="{type:'error'}"
+                                :positive-button-props="{type:'default'}"
+                                @negative-click="handleDeleteComment(entry)"
+                            >
                                 <template #trigger>
-                                    <n-button round size='tiny' color="rgb(118, 124, 130)" quaternary>
+                                    <n-button
+                                        round
+                                        size="tiny"
+                                        color="rgb(118, 124, 130)"
+                                        quaternary
+                                    >
                                         delete
                                     </n-button>
                                 </template>
@@ -21,24 +42,31 @@
                     </n-space>
                 </n-space>
                 <div class="comment">
-                    <Editor :value="commentOf(entry).content"
-                            @update:value="(value: string)=>handleEditComment(entry, value)"
-                            placeholder=""
-                            :toolbarConfig="ToolbarConfig.forComment()"
-                            :updateOnBlur="true"
-                            updateOnCtrlEnter
-                            exitOnEsc
-                            :attachmentStore="$props.project.board.attachmentStore()"
-                            :markdownHandler="markdownHandler"
-                            @addAttachment="(location: string, name: string, type: string)=>handleNewAttachment(entry, location, name, type)"
-                            :editorStyle="editorTheme"
+                    <Editor
+                        :value="commentOf(entry).content"
+                        placeholder=""
+                        :toolbar-config="ToolbarConfig.forComment()"
+                        :update-on-blur="true"
+                        update-on-ctrl-enter
+                        exit-on-esc
+                        :attachment-store="$props.project.board.attachmentStore()"
+                        :markdown-handler="markdownHandler"
+                        :editor-style="editorTheme"
+                        @update:value="(value: string)=>handleEditComment(entry, value)"
+                        @add-attachment="(location: string, name: string, type: string)=>handleNewAttachment(entry, location, name, type)"
                     />
                 </div>
             </div>
             <!-- ELSE -->
-            <n-space v-else justify="space-between" align="center" >
-                <n-space >
-                    <n-text depth="3">{{ computeText(entry) }} <AutoTime :data="entry.timestamp" /></n-text>
+            <n-space
+                v-else
+                justify="space-between"
+                align="center"
+            >
+                <n-space>
+                    <n-text depth="3">
+                        {{ computeText(entry) }} <AutoTime :data="entry.timestamp" />
+                    </n-text>
                 </n-space>
             </n-space>
             <!-- FI -->

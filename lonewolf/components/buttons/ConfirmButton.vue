@@ -6,7 +6,9 @@
             :class="$props.buttonClass"
             @click="handleClick"
         >
-            <slot name="button">Delete</slot>
+            <slot name="button">
+                Delete
+            </slot>
         </n-button>
         <n-tooltip
             v-if="state == 'expectingConfirmation'"
@@ -19,7 +21,9 @@
                     :class="$props.confirmClass"
                     @click="handleClick"
                 >
-                    <slot name="confirm">Sure?</slot>
+                    <slot name="confirm">
+                        Sure?
+                    </slot>
                     <n-progress
                         class="confirm-timeout ConfirmButton-93f669de-1722-4776-bc40-07b2c79e1936"
                         type="circle"
@@ -31,7 +35,9 @@
                     />
                 </n-button>
             </template>
-            <slot name="confirmTooltip">Click to confirm!</slot>
+            <slot name="confirmTooltip">
+                Click to confirm!
+            </slot>
         </n-tooltip>
     </div>
 </template>

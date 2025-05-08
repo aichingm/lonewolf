@@ -56,7 +56,7 @@ export default class FSStore implements Store {
         })
     }
 
-    public pushData(location: Location, data: ArrayBuffer): Promise<void>{
+    public pushData(location: Location, data: Uint8Array): Promise<void>{
         return new Promise((resolve, reject)=>{
             const stringData = new TextDecoder().decode(data)
             const path = Path.parse(stringData)
@@ -106,8 +106,8 @@ export default class FSStore implements Store {
                 const [name, mime, path ] = data;
                 const meta = new Attachment(name, mime)
                 this.createLocation(meta).then((location: Location)=>{
-                    const arrayBuffer = new TextEncoder().encode(path).buffer
-                    this.pushData(location, arrayBuffer).then(()=>
+                    const arr = new TextEncoder().encode(path)
+                    this.pushData(location, arr).then(()=>
                         resolve([location, meta])
                     )
                 })
@@ -120,8 +120,8 @@ export default class FSStore implements Store {
             chooseFile().then((data: [string, string, string])=>{
                 const [name, mime, path ] = data;
                 const meta = new Attachment(name, mime)
-                const arrayBuffer = new TextEncoder().encode(path).buffer
-                this.pushData(location, arrayBuffer).then(()=>{
+                const arr = new TextEncoder().encode(path)
+                this.pushData(location, arr).then(()=>{
                     this._descriptor.attachments.set(location, meta)
                     resolve(meta)
                 })

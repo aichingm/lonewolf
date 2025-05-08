@@ -1,21 +1,21 @@
 <template>
-    <div></div>
+    <div />
 </template>
 <script setup lang="ts">
 
 import { invoke } from "@tauri-apps/api/core";
-import { getMatches } from '@tauri-apps/plugin-cli'
-import type { CliMatches } from '@tauri-apps/plugin-cli'
+import { getMatches } from '@tauri-apps/plugin-cli';
+import type { CliMatches } from '@tauri-apps/plugin-cli';
 
 
 import Board from "@/common/data/Board";
-import { Path } from '@/utils/path'
-import { read } from './Files'
+import { Path } from '@/utils/path';
+import { read } from './Files';
 
 
 
 
-const $emit = defineEmits([ 'loadBoard' ]);
+const $emit = defineEmits([ 'loadBoard' ])
 
 getMatches().then((matches) => {
     if(matches.subcommand == null) {
@@ -42,7 +42,7 @@ function open(matches: CliMatches) {
     const fileArg = matches.args.file.value
 
     const readBoard = (path: string) => {
-        read(path).then((b: ArrayBuffer)=>{
+        read(path).then((b: Uint8Array)=>{
             const jsonString = new TextDecoder("utf-8").decode(b)
             const board = Board.fromSerializable(JSON.parse(jsonString))
             board.session.currentPath = path

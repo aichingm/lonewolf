@@ -2,16 +2,20 @@
     <n-card class="author-card">
         <n-thing>
             <template #avatar>
-                <Icon size="40" class="inline-block" :color="hsl($props.contributor.name, $props.contributor.contact)"/>
+                <Icon
+                    size="40"
+                    class="inline-block"
+                    :color="hsl($props.contributor.name, $props.contributor.contact)"
+                />
             </template>
             <template #header>
                 {{ $props.contributor.name }}
             </template>
-            <template  #description>
+            <template #description>
                 {{ $props.contributor.contact }}
             </template>
             {{ $props.contributor.description }}
-            <template  #header-extra>
+            <template #header-extra>
                 <span class="font-sm">{{ $props.contributor.years }}</span>
             </template>
         </n-thing>

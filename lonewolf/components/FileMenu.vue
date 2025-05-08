@@ -1,9 +1,27 @@
 <template>
-    <n-drawer v-model:show="drawer.state.value" :width="280" placement="left">
-        <n-drawer-content title="" body-content-style="margin:0;padding:0;" footer-style="display:inline-flex;justify-content:start;padding-left:0;padding-right:0;padding:0;flex-direction: column;">
-            <n-menu :options="options" @update:value="menuClicked" :indent="32" :icon-size="0"/>
+    <n-drawer
+        v-model:show="drawer.state.value"
+        :width="280"
+        placement="left"
+    >
+        <n-drawer-content
+            title=""
+            body-content-style="margin:0;padding:0;"
+            footer-style="display:inline-flex;justify-content:start;padding-left:0;padding-right:0;padding:0;flex-direction: column;"
+        >
+            <n-menu
+                :options="options"
+                :indent="32"
+                :icon-size="0"
+                @update:value="menuClicked"
+            />
             <template #footer>
-                <n-menu :options="footerOptions" @update:value="menuClicked" :indent="32" :icon-size="0"/>
+                <n-menu
+                    :options="footerOptions"
+                    :indent="32"
+                    :icon-size="0"
+                    @update:value="menuClicked"
+                />
             </template>
         </n-drawer-content>
     </n-drawer>

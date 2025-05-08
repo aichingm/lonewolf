@@ -1,7 +1,10 @@
 <template>
     <div class="card">
         <div class="quick-edit">
-            <ActionDropdown :options="actions" @selected="actionMenuSelected" />
+            <ActionDropdown
+                :options="actions"
+                @selected="actionMenuSelected"
+            />
         </div>
         <n-h3>{{ list.name }}</n-h3>
     </div>
@@ -33,8 +36,12 @@ const transactions = useTransactions()
 
 const theme = themeCast(useThemeVars())
 
+// NOTICE computed is not a function but a macro, we need to tell the macro that it should depend on a Proxy changing thats why we have unused expressions in computed macros
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 const list = computed(()=>{$props.list.version; return $props.project.board.findListInclArchives($props.list.id);}) as Ref<List> // if list is null, something else is f'ed up
 
+// NOTICE computed is not a function but a macro, we need to tell the macro that it should depend on a Proxy changing thats why we have unused expressions in computed macros
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 const actions = computed(()=>{$props.list.version; return generateActions()})
 
 const generateActions = function () {

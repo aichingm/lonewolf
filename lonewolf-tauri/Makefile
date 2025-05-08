@@ -31,7 +31,7 @@ test: test-unit
 test-unit:
 	npm run test:unit
 
-type-check-tauri:
+type-check:
 	npm run type-check
 
 # Files

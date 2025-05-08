@@ -14,7 +14,10 @@
             @click.stop
         >
             <template #icon>
-                <n-icon size="16" color="gray">
+                <n-icon
+                    size="16"
+                    color="gray"
+                >
                     <icon icon="fluent:more-horizontal-20-regular" />
                 </n-icon>
             </template>

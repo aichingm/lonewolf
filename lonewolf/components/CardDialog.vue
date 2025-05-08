@@ -1,5 +1,8 @@
 <template>
-    <n-modal v-model:show="showModel" class="component-root">
+    <n-modal
+        v-model:show="showModel"
+        class="component-root"
+    >
         <n-card
             class="card"
             :bordered="false"
@@ -10,53 +13,106 @@
             content-style="padding-left: 32px; padding-right: 32px;"
         >
             <InitialFocus />
-            <n-scrollbar class="scrollbar" >
+            <n-scrollbar class="scrollbar">
                 <div class="scroll-shadow-fixer-inner">
                     <n-space vertical>
-                        <IconedBox icon="fluent:rename-20-filled" :contentOffsetX="12" :iconOffsetY="8">
-                            <TextInput fontSize="20px" :value="data?.card.name||''" @update:value="emitTitle" placeholder="Title" commitOnBlur commitOnEnter selectOnEdit/>
-                        </IconedBox>
-                        <IconedBox icon="fluent:tag-20-filled" :contentOffsetX="24">
-                            <LabelSelector :project="$props.project" :activeLabels="data?.activeLabels||[]" :board="$props.board" @add="addLabel" @remove="removeLabel"/>
-                        </IconedBox>
-                        <IconedBox icon="fluent:timer-20-filled" :contentOffsetX="24">
-                            <n-date-picker v-model:value="timestampModel" type="datetime" placeholder="Due Date" clearable size="small" />
-                        </IconedBox>
-                        <IconedBox icon="fluent:code-text-20-filled" :contentOffsetX="24">
-                            <Editor v-model:value="descriptionModel"
-                                    updateOnBlur
-                                    placeholder="Add Description..."
-                                    :attachmentStore="$props.project.board.attachmentStore()"
-                                    :markdownHandler="markdownHandler"
-                                    :attachments="data?.attachments||[]"
-                                    @addAttachment="handleNewAttachment"
-                                    :editorStyle="editorTheme"
+                        <IconedBox
+                            icon="fluent:rename-20-filled"
+                            :content-offset-x="12"
+                            :icon-offset-y="8"
+                        >
+                            <TextInput
+                                font-size="20px"
+                                :value="data?.card.name||''"
+                                placeholder="Title"
+                                commit-on-blur
+                                commit-on-enter
+                                select-on-edit
+                                @update:value="emitTitle"
                             />
                         </IconedBox>
-                        <IconedBox icon="fluent:document-20-filled" :contentOffsetX="24">
-                            <AttachmentManager :attachments="data?.attachments||[]" @delete="handleDeleteAttachment" :project="$props.project" :board="$props.board" @add="handleNewAttachment" @edit="handleEditAttachment"/>
+                        <IconedBox
+                            icon="fluent:tag-20-filled"
+                            :content-offset-x="24"
+                        >
+                            <LabelSelector
+                                :project="$props.project"
+                                :active-labels="data?.activeLabels||[]"
+                                :board="$props.board"
+                                @add="addLabel"
+                                @remove="removeLabel"
+                            />
                         </IconedBox>
-                        <IconedBox icon="fluent:comment-20-filled" :contentOffsetX="24">
+                        <IconedBox
+                            icon="fluent:timer-20-filled"
+                            :content-offset-x="24"
+                        >
+                            <n-date-picker
+                                v-model:value="timestampModel"
+                                type="datetime"
+                                placeholder="Due Date"
+                                clearable
+                                size="small"
+                            />
+                        </IconedBox>
+                        <IconedBox
+                            icon="fluent:code-text-20-filled"
+                            :content-offset-x="24"
+                        >
+                            <Editor
+                                v-model:value="descriptionModel"
+                                update-on-blur
+                                placeholder="Add Description..."
+                                :attachment-store="$props.project.board.attachmentStore()"
+                                :markdown-handler="markdownHandler"
+                                :attachments="data?.attachments||[]"
+                                :editor-style="editorTheme"
+                                @add-attachment="handleNewAttachment"
+                            />
+                        </IconedBox>
+                        <IconedBox
+                            icon="fluent:document-20-filled"
+                            :content-offset-x="24"
+                        >
+                            <AttachmentManager
+                                :attachments="data?.attachments||[]"
+                                :project="$props.project"
+                                :board="$props.board"
+                                @delete="handleDeleteAttachment"
+                                @add="handleNewAttachment"
+                                @edit="handleEditAttachment"
+                            />
+                        </IconedBox>
+                        <IconedBox
+                            icon="fluent:comment-20-filled"
+                            :content-offset-x="24"
+                        >
                             <div class="editor-container">
-                                <Editor value=""
-                                        @update:value="emitNewCommentTransaction"
-                                        placeholder="Add Comment..."
-                                        :toolbarConfig="ToolbarConfig.forNewComment()"
-                                        :updateOnBlur="false"
-                                        updateOnCtrlEnter
-                                        exitOnEsc
-                                        clearAfterEdit
-                                        :attachmentStore="$props.project.board.attachmentStore()"
-                                        @addAttachment="handleNewAttachment"
-                                        :editorStyle="editorTheme"
+                                <Editor
+                                    value=""
+                                    placeholder="Add Comment..."
+                                    :toolbar-config="ToolbarConfig.forNewComment()"
+                                    :update-on-blur="false"
+                                    update-on-ctrl-enter
+                                    exit-on-esc
+                                    clear-after-edit
+                                    :attachment-store="$props.project.board.attachmentStore()"
+                                    :editor-style="editorTheme"
+                                    @update:value="emitNewCommentTransaction"
+                                    @add-attachment="handleNewAttachment"
                                 />
                             </div>
                         </IconedBox>
-                        <IconedBox icon="fluent:timeline-20-filled" :contentOffsetX="24">
-                            <n-space vertical class="flex-grow">
+                        <IconedBox
+                            icon="fluent:timeline-20-filled"
+                            :content-offset-x="24"
+                        >
+                            <n-space
+                                vertical
+                                class="flex-grow"
+                            >
                                 <n-space justify="right">
-                                    <n-switch v-model:value="timelineShowDetailsModel">
-                                    </n-switch>
+                                    <n-switch v-model:value="timelineShowDetailsModel" />
                                 </n-space>
                                 <CardDialogTimeline
                                     v-if="data != null"
@@ -64,8 +120,8 @@
                                     :logbook="data.logbook"
                                     :project="$props.project"
                                     :card="data.card"
-                                    :appSettings="$props.appSettings"
-                                    :darkMode="$props.darkMode"
+                                    :app-settings="$props.appSettings"
+                                    :dark-mode="$props.darkMode"
                                 />
                             </n-space>
                         </IconedBox>

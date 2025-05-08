@@ -1,5 +1,12 @@
 <template>
-    <div ref="elem" :class="'content ' + ($props.darkMode?'markdown-body-dark':'') + ' markdown-body'" v-html="previewHtml" @click="interceptLinkAction"></div>
+    <!-- eslint-disable vue/no-v-html -->
+    <div
+        ref="elem"
+        :class="'content ' + ($props.darkMode?'markdown-body-dark':'') + ' markdown-body'"
+        @click="interceptLinkAction"
+        v-html="previewHtml"
+    />
+    <!-- eslint-enable vue/no-v-html -->
 </template>
 <script setup lang="ts">
 
@@ -27,7 +34,11 @@ const previewHtml = computed(() => {
             }
             return currentNode;
         });
-    const clean = DOMPurify.sanitize(marked($props.value))
+    const markedResult = marked($props.value)
+    if (!(typeof markedResult === 'string')) {
+        return "<!-- result of marked is not string... -->"
+    }
+    const clean = DOMPurify.sanitize(markedResult)
     DOMPurify.removeAllHooks();
     return clean
 })

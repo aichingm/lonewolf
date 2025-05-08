@@ -1,15 +1,30 @@
 <template>
-    <div class="list-lane" :style="listWidth">
-        <div class="list-header list-part list-dragger" @click="$emit('list-edit', data.list, $props.list)">
-            <div class="list-name">{{ data.list.name }}</div>
-            <n-space :size="7" align="center" gap="0">
+    <div
+        class="list-lane"
+        :style="listWidth"
+    >
+        <div
+            class="list-header list-part list-dragger"
+            @click="$emit('list-edit', data.list, $props.list)"
+        >
+            <div class="list-name">
+                {{ data.list.name }}
+            </div>
+            <n-space
+                :size="7"
+                align="center"
+                gap="0"
+            >
                 <n-badge
                     :value="data.cards.length + (data?.list.enableCardLimit? ('/' + data?.list.actualCardLimit()) : '')"
                     show-zero
                     :color="data?.list.enableCardLimit && !data?.list.canAcceptCard() ? undefined : theme.listBadgeColor"
                     :type="data?.list.enableCardLimit && !data?.list.canAcceptCard() ? 'error' : 'default'"
-                ></n-badge>
-                <ActionDropdown :options="data.actions" @selected="actionMenuSelected" />
+                />
+                <ActionDropdown
+                    :options="data.actions"
+                    @selected="actionMenuSelected"
+                />
             </n-space>
         </div>
         <div :class="'cards list-part ' + (inputHasFocus?'':'list-dragger')">
@@ -20,12 +35,12 @@
                 group="cards"
                 animation="200"
                 item-key="id"
-                ghostClass="ghost-card"
-                dragClass="drag-card"
-                @change="dragEvent($event)"
+                ghost-class="ghost-card"
+                drag-class="drag-card"
                 :move="checkDrag"
-                :force-fallback="(isChrome() /* this fixes that chrome includes the background of the element */ || isWebkit() /* this fixes webkit cliping the rotated element to the original shape*/)">
-
+                :force-fallback="(isChrome() /* this fixes that chrome includes the background of the element */ || isWebkit() /* this fixes webkit cliping the rotated element to the original shape*/)"
+                @change="dragEvent($event)"
+            >
                 <!-- eslint-enable -->
                 <template #item="{ element }">
                     <CardVue
@@ -41,21 +56,25 @@
                 <n-input
                     :id="cardTitleInputId"
                     v-model:value="cardTitle"
-                    @keyup.enter="newCardButtonClicked()"
                     placeholder="New Card"
                     :theme-overrides="inputThemeOverrides"
+                    :disabled="!data?.list.canAcceptCard()"
+                    @keyup.enter="newCardButtonClicked()"
                     @focus="inputHasFocus = true"
                     @blur="inputHasFocus = false"
-                    :disabled="!data?.list.canAcceptCard()"
                 />
-                <n-button type="primary" @click="newCardButtonClicked()" tabindex="-1"
-                          :disabled="!data?.list.canAcceptCard()"
-                >+</n-button
+                <n-button
+                    type="primary"
+                    tabindex="-1"
+                    :disabled="!data?.list.canAcceptCard()"
+                    @click="newCardButtonClicked()"
                 >
+                    +
+                </n-button>
             </n-input-group>
-            <div :id="scrollTargetId"></div>
+            <div :id="scrollTargetId" />
         </div>
-        <div class="list-footer list-part list-dragger"></div>
+        <div class="list-footer list-part list-dragger" />
     </div>
 </template>
 

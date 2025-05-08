@@ -1,17 +1,51 @@
 <template>
     <n-space vertical>
-        <InitialFocus/>
-        <n-space class="line" justify="space-between" align="center" v-for="(l, index) in labels" :key="l.id">
-            <n-space inline class="line-left" justify="start" align="center">
-                <ColorPicker confirmable :color="nameToHex(l.color)" @confirm="(color)=>onConfirmLabelColorHandler(l, color)">
+        <InitialFocus />
+        <n-space
+            v-for="(l, index) in labels"
+            :key="l.id"
+            class="line"
+            justify="space-between"
+            align="center"
+        >
+            <n-space
+                inline
+                class="line-left"
+                justify="start"
+                align="center"
+            >
+                <ColorPicker
+                    confirmable
+                    :color="nameToHex(l.color)"
+                    @confirm="(color)=>onConfirmLabelColorHandler(l, color)"
+                >
                     <template #trigger>
-                        <div class="color-picker-circle" :style="labelStyle(l.color)"></div>
+                        <div
+                            class="color-picker-circle"
+                            :style="labelStyle(l.color)"
+                        />
                     </template>
                 </ColorPicker>
-                <TextInput v-model:value="l.name" @update:value="(name)=>onLabelNameChangeHandler(l, name)" placeholder="Label Name" saveable resetable commitOnBlur commitOnEnter selectOnEdit/>
+                <TextInput
+                    v-model:value="l.name"
+                    placeholder="Label Name"
+                    saveable
+                    resetable
+                    commit-on-blur
+                    commit-on-enter
+                    select-on-edit
+                    @update:value="(name)=>onLabelNameChangeHandler(l, name)"
+                />
             </n-space>
-            <n-space justify="end" class="actions" align="center">
-                <n-switch v-model:value="shownSwitches[index].value" @update:value="(v: boolean)=>handleVisibilityChange(v, l, index)">
+            <n-space
+                justify="end"
+                class="actions"
+                align="center"
+            >
+                <n-switch
+                    v-model:value="shownSwitches[index].value"
+                    @update:value="(v: boolean)=>handleVisibilityChange(v, l, index)"
+                >
                     <template #checked>
                         Shown
                     </template>
@@ -20,16 +54,24 @@
                     </template>
                 </n-switch>
                 <n-button-group>
-                    <n-popconfirm :show-icon="false" :negative-text="'Delete it'" :positive-text="'Oh, nevermind'" :negative-button-props="{type:'error'}" @negative-click="handleDeleteClick(l, index)">
+                    <n-popconfirm
+                        :show-icon="false"
+                        :negative-text="'Delete it'"
+                        :positive-text="'Oh, nevermind'"
+                        :negative-button-props="{type:'error'}"
+                        @negative-click="handleDeleteClick(l, index)"
+                    >
                         <template #trigger>
-                            <n-button ghost type="error">
+                            <n-button
+                                ghost
+                                type="error"
+                            >
                                 <template #icon>
                                     <n-icon>
                                         <icon icon="fluent:delete-20-regular" />
                                     </n-icon>
                                 </template>
                             </n-button>
-
                         </template>
                         Deleting a label will remove it from all cards!
                     </n-popconfirm>
@@ -37,13 +79,33 @@
             </n-space>
         </n-space>
         <n-input-group>
-            <ColorPicker :confirmable="false" class="new-label-color-picker" :color="nameToHex('black')" @update="(value)=>newLabelColor=value">
+            <ColorPicker
+                :confirmable="false"
+                class="new-label-color-picker"
+                :color="nameToHex('black')"
+                @update="(value)=>newLabelColor=value"
+            >
                 <template #trigger>
-                    <n-button ghost type="success" :style="newLabelColorButtonStyle">Pick a Color</n-button>
+                    <n-button
+                        ghost
+                        type="success"
+                        :style="newLabelColorButtonStyle"
+                    >
+                        Pick a Color
+                    </n-button>
                 </template>
             </ColorPicker>
-            <n-input placeholder="New Label" v-model:value="newLabelName"/>
-            <n-button ghost type="success" @click="emitNewLabel">Add</n-button>
+            <n-input
+                v-model:value="newLabelName"
+                placeholder="New Label"
+            />
+            <n-button
+                ghost
+                type="success"
+                @click="emitNewLabel"
+            >
+                Add
+            </n-button>
         </n-input-group>
     </n-space>
 </template>
