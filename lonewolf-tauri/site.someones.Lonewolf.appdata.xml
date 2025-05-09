@@ -11,7 +11,7 @@
 
   <url type="homepage">https://github.com/aichingm/Lonewolf</url>
   <url type="bugtracker">https://github.com/aichingm/Lonewolf/issues</url>
-  <!-- add when updating to gnome sdk 45 <url type="vcs-browser">https://github.com/aichingm/Lonewolf</url>-->
+  <url type="vcs-browser">https://github.com/aichingm/Lonewolf</url>
 
   <supports>
     <internet>offline-only</internet>
@@ -22,6 +22,11 @@
   <recommends>
     <display_length compare="ge">1000</display_length>
   </recommends>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#b5835a</color>
+    <color type="primary" scheme_preference="dark">#865e3c</color>
+  </branding>
 
   <description>
     <p>
@@ -44,23 +49,32 @@
   <screenshots>
     <screenshot type="default">
       <image>https://raw.githubusercontent.com/aichingm/lonewolf/master/assets/screenshot_light_main.png</image>
-      <caption>Main window (light mode)</caption>
+      <caption>Lonewolf's main project view (light mode).</caption>
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/aichingm/lonewolf/master/assets/screenshot_dark_main.png</image>
-      <caption>Main window (dark mode)</caption>
+      <caption>Lonewolf's main project view (dark mode).</caption>
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/aichingm/lonewolf/master/assets/screenshot_light_card.png</image>
-      <caption>Card Dialog</caption>
+      <caption>Lonewolf's card detail editor.</caption>
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/aichingm/lonewolf/master/assets/screenshot_light_about.png</image>
-      <caption>About window</caption>
+      <caption>Lonewolf's about dialog.</caption>
     </screenshot>
   </screenshots>
 
   <releases>
+    <release type="stable" version="2.0.0" date="2025-05-09">
+      <description>
+        <ul>
+          <li>Add new delete feature for lists and cards</li>
+          <li>Fix issues with switching between light and dark mode</li>
+          <li>Update the framework to a new major version</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.4.0" date="2024-07-12">
       <description>
         <ul>
