@@ -33,7 +33,6 @@
     "dayjs": "^1.11.7",
     "dompurify": "^3.2.5",
     "emoji-name-map": "^2.0.3",
-    "github-markdown-css": "^5.2.0",
     "globals": "^16.1.0",
     "import": "^0.0.6",
     "marked": "^15.0.11",

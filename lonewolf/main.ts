@@ -7,7 +7,7 @@ import "vfonts/Lato.css";
 // Monospace Font
 import "vfonts/FiraCode.css";
 
-import "github-markdown-css/github-markdown.css"
+import "./assets/github-markdown.css"
 
 import Icon from "./components/icons/Icon.vue";
 
