@@ -14,7 +14,7 @@
 import { computed } from "vue";
 import type { Ref } from "vue";
 
-import { useThemeVars } from "naive-ui";
+import { useThemeVars, useDialog } from "naive-ui";
 import { themeCast } from "@/themes/theme";
 
 import type List from "@/common/data/List";
@@ -22,7 +22,7 @@ import type { List as ListObservable} from "@/common/Observable";
 import type Project from "@/common/Project";
 
 import { useTransactions } from '../transactions/api'
-import { ListArchiveTransaction } from "@/common/transactions/ListTransactions";
+import { ListDeleteArchivedTransaction, ListArchiveTransaction } from "@/common/transactions/ListTransactions";
 
 import ActionDropdown from "@/components/ActionDropdown.vue";
 import { staticOption } from "@/components/DropdownOption";
@@ -37,17 +37,20 @@ const transactions = useTransactions()
 
 const theme = themeCast(useThemeVars())
 
+const dialog = useDialog()
+
 // NOTICE computed is not a function but a macro, we need to tell the macro that it should depend on a Proxy changing thats why we have unused expressions in computed macros
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
 const list = computed(()=>{$props.list.version; return $props.project.board.findListInclArchives($props.list.id);}) as Ref<List> // if list is null, something else is f'ed up
 
 // NOTICE computed is not a function but a macro, we need to tell the macro that it should depend on a Proxy changing thats why we have unused expressions in computed macros
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-const actions = computed(()=>{$props.list.version; return generateActions()})
+const actions = computed(()=>{$props.list.version; return generateActions($props.list.id)})
 
-function generateActions(): DropdownOption[] {
+function generateActions(listId: string): DropdownOption[] {
     return [
-        staticOption("restore", "restoreKey", "Restore", list)
+        staticOption("restore", "restoreKey", "Restore", listId),
+        staticOption("delete", "deleteKey", "Delete", listId),
     ];
 }
 
@@ -57,7 +60,20 @@ function actionMenuSelected(
 ) {
 
     if (optionObject.command == "restore") {
-        transactions.commit(new ListArchiveTransaction(list.value.id, list.value.position, ListArchiveTransaction.Unarchive));
+        // TODO list.value.position should be read from the optionObject.data field
+        transactions.commit(new ListArchiveTransaction(optionObject.data, list.value.position, ListArchiveTransaction.Unarchive));
+    }
+
+    if (optionObject.command == "delete" && optionObject.data != null) {
+        dialog.warning({
+            title: 'Delete',
+            content: 'Deleting a list can not be undone, are you sure?',
+            positiveText: 'I am sure!',
+            negativeText: 'Cancel',
+            onPositiveClick: () => {
+                transactions.commit(new ListDeleteArchivedTransaction(optionObject.data))
+            },
+        })
     }
 
 }

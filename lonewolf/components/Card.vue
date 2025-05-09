@@ -94,9 +94,8 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useThemeVars } from 'naive-ui'
+import { useThemeVars, useDialog } from 'naive-ui'
 import { themeCast } from '@/themes/theme'
-
 
 import CardLabelBadge from "./CardLabelBadge.vue";
 import AutoTime from "./AutoTime.vue";
@@ -108,11 +107,12 @@ import type Project from "@/common/Project";
 import type List from "@/common/data/List";
 
 import { useTransactions } from '@/components/transactions/api'
-import { CardSortTransaction, CardMoveTransaction } from "@/common/transactions/CardTransactions";
+import { CardSortTransaction, CardMoveTransaction, CardDeleteTransaction } from "@/common/transactions/CardTransactions";
 
 import ActionDropdown from "./ActionDropdown.vue";
 import type { DropdownOption } from "./DropdownOption";
 import { staticOption, groupOption } from "./DropdownOption";
+
 import { taskStats } from "@/utils/markdown";
 
 const $props = defineProps<{
@@ -126,6 +126,8 @@ const $emit = defineEmits(["card-edit"]);
 const theme = themeCast(useThemeVars())
 
 const transactions = useTransactions()
+
+const  dialog = useDialog()
 
 const data = computed(()=>{
 
@@ -170,6 +172,7 @@ function generateActions (card: Card, lists: List[], cards: Card[]): DropdownOpt
         groupOption("move", "moveKey", "Move", card, cardsChildren, cardsChildren.length == 0),
         groupOption("moveTo", "moveToKey", "Move To", card, listChildren, listChildren.length == 0),
         staticOption("archive", "archiveKey", "Archive", card),
+        staticOption("delete", "deleteKey", "Delete", card)
     ];
 }
 
@@ -206,22 +209,36 @@ function actionMenuSelected(
     optionObject: DropdownOption
 ) {
     if (optionObject.command == "edit") {
-        $emit("card-edit", data.value.card, $props.card);
+        $emit("card-edit", optionObject.data, $props.card);
     }
 
     if (optionObject.command == "move" && optionObject.data != null) {
         if (typeof key === 'number') {
+            // TODO use inforamtion form optionObject.data
             // FIXME does not sort correctly when moving card down off by one
             transactions.commit(new CardSortTransaction(data.value.card.id, data.value.card.position, key))
         }
     }
 
     if (optionObject.command == "moveTo" && optionObject.data != null) {
+        // TODO use inforamtion form optionObject.data
         transactions.commit(new CardMoveTransaction(data.value.card.id, data.value.card.list.id, data.value.card.position, optionObject.data.id, 0))
     }
 
     if (optionObject.command == "archive" && optionObject.data != null) {
-        transactions.commit(new CardMoveTransaction(data.value.card.id, data.value.card.list.id, data.value.card.position, $props.project.board.cardArchive.id, 0))
+        transactions.commit(new CardMoveTransaction(optionObject.data.id, optionObject.data.list.id, optionObject.data.position, $props.project.board.cardArchive.id, 0))
+    }
+
+    if (optionObject.command == "delete" && optionObject.data != null) {
+        dialog.warning({
+            title: 'Delete',
+            content: 'Deleting a card can not be undone, are you sure?',
+            positiveText: 'I am sure!',
+            negativeText: 'Cancel',
+            onPositiveClick: () => {
+                transactions.commit(new CardDeleteTransaction(optionObject.data.id))
+            },
+        })
     }
 }
 
@@ -276,4 +293,20 @@ function dueDateType (card: Card): string {
 .card:hover {
   background-color: v-bind('theme.cardColorHover');
 }
+
+:global(.dropdown-button-4d96a4f6-d8f5-44d0-930d-f0328aed36d2) { /* this needs to be global since the actual menu is transportet into an emelemt somewhere in the parents-chain of the dom */
+  width: calc(100% - 8px);
+  justify-content: start;
+}
+
+:global(.dropdown-button-4d96a4f6-d8f5-44d0-930d-f0328aed36d2 > span) {
+    gap: 80px;
+}
+
+:global(.dropdown-button-4d96a4f6-d8f5-44d0-930d-f0328aed36d2 > .n-button__content) {/* this needs to be global since the actual menu is transportet into an emelemt somewhere in the parents-chain of the dom */
+  justify-content: space-between;
+  display: inline-flex;
+  flex-grow: 1;
+}
+
 </style>

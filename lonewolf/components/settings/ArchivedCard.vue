@@ -92,7 +92,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { useThemeVars } from "naive-ui";
+import { useThemeVars, useDialog } from "naive-ui";
 import { themeCast } from "@/themes/theme";
 
 import CardLabelBadge from "@/components/CardLabelBadge.vue";
@@ -105,7 +105,7 @@ import type Project from "@/common/Project";
 import type List from "@/common/data/List";
 
 import { useTransactions } from '../transactions/api'
-import { CardMoveTransaction } from "@/common/transactions/CardTransactions";
+import { CardDeleteArchivedTransaction, CardMoveTransaction } from "@/common/transactions/CardTransactions";
 
 import ActionDropdown from "@/components/ActionDropdown.vue";
 import type { DropdownOption } from "@/components/DropdownOption";
@@ -124,6 +124,8 @@ const transactions = useTransactions()
 
 const theme = themeCast(useThemeVars())
 
+const dialog = useDialog()
+
 const data = computed(()=>{
 
     const card = $props.project.board.findCard($props.card.id) as Card
@@ -140,7 +142,7 @@ const data = computed(()=>{
 
     const hasDueDate = card.dueDate!=null
 
-    const actions = generateActions(lists)
+    const actions = generateActions(card, lists)
 
     return {
         card: card,
@@ -157,10 +159,11 @@ const data = computed(()=>{
 
 })
 
-function generateActions(lists: List[]): DropdownOption[] {
+function generateActions(card: Card, lists: List[]): DropdownOption[] {
     const listChildren = filterMoveLists(lists);
     return [
         groupOption("moveTo", "moveToKey", "Move To", null, listChildren, listChildren.length == 0),
+        staticOption("delete", "deleteKey", "Delete", card),
     ];
 }
 
@@ -175,6 +178,18 @@ function actionMenuSelected(
 
     if (optionObject.command == "moveTo" && optionObject.data != null) {
         transactions.commit(new CardMoveTransaction(data.value.card.id, data.value.card.list.id, data.value.card.position, optionObject.data.id, 0))
+    }
+
+    if (optionObject.command == "delete" && optionObject.data != null) {
+        dialog.warning({
+            title: 'Delete',
+            content: 'Deleting a card can not be undone, are you sure?',
+            positiveText: 'I am sure!',
+            negativeText: 'Cancel',
+            onPositiveClick: () => {
+                transactions.commit(new CardDeleteArchivedTransaction(optionObject.data.id))
+            },
+        })
     }
 
 }

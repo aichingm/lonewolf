@@ -106,6 +106,62 @@ export class NewListTransaction extends ListTransaction {
 
 }
 
+export class ListDeleteTransaction extends ListTransaction {
+    private _listPosition: number = -1
+
+    constructor (listId: string) {
+        super(listId)
+    }
+
+    public apply(board: Board): boolean {
+        console.log("ListDeleteTransaction", this._listId)
+        const list = this.list(board)
+        this._listPosition = list.position
+
+        if (list.cards.items.length > 0) {
+            console.error("ListDeleteTransaction: Error list is not empty", list)
+            return false
+        }
+
+        board.lists.remove(list)
+        list.logbook.forEach(e => board.logbook.delete(e))
+
+        return true
+    }
+
+    public mutate(bo: BoardObservable, _b: Board): boolean {
+        bo.lists.splice(this._listPosition, 1)
+        bo.version = this.id
+        return true
+    }
+
+}
+
+export class ListDeleteArchivedTransaction extends ListTransaction {
+    private _listPosition: number = -1
+
+    constructor (listId: string) {
+        super(listId)
+    }
+
+    public apply(board: Board): boolean {
+        console.log("ListDeleteArchivedTransaction", this._listId)
+        const list = this.list(board)
+        this._listPosition = list.position
+
+        board.listArchive.remove(list)
+        list.logbook.forEach(e => board.logbook.delete(e))
+
+        return true
+    }
+
+    public mutate(bo: BoardObservable, _b: Board): boolean {
+        bo.listArchive.splice(this._listPosition, 1)
+        return true
+    }
+
+}
+
 export class ListSortTransaction extends ListTransaction {
     private _oldPosition: number;
     private _newPosition: number;

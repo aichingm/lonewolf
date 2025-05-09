@@ -143,7 +143,7 @@ function handleSelect (key: string | number) {
 }
 </script>
 <style scoped>
-:global(.dropdown-button-04aec8f5-4fd4-42e2-a43d-9ab34aea0a86) { /* this needs to be global since the actual menu is transportet into an emelemt somewhere in the parrants-cain of the dom */
+:global(.dropdown-button-04aec8f5-4fd4-42e2-a43d-9ab34aea0a86) { /* this needs to be global since the actual menu is transportet into an emelemt somewhere in the parents-chain of the dom */
   width: calc(100% - 8px);
   margin: 4px;
   justify-content: start;
@@ -151,11 +151,11 @@ function handleSelect (key: string | number) {
   padding-right: 10px;
 }
 
-:global(.dropdown-button-04aec8f5-4fd4-42e2-a43d-9ab34aea0a86:hover) {/* this needs to be global since the actual menu is transportet into an emelemt somewhere in the parrants-cain of the dom */
+:global(.dropdown-button-04aec8f5-4fd4-42e2-a43d-9ab34aea0a86:hover) {/* this needs to be global since the actual menu is transportet into an emelemt somewhere in the parents-chain of the dom */
   background-color: var(--n-option-color-hover) !important;
 }
 
-:global(.dropdown-button-04aec8f5-4fd4-42e2-a43d-9ab34aea0a86 > .n-button__content) {/* this needs to be global since the actual menu is transportet into an emelemt somewhere in the parrants-cain of the dom */
+:global(.dropdown-button-04aec8f5-4fd4-42e2-a43d-9ab34aea0a86 > .n-button__content) {/* this needs to be global since the actual menu is transportet into an emelemt somewhere in the parents-chain of the dom */
   justify-content: space-between;
   display: inline-flex;
   flex-grow: 1;

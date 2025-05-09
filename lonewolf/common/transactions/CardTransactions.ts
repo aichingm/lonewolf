@@ -139,6 +139,63 @@ export class NewCardTransaction extends CardTransaction {
 
 }
 
+export class CardDeleteTransaction extends CardTransaction {
+    private _listPosition = -1;
+    private _cardPosition = -1;
+
+    constructor (cardId: string) {
+        super(cardId)
+
+    }
+
+    public apply(board: Board): boolean {
+        console.log("CardDeleteTransaction", this._cardId)
+        const card = this.card(board)
+        this._cardPosition = card.position
+        this._listPosition = card.list.position
+
+        card.list.cards.remove(card);
+        board.cards.delete(card.id)
+        card.logbook.forEach(e => board.logbook.delete(e))
+
+        return true
+    }
+
+    public mutate(bo: BoardObservable, _board: Board): boolean {
+        bo.lists[this._listPosition].cards.splice(this._cardPosition, 1)
+        bo.lists[this._listPosition].version = this.id
+        return true
+    }
+
+}
+
+export class CardDeleteArchivedTransaction extends CardTransaction {
+    private _cardPosition = -1;
+
+    constructor (cardId: string) {
+        super(cardId)
+    }
+
+    public apply(board: Board): boolean {
+        console.log("CardDeleteArchivedTransaction", this._cardId)
+        const card = this.card(board)
+        this._cardPosition = card.position
+
+        board.cards.delete(card.id)
+        card.logbook.forEach(e => board.logbook.delete(e))
+        board.cardArchive.cards.remove(card)
+
+        return true
+    }
+
+    public mutate(bo: BoardObservable, _board: Board): boolean {
+        bo.cardArchive.cards.splice(this._cardPosition, 1)
+        bo.cardArchive.version = this.id
+        return true
+    }
+
+}
+
 export class AddCommentTransaction extends CardTransaction {
     private _content: string;
     private _comment: CardComment;

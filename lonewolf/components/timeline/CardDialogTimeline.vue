@@ -189,7 +189,7 @@ function computeText(entry: LogEntry): string{
     case TimelineKind.PropertyChange:
         return initiator(entry) + ' changed the ' + fieldToText(entry) + ' of this card'
     case TimelineKind.CardMove:
-        return initiator(entry) + ' moved the card to ' + $props.project.board.findListInclArchives(entry.args[2])?.name
+        return initiator(entry) + ' moved the card to ' + ($props.project.board.findListInclArchives(entry.args[2])?.name || "[deleted]")
     default:
         throw new Error("Can not compute text for LogEntry[" + entry.id + "]")
     }
