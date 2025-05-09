@@ -13,8 +13,8 @@ Organize and track your tasks with ease and flexibility. Lonewolf is a productiv
 * Split up larger tasks with check lists
 * Keep your thoughts by adding comments for your future self
 
-![Screenshot main view in dark mode](assets/showcase_dark_main.png)
-![Screenshot card dialog in dark mode](assets/showcase_dark_card.png)
+![Screenshot main view in dark mode](./assets/screenshot_dark_main.png)
+![Screenshot card dialog in dark mode](./assets/screenshot_dark_card.png)
 
 ## Install
 
