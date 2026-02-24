@@ -1,0 +1,56 @@
+name: Build Windows App
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Install dependencies and build web assets
+        working-directory: ./lonewolf-tauri
+        run: |
+          npm install
+          npm install --no-save sharp
+
+      - name: Generate Icons
+        working-directory: ./lonewolf-tauri
+        shell: bash
+        run: |
+          mkdir -p src-tauri/icons
+          node bin/svg2png.mjs -b "#ffffff00" src/assets/icon.svg --width 512 --height 512 --output src-tauri/icons/512x512-lonewolf.png
+          npm run tauri icon -- src-tauri/icons/512x512-lonewolf.png -o src-tauri/icons
+
+      - name: Generate Frontend Icons
+        working-directory: ./lonewolf/assets
+        run: node icons.script.mjs generate
+
+      - name: Build Tauri App
+        working-directory: ./lonewolf-tauri
+        run: npm run tauri build
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lonewolf-Windows-Installer
+          path: |
+            lonewolf-tauri/src-tauri/target/release/bundle/nsis/*.exe
+            lonewolf-tauri/src-tauri/target/release/bundle/msi/*.msi
